@@ -141,22 +141,64 @@ public class WorkspaceController : Controller
     }
     
     [HttpGet]
-    [Route("[action]")]
-    public IActionResult Delete()
+    [Route("{workspaceId:guid}/[action]")]
+    public async Task<IActionResult> Delete([FromRoute][Required] Guid workspaceId)
     {
-        throw new NotImplementedException();
+        var userId = HttpContext.GetIdFromSession();
+        if (userId == null) return RedirectToAction("Login", "User");
+
+        Workspace? workspace;
+        using (var scope = _scopeFactory.CreateScope())
+        {
+            var usersCollectionService = scope.ServiceProvider.GetRequiredService<IUsersAuthorizer>();
+            var user = await usersCollectionService.GetUserAsync(u => u.Id == userId);
+            
+            if (user == null) return View("Error", (404, "User was not found"));
+
+            var workspacesService = usersCollectionService.GetServiceForUser<IWorkspacesService>(user);
+            
+            workspace = await workspacesService.GetWorkspaceAsync(w => w.Id == workspaceId);
+        }
+
+        if (workspace == null) return View("Error", (404, "Workspace was not found"));
+        
+        return View(new DeleteWorkspaceModel{WorkspaceName = workspace.Name});
     }
     
     [HttpPost]
-    [Route("[action]")]
-    public IActionResult Delete(int model)
+    [Route("{workspaceId:guid}/[action]")]
+    public async Task<IActionResult> Delete([FromRoute][Required] Guid workspaceId, [FromForm] DeleteWorkspaceModel model)
     {
-        throw new NotImplementedException();
+        var userId = HttpContext.GetIdFromSession();
+        if (userId == null) return RedirectToAction("Login", "User");
+        
+        using (var scope = _scopeFactory.CreateScope())
+        {
+            var usersCollectionService = scope.ServiceProvider.GetRequiredService<IUsersAuthorizer>();
+            var user = await usersCollectionService.GetUserAsync(u => u.Id == userId);
+            
+            if (user == null) return View("Error", (404, "User was not found"));
+
+            if (user.Password != model.Password)
+            {
+                ModelState.AddModelError(nameof(DeleteWorkspaceModel.Password), "Wrong password");
+                return View(model);
+            }
+
+            var workspacesService = usersCollectionService.GetServiceForUser<IWorkspacesService>(user);
+
+            var workspace = await workspacesService.GetWorkspaceAsync(w => w.Id == workspaceId);
+            if (workspace == null) return View("Error", (404, "Workspace was not found"));
+            
+            await workspacesService.RemoveAsync(workspace);
+        }
+
+        return RedirectToAction("Index");
     }
 
     [HttpGet]
     [Route("[action]")]
-    public IActionResult Edit()
+    public IActionResult Edit([FromQuery][Required] Guid workspaceId)
     {
         throw new NotImplementedException();
     }

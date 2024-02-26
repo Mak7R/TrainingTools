@@ -6,7 +6,7 @@
         <input name="SortingOption" value="@ViewBag.SortingOption" type="hidden"/>
         
         <div class="input-group input-group-horizontal">
-            <label asp-for="SearchBy" class="form-label me-2 mt-1">Search by</label>
+            <label asp-for="SearchBy" class="form-label me-2 mt-1"></label>
             <select asp-for="SearchBy" class="form-select flex-grow-0 w-25 me-2">
                 @foreach (var item in Model.SearchByOptions)
                 {
@@ -21,13 +21,13 @@
 
                 }
             </select>
-
-            <label asp-for="SearchValue" class="form-label me-2 sr-only"></label>
+            
             <input
                 asp-for="SearchValue"
                 class="form-control flex-grow-1"
                 placeholder="search"
                 value="@ViewBag.SearchValue"/>
+            
             <button type="submit" class="btn btn-success">Search</button>
         </div>
     </form>
