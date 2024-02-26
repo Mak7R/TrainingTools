@@ -1,0 +1,34 @@
+﻿@model FilterModel
+
+<div class="container-fluid">
+    <form class="default-search-form" role="search" action="@Context.Request.Path" method="get">
+        <input name="SortBy" value="@ViewBag.SortBy" type="hidden"/>
+        <input name="SortingOption" value="@ViewBag.SortingOption" type="hidden"/>
+        
+        <div class="input-group input-group-horizontal">
+            <label asp-for="SearchBy" class="form-label me-2 mt-1">Search by</label>
+            <select asp-for="SearchBy" class="form-select flex-grow-0 w-25 me-2">
+                @foreach (var item in Model.SearchByOptions)
+                {
+                    if (item.Key == ViewBag.SearchBy)
+                    {
+                        <option value="@item.Key" selected>@item.Value</option>
+                    }
+                    else
+                    {
+                        <option value="@item.Key">@item.Value</option>
+                    }
+
+                }
+            </select>
+
+            <label asp-for="SearchValue" class="form-label me-2 sr-only"></label>
+            <input
+                asp-for="SearchValue"
+                class="form-control flex-grow-1"
+                placeholder="search"
+                value="@ViewBag.SearchValue"/>
+            <button type="submit" class="btn btn-success">Search</button>
+        </div>
+    </form>
+</div>

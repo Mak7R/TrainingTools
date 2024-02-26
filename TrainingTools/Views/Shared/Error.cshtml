@@ -1,0 +1,12 @@
+﻿@model (int statusCode, string message)
+
+@{
+    ViewBag.Title = $"Error";
+    ViewBag.CurrentPage = ActivePage.Another;
+}
+<div class="container-fluid justify-content-center">
+    <h1 class="text-center">@Model.statusCode</h1>
+    <h3 class="text-center">
+        @Model.message
+    </h3>
+</div>

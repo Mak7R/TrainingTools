@@ -1,0 +1,17 @@
+﻿@model WorkspaceViewModel
+
+@{
+    ViewBag.Title = $"Workspace: {Model.Name}";
+    ViewBag.CurrentPage = ActivePage.Workspaces;
+}
+
+<div class="container-fluid" >
+    <h1>Workspace: @Model.Name</h1>
+
+    <ul>
+        <li>ID: @Model.Id</li>
+        <li>Name: @Model.Name</li>
+        <li>Owner: @Model.Owner.Name</li>
+        <li><a asp-controller="Exercise" asp-action="Index" asp-route-workspaceId="@Model.Id" class="btn btn-primary">Exercises</a></li>
+    </ul>
+</div>
