@@ -27,23 +27,23 @@ public class UsersAuthorizer : IDisposable, IUsersAuthorizer
         return service;
     }
 
-    public async Task AddAsync(User user)
+    public async Task Add(User user)
     {
         await _dbContext.Users.AddAsync(user);
         await _dbContext.SaveChangesAsync();
     }
 
-    public async Task<User?> GetUserAsync(Expression<Func<User, bool>> expression)
+    public async Task<User?> Get(Expression<Func<User, bool>> expression)
     {
         return await _dbContext.Users.AsNoTracking().FirstOrDefaultAsync(expression);
     }
     
-    public async Task<IEnumerable<User>> GetUsersAsync()
+    public async Task<IEnumerable<User>> GetAll()
     {
         return await _dbContext.Users.AsNoTracking().ToListAsync();
     }
 
-    public async Task UpdateUserAsync(Guid userId, IUsersAuthorizer.UpdateUserModel userModel)
+    public async Task Update(Guid userId, IUsersAuthorizer.UpdateUserModel userModel)
     {
         var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == userId);
         if (user == null) throw new NotFoundException($"{nameof(User)} with id {userId} was not found");
@@ -55,7 +55,7 @@ public class UsersAuthorizer : IDisposable, IUsersAuthorizer
         await _dbContext.SaveChangesAsync();
     }
 
-    public async Task RemoveAsync(User user)
+    public async Task Remove(User user)
     {
         _dbContext.Users.Remove(user);
         await _dbContext.SaveChangesAsync();

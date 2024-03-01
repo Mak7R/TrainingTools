@@ -13,7 +13,13 @@ public class Exercise
     [StringLength(MaxNameLength)]
     public string Name { get; set; }
     
+    
     [ForeignKey(nameof(Workspace))]
     public Guid WorkspaceId { get; set; }
     public Workspace Workspace { get; set; }
+    
+    
+    [ForeignKey(nameof(Group))]
+    public Guid? GroupId { get; set; }
+    public Group? Group { get; set; }
 }

@@ -1,5 +1,4 @@
 ﻿
-using Contracts;
 using Contracts.Models;
 using Contracts.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -9,11 +8,11 @@ using TrainingTools.Models;
 namespace TrainingTools.Controllers;
 
 [Route("[action]")]
-public class UserController : Controller
+public class UsersController : Controller
 {
     private readonly IServiceScopeFactory _scopeFactory;
 
-    public UserController(IServiceScopeFactory scopeFactory)
+    public UsersController(IServiceScopeFactory scopeFactory)
     {
         _scopeFactory = scopeFactory;
     }
@@ -29,23 +28,20 @@ public class UserController : Controller
     {
         if (!ModelState.IsValid) return View(model);
 
-        User? user;
-        using (var scope = _scopeFactory.CreateScope())
+        using var scope = _scopeFactory.CreateScope();
+        var usersAuthorizer = scope.ServiceProvider.GetRequiredService<IUsersAuthorizer>();
+        var user = await usersAuthorizer.Get(u => u.Email == model.Email);
+
+        if (user == null)
         {
-            var usersAuthorizer = scope.ServiceProvider.GetRequiredService<IUsersAuthorizer>();
-            user = await usersAuthorizer.GetUserAsync(u => u.Email == model.Email);
+            ModelState.AddModelError(nameof(LoginUserModel.Email), "User was not found");
+            return View(model);
+        }
 
-            if (user == null)
-            {
-                ModelState.AddModelError(nameof(LoginUserModel.Email), "User was not found");
-                return View(model);
-            }
-
-            if (user.Password != model.Password)
-            {
-                ModelState.AddModelError(nameof(LoginUserModel.Password), "Wrong password");
-                return View(model);
-            }
+        if (user.Password != model.Password)
+        {
+            ModelState.AddModelError(nameof(LoginUserModel.Password), "Wrong password");
+            return View(model);
         }
 
         HttpContext.AddIdToSession(user.Id);
@@ -74,12 +70,10 @@ public class UserController : Controller
 
         try
         {
-            using (var scope = _scopeFactory.CreateScope())
-            {
-                var usersAuthorizer = scope.ServiceProvider.GetRequiredService<IUsersAuthorizer>();
-                await usersAuthorizer.AddAsync(user);
-            }
-            
+            using var scope = _scopeFactory.CreateScope();
+            var usersAuthorizer = scope.ServiceProvider.GetRequiredService<IUsersAuthorizer>();
+            await usersAuthorizer.Add(user);
+
             HttpContext.AddIdToSession(user.Id);
             return RedirectToAction("Index", "Home");
         }
@@ -97,24 +91,28 @@ public class UserController : Controller
     }
 
     [HttpGet]
+    [ActionName("DeleteAccount")]
     public IActionResult Delete()
     {
         throw new NotImplementedException();
     }
     
     [HttpPost]
+    [ActionName("DeleteAccount")]
     public IActionResult Delete(int model)
     {
         throw new NotImplementedException();
     }
 
     [HttpGet]
+    [ActionName("EditAccount")]
     public IActionResult Edit()
     {
         throw new NotImplementedException();
     }
 
     [HttpPost]
+    [ActionName("EditAccount")]
     public IActionResult Edit(int model)
     {
         throw new NotImplementedException();

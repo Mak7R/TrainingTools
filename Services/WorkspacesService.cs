@@ -29,14 +29,14 @@ public class WorkspacesService : IWorkspacesService
         User = user;
     }
 
-    public async Task AddAsync(Workspace workspace)
+    public async Task Add(Workspace workspace)
     {
         workspace.OwnerId = User.Id;
         await _dbContext.Workspaces.AddAsync(workspace);
         await _dbContext.SaveChangesAsync();
     }
 
-    public async Task<Workspace?> GetWorkspaceAsync(Expression<Func<Workspace, bool>> expression)
+    public async Task<Workspace?> Get(Expression<Func<Workspace, bool>> expression)
     {
         return await _dbContext.Workspaces
             .AsNoTracking()
@@ -45,7 +45,7 @@ public class WorkspacesService : IWorkspacesService
             .FirstOrDefaultAsync(expression);
     }
 
-    public async Task<IEnumerable<Workspace>> GetWorkspacesAsync()
+    public async Task<IEnumerable<Workspace>> GetAll()
     {
         return await _dbContext.Workspaces
             .AsNoTracking()
@@ -54,7 +54,7 @@ public class WorkspacesService : IWorkspacesService
             .ToListAsync();
     }
 
-    public async Task UpdateAsync(Guid workspaceId, IWorkspacesService.UpdateWorkspaceModel workspaceModel)
+    public async Task Update(Guid workspaceId, IWorkspacesService.UpdateWorkspaceModel workspaceModel)
     {
         var workspace = await _dbContext.Workspaces
             .Include(w => w.Owner)
@@ -67,7 +67,7 @@ public class WorkspacesService : IWorkspacesService
         await _dbContext.SaveChangesAsync();
     }
 
-    public async Task RemoveAsync(Workspace workspace)
+    public async Task Remove(Workspace workspace)
     {
         if (workspace.Owner.Id != User.Id) throw new OperationNotAllowedException("User is not owner of this workspace");
         _dbContext.Workspaces.Remove(workspace);

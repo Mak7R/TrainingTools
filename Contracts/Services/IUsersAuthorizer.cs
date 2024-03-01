@@ -6,11 +6,11 @@ namespace Contracts.Services;
 public interface IUsersAuthorizer
 {
     T GetServiceForUser<T>(User user) where T: IAuthorizeService;
-    Task AddAsync(User user);
-    Task<User?> GetUserAsync(Expression<Func<User, bool>> expression);
-    Task<IEnumerable<User>> GetUsersAsync();
-    Task UpdateUserAsync(Guid userId, UpdateUserModel userModel);
-    Task RemoveAsync(User user);
+    Task Add(User user);
+    Task<User?> Get(Expression<Func<User, bool>> expression);
+    Task<IEnumerable<User>> GetAll();
+    Task Update(Guid userId, UpdateUserModel userModel);
+    Task Remove(User user);
     
     public record UpdateUserModel(string Name, string Email, string Password);
 }

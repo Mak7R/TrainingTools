@@ -2,9 +2,9 @@
 using Contracts.Models;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 
-namespace TrainingTools.Models;
+namespace TrainingTools.Models.SharedModels;
 
-public class DeleteWorkspaceModel
+public class DeleteModel<TViewModel>
 {
     [Display(Name = "Password")]
     [Required(ErrorMessage = "Password is required")]
@@ -12,5 +12,5 @@ public class DeleteWorkspaceModel
     public string Password { get; set; }
     
     [BindNever]
-    public string Name { get; set; }
+    public TViewModel ViewModel { get; set; } 
 }

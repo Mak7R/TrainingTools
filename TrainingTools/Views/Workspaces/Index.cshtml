@@ -53,19 +53,21 @@
                 <tr>
                     <td>@workspace.Id</td>
                     <td>
-                        <a asp-controller="Workspace" asp-action="Get" asp-route-workspaceId="@workspace.Id">@workspace.Name</a>
+                        <a asp-controller="Workspaces" asp-action="Get" asp-route-workspaceId="@workspace.Id">@workspace.Name</a>
                     </td>
                     <td>
-                        <a asp-controller="Exercise" asp-action="Index" asp-route-workspaceId="@workspace.Id" class="btn btn-success">Exercises</a>
-                        <a asp-controller="Workspace" asp-action="Edit" asp-route-workspaceId="@workspace.Id" class="btn btn-primary">Edit</a>
-                        <a asp-controller="Workspace" asp-action="Delete" asp-route-workspaceId="@workspace.Id" class="btn btn-danger">Delete</a>
+                        <a asp-controller="Workspaces" asp-action="GetInfo" asp-route-workspaceId="@workspace.Id" class="btn btn-success">Info</a>
+                        <a asp-controller="Groups" asp-action="Index" asp-route-workspaceId="@workspace.Id" class="btn btn-success">Groups</a>
+                        <a asp-controller="Exercises" asp-action="Index" asp-route-workspaceId="@workspace.Id" class="btn btn-success">Exercises</a>
+                        <a asp-controller="Workspaces" asp-action="Edit" asp-route-workspaceId="@workspace.Id" class="btn btn-primary">Edit</a>
+                        <a asp-controller="Workspaces" asp-action="Delete" asp-route-workspaceId="@workspace.Id" class="btn btn-danger">Delete</a>
                     </td>
                 </tr>
             }
         </tbody>
     </table>
 
-    <a asp-controller="Workspace" asp-action="Add" class="btn btn-success btn-block w-100">Add Workspace</a>
+    <a asp-controller="Workspaces" asp-action="Add" class="btn btn-success btn-block w-100">Add Workspace</a>
 </div>
 
 

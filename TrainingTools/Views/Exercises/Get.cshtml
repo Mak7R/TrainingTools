@@ -1,0 +1,24 @@
+﻿@model ExerciseViewModel
+
+@{
+    ViewBag.Title = $"Exercise: {Model.Name}";
+    ViewBag.CurrentPage = ActivePage.Workspaces;
+}
+
+<div class="container-fluid">
+    <div class="container mb-2">
+        <h1>Exercise: @Model.Name</h1>
+        <ul class="list-group list-group-flush">
+            <li class="list-group-item">ID: @Model.Id</li>
+            <li class="list-group-item">Name: @Model.Name</li>
+            <li class="list-group-item">Workspace: @Model.Workspace.Name</li>
+            <li class="list-group-item">Owner: @Model.Workspace.Owner.Name</li>
+        </ul>
+    </div>
+    
+    <div class="container">
+        <h3>Actions</h3>
+        <a class="btn btn-primary" asp-controller="Exercises" asp-action="Edit" asp-route-exerciseId="@Model.Id">Edit</a>
+        <a class="btn btn-danger" asp-controller="Exercises" asp-action="Delete" asp-route-exerciseId="@Model.Id">Delete</a>
+    </div>
+</div>

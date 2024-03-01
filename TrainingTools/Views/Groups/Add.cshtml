@@ -1,11 +1,12 @@
-﻿@model AddExerciseModel
+﻿@model AddGroupModel
+
 @{
-    ViewBag.Title = "Add Exercise";
+    ViewBag.Title = "Add Group";
     ViewBag.CurrentPage = ActivePage.Workspaces;
 }
 
 <div class="container">
-    <form method="post" asp-controller="Exercise" asp-action="Add" asp-route-workspaceId="@ViewBag.WorkspaceId">
+    <form method="post">
         <div asp-validation-summary="ModelOnly" class="text-danger"></div>
         
         <div class="form-group mb-3">

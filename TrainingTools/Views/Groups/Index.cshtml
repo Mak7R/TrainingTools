@@ -1,15 +1,15 @@
-﻿@model IEnumerable<ExerciseViewModel>
+﻿@model IEnumerable<GroupViewModel>
 
 @{
-    ViewBag.Title = $"Exercise";
+    ViewBag.Title = $"Groups";
     ViewBag.CurrentPage = ActivePage.Workspaces;
 }
 
 @{
     var searchOptions = new Dictionary<string, string>
     {
-        { nameof(ExerciseViewModel.Id), "Id" },
-        { nameof(ExerciseViewModel.Name), "Name" },
+        { nameof(GroupViewModel.Id), "Id" },
+        { nameof(GroupViewModel.Name), "Name" },
     };
     const string partialIconsPath = "Partials/SmallItems/";
     var workspaceId = Context.Request.RouteValues["workspaceId"]?.ToString();
@@ -23,7 +23,7 @@
                 <th class="col-4">
                     @await Component.InvokeAsync("Sort", new SortingComponentView
                         {
-                            Value = nameof(ExerciseViewModel.Id), 
+                            Value = nameof(GroupViewModel.Id), 
                             Display = "Id",
                             Options = new Dictionary<string, string>()
                             {
@@ -34,7 +34,7 @@
                 <th class="col-4">
                     @await Component.InvokeAsync("Sort", new SortingComponentView
                         {
-                            Value = nameof(ExerciseViewModel.Name), 
+                            Value = nameof(GroupViewModel.Name), 
                             Display = "Name",
                             Options = new Dictionary<string, string>
                             {
@@ -55,15 +55,16 @@
                         @item.Id
                     </td>
                     <td>
-                        <a asp-controller="Exercise" asp-route-workspaceId="@workspaceId" asp-action="Get" asp-route-exerciseId="@item.Id">@item.Name</a>
+                        <a asp-controller="Groups" asp-action="Get" asp-route-groupId="@item.Id">@item.Name</a>
                     </td>
                     <td>
-                        
+                        <a class="btn btn-primary" asp-controller="Groups" asp-action="Edit" asp-route-groupId="@item.Id">Edit</a>
+                        <a class="btn btn-danger" asp-controller="Groups" asp-action="Delete" asp-route-groupId="@item.Id">Delete</a>
                     </td>
                 </tr>
             }
         </tbody>
     </table>
 
-    <a asp-controller="Exercise" asp-route-workspaceId="@workspaceId" asp-action="Add" class="btn btn-success btn-block w-100">Add Exercise</a>
+    <a asp-controller="Groups" asp-route-workspaceId="@workspaceId" asp-action="Add" class="btn btn-success btn-block w-100">Add Group</a>
 </div>

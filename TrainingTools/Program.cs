@@ -33,6 +33,8 @@ builder.Services.AddDbContext<TrainingToolsDbContext>(options =>
 builder.Services.AddScoped<IUsersAuthorizer, UsersAuthorizer>();
 builder.Services.AddScoped<IWorkspacesService, WorkspacesService>();
 builder.Services.AddScoped<IExercisesService, ExercisesService>();
+builder.Services.AddScoped<IGroupsService, GroupsService>();
+
 var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
