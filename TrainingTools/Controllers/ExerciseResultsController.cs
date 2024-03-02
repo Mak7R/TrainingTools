@@ -83,35 +83,14 @@ public class ExerciseResultsController : Controller
             if (user == null) return View("Error", (404, "User was not found"));
 
             var exerciseResultsService = usersCollectionService.GetServiceForUser<IExerciseResultsService>(user);
-            await exerciseResultsService.Update(model.ExerciseResultsId, r =>
-            {
-                var currentResults = r.Results;
-                var newResults = model.ExerciseResultsEntries;
             
-                for (int i = 0; i < Math.Min(currentResults.Count, newResults.Count); i++)
-                {
-                    currentResults[i].Weight = newResults[i].Weight;
-                    currentResults[i].Count = newResults[i].Count;
-                }
+            // here can be update of exercise results body. See IExerciseResultsService.Update(id, action);
 
-                if (currentResults.Count > newResults.Count)
-                {
-                    currentResults.RemoveRange(newResults.Count, currentResults.Count - newResults.Count);
-                }
-                else if (currentResults.Count < newResults.Count)
-                {
-                    for (int i = currentResults.Count; i < newResults.Count; i++)
-                    {
-                        var result = new ExerciseResultEntry
-                        {
-                            Id = Guid.NewGuid(),
-                            Weight = newResults[i].Weight,
-                            Count = newResults[i].Count
-                        };
-                        currentResults.Add(result);
-                    }
-                }
-            });
+            await exerciseResultsService.UpdateResults(
+                model.ExerciseResultsId,
+                model.ExerciseResultsEntries
+                    .Select(e => new ExerciseResultEntry { Count = e.Count, Weight = e.Weight })
+                    .ToList());
         }
         catch
         {

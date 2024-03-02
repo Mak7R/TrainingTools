@@ -66,3 +66,7 @@ app.UseRouting();
 app.MapControllers();
 
 app.Run();
+
+// TODO
+// Create SQL Requests to DB
+// Create Cache for Responses from DB

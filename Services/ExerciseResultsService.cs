@@ -40,6 +40,7 @@ public class ExerciseResultsService : IExerciseResultsService
         await _dbContext.SaveChangesAsync();
     }
 
+
     public async Task<ExerciseResults?> Get(Expression<Func<ExerciseResults, bool>> expression)
     {
         return await _dbContext.ExerciseResults
@@ -86,15 +87,54 @@ public class ExerciseResultsService : IExerciseResultsService
         if (exerciseResults == null) throw new NotFoundException($"{nameof(ExerciseResults)} with id {exerciseResultsId} was not found");
 
         updater(exerciseResults);
-        foreach (var result in exerciseResults.Results)
+        
+        // I can paste here all checks and security. Like check user changed or another errors.
+        
+        await _dbContext.SaveChangesAsync();
+    }
+
+    public async Task UpdateResults(Guid exerciseResultsId, List<ExerciseResultEntry> newResults)
+    {
+        var exerciseResults = await _dbContext.ExerciseResults
+            .Include(r => r.Owner)
+            .Include(r => r.Results)
+            .Include(r => r.Exercise)
+            .ThenInclude(e => e.Workspace)
+            .ThenInclude(w => w.Owner)
+            .Include(r => r.Exercise)
+            .ThenInclude(e => e.Group)
+            .Where(r => r.Owner.Id == User.Id)
+            .FirstOrDefaultAsync(r => r.Id == exerciseResultsId);
+        
+        if (exerciseResults == null) throw new NotFoundException($"{nameof(ExerciseResults)} with id {exerciseResultsId} was not found");
+        
+        var oldResults = exerciseResults.Results;
+        
+        for (int i = 0; i < Math.Min(oldResults.Count, newResults.Count); i++)
         {
-            // first get all from db and then make check ???
-            if (await _dbContext.ExerciseResults.FirstOrDefaultAsync(r => r.Id == result.Id) == null)
+            oldResults[i].Count = newResults[i].Count;
+            oldResults[i].Weight = newResults[i].Weight;
+        }
+
+        if (oldResults.Count > newResults.Count)
+        {
+            _dbContext.ExerciseResultEntries.RemoveRange(oldResults.GetRange(newResults.Count, oldResults.Count - newResults.Count));
+            oldResults.RemoveRange(newResults.Count, oldResults.Count - newResults.Count);
+        }
+        else
+        {
+            for (int i = oldResults.Count; i < newResults.Count; i++)
             {
-                await _dbContext.ExerciseResultEntries.AddAsync(result);
+                var entry = new ExerciseResultEntry
+                {
+                    Id = Guid.NewGuid(), 
+                    Weight = newResults[i].Weight, 
+                    Count = newResults[i].Count
+                };
+                await _dbContext.ExerciseResultEntries.AddAsync(entry);
+                oldResults.Add(entry);
             }
         }
-        // I can paste here all checks and security. Like check user changed or another errors.
         
         await _dbContext.SaveChangesAsync();
     }
