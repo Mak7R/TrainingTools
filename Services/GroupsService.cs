@@ -61,7 +61,7 @@ public class GroupsService : IGroupsService
             .ToListAsync();
     }
 
-    public async Task Update(Guid groupId, IGroupsService.UpdateGroupModel groupModel)
+    public async Task Update(Guid groupId, Action<Group> updater)
     {
         var group = await _dbContext.Groups
             .Include(g => g.Workspace)
@@ -70,9 +70,11 @@ public class GroupsService : IGroupsService
             .FirstOrDefaultAsync(g => g.Id == groupId);
         
         if (group == null) throw new NotFoundException($"{nameof(Group)} with id {groupId} was not found");
-        
-        group.Name = groupModel.Name;
 
+        updater(group);
+
+        // I can paste here all checks and security. Like check user changed or another errors.
+        
         await _dbContext.SaveChangesAsync();
     }
 

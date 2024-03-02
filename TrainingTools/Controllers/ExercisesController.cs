@@ -136,12 +136,13 @@ public class ExercisesController : Controller
         if (user == null) return View("Error", (404, "User was not found"));
 
         var exercisesService = usersCollectionService.GetServiceForUser<IExercisesService>(user);
-            
         var exercise = await exercisesService.Get(e => e.Id == exerciseId);
-
         if (exercise == null) return View("Error", (404, "Group was not found"));
+
+        var resultsService = usersCollectionService.GetServiceForUser<IExerciseResultsService>(user);
+        var results = await resultsService.Get(r => r.Exercise.Id == exercise.Id);
         
-        return View(new ExerciseViewModel(exercise));
+        return View(new FullExerciseViewModel(exercise, results));
     }
     
     [HttpGet, HttpPost]
@@ -200,14 +201,15 @@ public class ExercisesController : Controller
         if (user == null) return View("Error", (404, "User was not found"));
 
         var exercisesService = usersCollectionService.GetServiceForUser<IExercisesService>(user);
-            
+        
+        await exercisesService.Update(exerciseId, e =>
+        {
+            e.Name = model.Name;
+            e.GroupId = model.GroupId;
+        });
+        
         var exercise = await exercisesService.Get(e => e.Id == exerciseId);
-            
         if (exercise == null) return View("Error", (404, "Exercise was not found"));
-
-        var updateExercise = new IExercisesService.UpdateExerciseModel(model.Name, model.GroupId);
-
-        await exercisesService.Update(exerciseId, updateExercise);
 
         return RedirectToAction("Index", new {workspaceId = exercise.Workspace.Id});
     }

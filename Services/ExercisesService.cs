@@ -84,7 +84,7 @@ public class ExercisesService : IExercisesService
             .ToListAsync();
     }
 
-    public async Task Update(Guid exerciseId, IExercisesService.UpdateExerciseModel exerciseModel)
+    public async Task Update(Guid exerciseId, Action<Exercise> updater)
     {
         var exercise = await _dbContext.Exercises
             .Include(e => e.Workspace)
@@ -97,25 +97,9 @@ public class ExercisesService : IExercisesService
         
         if (exercise == null) throw new NotFoundException($"{nameof(Exercise)} with id {exerciseId} was not found");
 
-        if (exercise.GroupId != exerciseModel.GroupId)
-        {
-            if (exerciseModel.GroupId.HasValue)
-            {
-                var group = await _dbContext.Groups
-                    .Include(g => g.Workspace)
-                    .FirstOrDefaultAsync(g => g.Id == exerciseModel.GroupId.Value);
-
-                if (group != null && group.WorkspaceId != exercise.WorkspaceId)
-                    throw new OperationNotAllowedException("Group and exercise exists in different workspaces");
-                
-                exercise.Group = group;
-            }
-            else
-            {
-                exercise.Group = null;
-            }
-        }
-        exercise.Name = exerciseModel.Name;
+        updater(exercise);
+        
+        // I can paste here all checks and security. Like check user changed or another errors.
         
         await _dbContext.SaveChangesAsync();
     }

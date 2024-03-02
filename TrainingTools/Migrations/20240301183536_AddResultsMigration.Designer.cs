@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Services.DbContexts;
 
@@ -11,9 +12,11 @@ using Services.DbContexts;
 namespace TrainingTools.Migrations
 {
     [DbContext(typeof(TrainingToolsDbContext))]
-    partial class TrainingToolsDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240301183536_AddResultsMigration")]
+    partial class AddResultsMigration
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -190,7 +193,7 @@ namespace TrainingTools.Migrations
                     b.HasOne("Contracts.Models.Exercise", "Exercise")
                         .WithMany("Results")
                         .HasForeignKey("ExerciseId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.HasOne("Contracts.Models.User", "Owner")

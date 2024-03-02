@@ -43,14 +43,14 @@ public class UsersAuthorizer : IDisposable, IUsersAuthorizer
         return await _dbContext.Users.AsNoTracking().ToListAsync();
     }
 
-    public async Task Update(Guid userId, IUsersAuthorizer.UpdateUserModel userModel)
+    public async Task Update(Guid userId, Action<User> updater)
     {
         var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == userId);
         if (user == null) throw new NotFoundException($"{nameof(User)} with id {userId} was not found");
 
-        user.Email = userModel.Email;
-        user.Password = userModel.Password;
-        user.Name = userModel.Name;
+        updater(user);
+        
+        // I can paste here all checks and security. Like check user changed or another errors.
 
         await _dbContext.SaveChangesAsync();
     }

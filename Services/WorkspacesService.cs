@@ -54,15 +54,17 @@ public class WorkspacesService : IWorkspacesService
             .ToListAsync();
     }
 
-    public async Task Update(Guid workspaceId, IWorkspacesService.UpdateWorkspaceModel workspaceModel)
+    public async Task Update(Guid workspaceId, Action<Workspace> updater)
     {
         var workspace = await _dbContext.Workspaces
             .Include(w => w.Owner)
             .Where(w => w.Owner.Id == User.Id)
             .FirstOrDefaultAsync(w => w.Id == workspaceId);
         if (workspace == null) throw new NotFoundException($"{nameof(Workspace)} with id {workspaceId} was not found");
+
+        updater(workspace);
         
-        workspace.Name = workspaceModel.Name;
+        // I can paste here all checks and security. Like check user changed or another errors.
 
         await _dbContext.SaveChangesAsync();
     }

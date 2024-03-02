@@ -9,8 +9,6 @@ public interface IUsersAuthorizer
     Task Add(User user);
     Task<User?> Get(Expression<Func<User, bool>> expression);
     Task<IEnumerable<User>> GetAll();
-    Task Update(Guid userId, UpdateUserModel userModel);
+    Task Update(Guid userId, Action<User> updater);
     Task Remove(User user);
-    
-    public record UpdateUserModel(string Name, string Email, string Password);
 }

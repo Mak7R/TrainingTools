@@ -8,8 +8,6 @@ public interface IWorkspacesService : IAuthorizeService
     Task Add(Workspace workspace);
     Task<Workspace?> Get(Expression<Func<Workspace, bool>> expression);
     Task<IEnumerable<Workspace>> GetAll();
-    Task Update(Guid workspaceId, UpdateWorkspaceModel workspaceModel);
+    Task Update(Guid workspaceId, Action<Workspace> updater);
     Task Remove(Workspace workspace);
-    
-    public record UpdateWorkspaceModel(string Name);
 }

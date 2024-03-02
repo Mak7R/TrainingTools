@@ -188,14 +188,9 @@ public class GroupsController : Controller
         if (user == null) return View("Error", (404, "User was not found"));
 
         var groupsService = usersCollectionService.GetServiceForUser<IGroupsService>(user);
-            
-        var group = await groupsService.Get(e => e.Id == groupId);
-            
+        await groupsService.Update(groupId, g => g.Name = model.Name);
+        var group = await groupsService.Get(g => g.Id == groupId);
         if (group == null) return View("Error", (404, "Group was not found"));
-
-        var updateGroup = new IGroupsService.UpdateGroupModel(model.Name);
-
-        await groupsService.Update(groupId, updateGroup);
 
         return RedirectToAction("Index", new {workspaceId = group.Workspace.Id});
     }

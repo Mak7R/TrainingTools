@@ -8,6 +8,8 @@ public class TrainingToolsDbContext : DbContext
     public DbSet<User> Users { get; set; }
     public DbSet<Workspace> Workspaces { get; set; }
     public DbSet<Exercise> Exercises { get; set; }
+    public DbSet<ExerciseResults> ExerciseResults { get; set; }
+    public DbSet<ExerciseResultEntry> ExerciseResultEntries { get; set; }
     
     public DbSet<Group> Groups { get; set; }
     

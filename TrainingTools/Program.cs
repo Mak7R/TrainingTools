@@ -34,6 +34,7 @@ builder.Services.AddScoped<IUsersAuthorizer, UsersAuthorizer>();
 builder.Services.AddScoped<IWorkspacesService, WorkspacesService>();
 builder.Services.AddScoped<IExercisesService, ExercisesService>();
 builder.Services.AddScoped<IGroupsService, GroupsService>();
+builder.Services.AddScoped<IExerciseResultsService, ExerciseResultsService>();
 
 var app = builder.Build();
 

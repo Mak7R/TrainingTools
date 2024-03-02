@@ -245,14 +245,8 @@ public class WorkspacesController : Controller
         if (user == null) return View("Error", (404, "User was not found"));
 
         var workspacesService = usersCollectionService.GetServiceForUser<IWorkspacesService>(user);
-            
-        var workspace = await workspacesService.Get(w => w.Id == workspaceId);
-            
-        if (workspace == null) return View("Error", (404, "Workspace was not found"));
 
-        var updatedWorkspace = new IWorkspacesService.UpdateWorkspaceModel(model.Name);
-
-        await workspacesService.Update(workspaceId, updatedWorkspace);
+        await workspacesService.Update(workspaceId, w => w.Name = model.Name);
 
         return RedirectToAction("Index");
     }

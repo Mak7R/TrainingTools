@@ -1,4 +1,5 @@
-﻿@model ExerciseViewModel
+﻿@using Contracts.Models
+@model FullExerciseViewModel
 
 @{
     ViewBag.Title = $"Exercise: {Model.Name}";
@@ -16,9 +17,43 @@
         </ul>
     </div>
     
-    <div class="container">
+    <div class="container mb-2">
         <h3>Actions</h3>
         <a class="btn btn-primary" asp-controller="Exercises" asp-action="Edit" asp-route-exerciseId="@Model.Id">Edit</a>
         <a class="btn btn-danger" asp-controller="Exercises" asp-action="Delete" asp-route-exerciseId="@Model.Id">Delete</a>
+    </div>
+
+    <div class="container">
+        @if(Model.Results == null){
+            <div>
+                <button class="btn btn-success" onclick="AddResult('@Model.Id')">Add Results</button>
+            </div>
+            
+            <script>
+                function AddResult(exerciseId){
+                    fetch('/api/workspaces/exercises/results?exerciseId=' + exerciseId, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        console.log('Success: Data was successfully sent to the server');
+                        window.location.reload();
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        window.location.href = '/error/500?message="Error when adding results"';
+                    });
+                }
+            </script>
+        }
+        else
+        {
+            @await Html.PartialAsync("Partials/ResultsFormPartialViewView", Model.Results, ViewData)
+        }
     </div>
 </div>

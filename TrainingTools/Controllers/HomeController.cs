@@ -18,4 +18,12 @@ public class HomeController : Controller
     {
         return View((Response.StatusCode, "Internal server error"));
     }
+
+    [HttpGet]
+    [Route("error/{statusCode:int}")]
+    public IActionResult Error([FromRoute] int statusCode, string? message)
+    {
+        if (string.IsNullOrEmpty(message)) message = "Custom users error";
+        return View((statusCode, message));
+    }
 }
