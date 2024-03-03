@@ -60,7 +60,8 @@
                         <a asp-controller="Groups" asp-action="Index" asp-route-workspaceId="@workspace.Id" class="btn btn-success">Groups</a>
                         <a asp-controller="Exercises" asp-action="Index" asp-route-workspaceId="@workspace.Id" class="btn btn-success">Exercises</a>
                         <a asp-controller="Workspaces" asp-action="Edit" asp-route-workspaceId="@workspace.Id" class="btn btn-primary">Edit</a>
-                        <a asp-controller="Workspaces" asp-action="Delete" asp-route-workspaceId="@workspace.Id" class="btn btn-danger">Delete</a>
+                        @await Html.PartialAsync("Partials/DeleteWithPasswordPartialView", new DeleteWithPasswordViewModel
+                            ("Delete", $"Delete workspace: {workspace.Name}", $"/workspaces/{workspace.Id}/delete", "alert('Workspace was successful deleted');window.location.reload();"), ViewData)
                     </td>
                 </tr>
             }

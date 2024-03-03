@@ -6,8 +6,8 @@
         <input name="SortingOption" value="@ViewBag.SortingOption" type="hidden"/>
         
         <div class="input-group input-group-horizontal">
-            <label asp-for="SearchBy" class="form-label me-2 mt-1"></label>
-            <select asp-for="SearchBy" class="form-select flex-grow-0 w-25 me-2">
+            <label asp-for="SearchBy" class="input-group-text form-label d-none d-sm-block" style="margin-bottom: 0"></label>
+            <select asp-for="SearchBy" class="form-select flex-grow-0 w-25">
                 @foreach (var item in Model.SearchByOptions)
                 {
                     if (item.Key == ViewBag.SearchBy)
@@ -21,13 +21,13 @@
 
                 }
             </select>
-            
+
             <input
                 asp-for="SearchValue"
-                class="form-control flex-grow-1"
+                class="form-control"
                 placeholder="search"
                 value="@ViewBag.SearchValue"/>
-            
+
             <button type="submit" class="btn btn-success">Search</button>
         </div>
     </form>

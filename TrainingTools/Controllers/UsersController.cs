@@ -141,15 +141,53 @@ public class UsersController : Controller
     }
 
     [HttpGet]
-    public IActionResult Edit()
+    public async Task<IActionResult> Edit()
     {
-        throw new NotImplementedException();
+        var userId = HttpContext.GetIdFromSession();
+        if (userId == null) return RedirectToAction("Login", "Users");
+        
+        using var scope = _scopeFactory.CreateScope();
+        var usersCollectionService = scope.ServiceProvider.GetRequiredService<IUsersAuthorizer>();
+        var user = await usersCollectionService.Get(u => u.Id == userId);
+        if (user == null) return View("Error", (404, "User was not found"));
+
+        return View(new EditUserModel{Name = user.Name, Email = user.Email});
     }
 
     [HttpPost]
-    public IActionResult Edit(int model)
+    public async Task<IActionResult> Edit([Required, FromForm] EditUserModel model)
     {
-        throw new NotImplementedException();
+        if (!ModelState.IsValid) return View(model);
+        
+        var userId = HttpContext.GetIdFromSession();
+        if (userId == null) return RedirectToAction("Login", "Users");
+        
+        using var scope = _scopeFactory.CreateScope();
+        var usersCollectionService = scope.ServiceProvider.GetRequiredService<IUsersAuthorizer>();
+        var user = await usersCollectionService.Get(u => u.Id == userId);
+        if (user == null) return View("Error", (404, "User was not found"));
+
+        if (user.Password != model.Password)
+        {
+            ModelState.AddModelError(nameof(LoginUserModel.Password), "Wrong password");
+            return View(model);
+        }
+        
+        try
+        {
+            await usersCollectionService.Update(userId.Value, u =>
+            {
+                u.Email = model.Email;
+                u.Name = model.Name;
+            });
+            await usersCollectionService.SaveChanges();
+        }
+        catch (Exception e)
+        {
+            return View("Error", (500, e.Message));
+        }
+
+        return RedirectToAction("Index");
     }
 
     [HttpPatch]

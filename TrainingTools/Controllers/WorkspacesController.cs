@@ -113,7 +113,9 @@ public class WorkspacesController : Controller
 
     [HttpGet]
     [Route("{workspaceId:guid}")]
-    public async Task<IActionResult> Get([FromRoute,Required] Guid workspaceId)
+    public async Task<IActionResult> Get([FromRoute,Required] Guid workspaceId,
+        FilterModel filter, 
+        SortBindingModel sorter)
     {
         var userId = HttpContext.GetIdFromSession();
         if (userId == null) return RedirectToAction("Login", "Users");
@@ -134,6 +136,38 @@ public class WorkspacesController : Controller
         var groups = (await groupsService.GetAll()).Where(g => g.Workspace.Id == workspace.Id);
         var exercises = (await exercisesService.GetAll()).Where(e => e.Workspace.Id == workspace.Id);
 
+        if (filter.HasFilters)
+        {
+            ViewBag.SearchBy = filter.SearchBy!;
+            ViewBag.SearchValue = filter.SearchValue!;
+
+            exercises = exercises.Where(filter.SearchBy switch
+            {
+                nameof(Exercise.Id) => e => e.Id.ToString().Contains(filter.SearchValue!),
+                nameof(Exercise.Name) => e => e.Name.Contains(filter.SearchValue!),
+                _ => _ => false
+            });
+        }
+
+        if (sorter.HasSorters)
+        {
+            ViewBag.SortBy = sorter.SortBy!;
+            ViewBag.SortingOption = sorter.SortingOption!;
+            
+            exercises = (sorter.SortBy, sorter.SortingOption) switch
+            {
+                (nameof(Exercise.Name), "A-Z") => 
+                    exercises.OrderBy(w => w.Name),
+                (nameof(Exercise.Name), "Z-A") => 
+                    exercises.OrderBy(w => w.Name).Reverse(),
+                (nameof(Exercise.Id), "ASCENDING") => 
+                    exercises.OrderBy(w => w.Id),
+                (nameof(Exercise.Id), "DESCENDING") => 
+                    exercises.OrderBy(w => w.Id).Reverse(),
+                _ => exercises
+            };
+        }
+        
         return View(new FullWorkspaceViewModel(workspace, groups, exercises));
     }
     
@@ -159,9 +193,9 @@ public class WorkspacesController : Controller
         return View(new WorkspaceViewModel(workspace));
     }
     
-    [HttpGet]
+    [HttpDelete]
     [Route("{workspaceId:guid}/[action]")]
-    public async Task<IActionResult> Delete([FromRoute][Required] Guid workspaceId)
+    public async Task<IActionResult> Delete([FromRoute, Required] Guid workspaceId, [FromBody] DeleteModel model)
     {
         var userId = HttpContext.GetIdFromSession();
         if (userId == null) return RedirectToAction("Login", "Users");
@@ -170,40 +204,18 @@ public class WorkspacesController : Controller
         var usersCollectionService = scope.ServiceProvider.GetRequiredService<IUsersAuthorizer>();
         var user = await usersCollectionService.Get(u => u.Id == userId);
             
-        if (user == null) return View("Error", (404, "User was not found"));
-
-        var workspacesService = usersCollectionService.GetServiceForUser<IWorkspacesService>(user);
-            
-        var workspace = await workspacesService.Get(w => w.Id == workspaceId);
-
-        if (workspace == null) return View("Error", (404, "Workspace was not found"));
-        
-        return View(new DeleteWorkspaceModel{Name = workspace.Name});
-    }
-    
-    [HttpPost]
-    [Route("{workspaceId:guid}/[action]")]
-    public async Task<IActionResult> Delete([FromRoute][Required] Guid workspaceId, [FromForm] DeleteWorkspaceModel model)
-    {
-        var userId = HttpContext.GetIdFromSession();
-        if (userId == null) return RedirectToAction("Login", "Users");
-
-        using var scope = _scopeFactory.CreateScope();
-        var usersCollectionService = scope.ServiceProvider.GetRequiredService<IUsersAuthorizer>();
-        var user = await usersCollectionService.Get(u => u.Id == userId);
-            
-        if (user == null) return View("Error", (404, "User was not found"));
+        if (user == null) return NotFound(new {message = "User was not found"});
 
         if (user.Password != model.Password)
         {
             ModelState.AddModelError(nameof(DeleteWorkspaceModel.Password), "Wrong password");
-            return View(model);
+            return BadRequest(new {message = "Wrong password"});
         }
 
         var workspacesService = usersCollectionService.GetServiceForUser<IWorkspacesService>(user);
 
         var workspace = await workspacesService.Get(w => w.Id == workspaceId);
-        if (workspace == null) return View("Error", (404, "Workspace was not found"));
+        if (workspace == null) return NotFound(new { message = "Workspace was not found" });
 
         try
         {
@@ -212,10 +224,10 @@ public class WorkspacesController : Controller
         }
         catch (Exception e)
         {
-            return View("Error", (500, e.Message));
+            return StatusCode(500, new {message = e.Message});
         }
         
-        return RedirectToAction("Index");
+        return Ok();
     }
 
     [HttpGet]
