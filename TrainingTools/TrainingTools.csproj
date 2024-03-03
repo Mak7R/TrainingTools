@@ -27,6 +27,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <Folder Include="wwwroot\lib\bootstrap\dist\" />
       <Folder Include="wwwroot\styles\" />
     </ItemGroup>
 

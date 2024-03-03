@@ -19,9 +19,9 @@
     <h2>Actions</h2>
     <a class="btn btn-primary" asp-controller="Users" asp-action="Edit">Edit</a>
     
-    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#changePasswordModal">
-          Change password
-        </button>
+    <button id="showChangePassDialog" type="button" class="btn btn-primary">
+      Change password
+    </button>
     <div class="modal fade" id="changePasswordModal" tabindex="-1" aria-labelledby="changePasswordLabel" aria-hidden="true">
           <div class="modal-dialog">
             <div class="modal-content">
@@ -66,6 +66,17 @@
 @section scripts
 {
   <script>
+    const changePassModalElement = document.getElementById('changePasswordModal')
+    const bsChangePassModal = new bootstrap.Modal(changePassModalElement);
+    changePassModalElement.addEventListener('hide.bs.modal', function (event){
+        document.getElementById('currentPassword').value = '';
+        document.getElementById('newPassword').value = '';
+        document.getElementById('confirmPassword').value = '';
+    })
+    
+    document.getElementById('showChangePassDialog').addEventListener('click', function (event) {
+      bsChangePassModal.show();  
+    })
     document.getElementById('changePasswordForm').addEventListener('submit', function(event) {
       event.preventDefault();
       
@@ -93,12 +104,13 @@
       })
       .then(response => {
           if (response.ok) {
-              // Handle success response
               alert("Password changed successfully.");
-              // Reset form values
+              
               document.getElementById('currentPassword').value = '';
               document.getElementById('newPassword').value = '';
               document.getElementById('confirmPassword').value = '';
+              
+              bsChangePassModal.hide();
           } else {
               return response.json();
           }
