@@ -9,7 +9,7 @@ public interface IExerciseResultsService : IAuthorizeService
     Task<ExerciseResults?> Get(Expression<Func<ExerciseResults, bool>> expression);
     Task<IEnumerable<ExerciseResults>> GetAll();
     Task Update(Guid exerciseResultsId, Action<ExerciseResults> updater);
-    Task Remove(ExerciseResults exerciseResults);
+    Task Remove(Guid exerciseResultsId);
 
     Task UpdateResults(Guid exerciseResultsId, List<ExerciseResultEntry> newResults);
 }

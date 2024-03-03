@@ -109,6 +109,7 @@ public class GroupsController : Controller
         };
 
         await groupsService.Add(group);
+        await usersCollectionService.SaveChanges();
 
         return RedirectToAction("Index", new {workspaceId});
     }
@@ -150,10 +151,17 @@ public class GroupsController : Controller
 
         var groupsService = usersCollectionService.GetServiceForUser<IGroupsService>(user);
         var group = await groupsService.Get(g => g.Id == groupId);
-        if (group == null) return View("Error", (404, "Group was not found"));
-        await groupsService.Remove(group);
-
-        return RedirectToAction("Index", new {workspaceId = group.Workspace.Id});
+        try
+        {
+            await groupsService.Remove(groupId);
+            await usersCollectionService.SaveChanges();
+        }
+        catch (Exception e)
+        {
+            return View("Error", (500, e.Message));
+        }
+        
+        return RedirectToAction("Index", new {workspaceId = group!.Workspace.Id});
     }
 
     [HttpGet]
@@ -189,6 +197,8 @@ public class GroupsController : Controller
 
         var groupsService = usersCollectionService.GetServiceForUser<IGroupsService>(user);
         await groupsService.Update(groupId, g => g.Name = model.Name);
+        await usersCollectionService.SaveChanges();
+        
         var group = await groupsService.Get(g => g.Id == groupId);
         if (group == null) return View("Error", (404, "Group was not found"));
 

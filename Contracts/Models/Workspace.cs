@@ -16,4 +16,7 @@ public class Workspace
     [ForeignKey(nameof(Owner))]
     public Guid OwnerId { get; set; }
     public User Owner { get; set; }
+    
+    public List<Group> Groups { get; set; }
+    public List<Exercise> Exercises { get; set; }
 }

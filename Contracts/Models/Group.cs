@@ -12,4 +12,6 @@ public class Group
     [ForeignKey(nameof(Workspace))]
     public Guid WorkspaceId { get; set; }
     public Workspace Workspace { get; set; }
+    
+    public List<Exercise> Exercises { get; set; }
 }

@@ -118,6 +118,7 @@ public class ExercisesController : Controller
         };
 
         await exercisesService.Add(exercise);
+        await usersCollectionService.SaveChanges();
 
         return RedirectToAction("Index", new {workspaceId});
     }
@@ -160,10 +161,17 @@ public class ExercisesController : Controller
 
         var exercisesService = usersCollectionService.GetServiceForUser<IExercisesService>(user);
         var exercise = await exercisesService.Get(e => e.Id == exerciseId);
-        if (exercise == null) return View("Error", (404, "Exercise was not found"));
-        await exercisesService.Remove(exercise);
+        try
+        {
+            await exercisesService.Remove(exerciseId);
+            await usersCollectionService.SaveChanges();
+        }
+        catch(Exception e)
+        {
+            return View("Error", (500, e.Message));
+        }
 
-        return RedirectToAction("Index", new {workspaceId = exercise.Workspace.Id});
+        return RedirectToAction("Index", new {workspaceId = exercise!.Workspace.Id});
     }
 
     [HttpGet]
@@ -207,6 +215,7 @@ public class ExercisesController : Controller
             e.Name = model.Name;
             e.GroupId = model.GroupId;
         });
+        await usersCollectionService.SaveChanges();
         
         var exercise = await exercisesService.Get(e => e.Id == exerciseId);
         if (exercise == null) return View("Error", (404, "Exercise was not found"));

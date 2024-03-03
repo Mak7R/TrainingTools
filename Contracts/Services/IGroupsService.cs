@@ -9,5 +9,5 @@ public interface IGroupsService : IAuthorizeService
     Task<Group?> Get(Expression<Func<Group, bool>> expression);
     Task<IEnumerable<Group>> GetAll();
     Task Update(Guid groupId, Action<Group> updater);
-    Task Remove(Group group);
+    Task Remove(Guid groupId);
 }

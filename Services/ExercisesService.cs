@@ -11,6 +11,7 @@ namespace Services;
 public class ExercisesService : IExercisesService
 {
     private readonly TrainingToolsDbContext _dbContext;
+    private readonly IUsersAuthorizer _usersAuthorizer;
     private User? _user;
 
     private User User
@@ -19,9 +20,10 @@ public class ExercisesService : IExercisesService
         set => _user = value;
     }
 
-    public ExercisesService(TrainingToolsDbContext dbContext)
+    public ExercisesService(TrainingToolsDbContext dbContext, IUsersAuthorizer usersAuthorizer)
     {
         _dbContext = dbContext;
+        _usersAuthorizer = usersAuthorizer;
     }
 
     public void SetUser(User user)
@@ -55,7 +57,6 @@ public class ExercisesService : IExercisesService
         }
         
         await _dbContext.Exercises.AddAsync(exercise);
-        await _dbContext.SaveChangesAsync();
     }
 
     public async Task<Exercise?> Get(Expression<Func<Exercise, bool>> expression)
@@ -101,13 +102,24 @@ public class ExercisesService : IExercisesService
         
         // I can paste here all checks and security. Like check user changed or another errors.
         
-        await _dbContext.SaveChangesAsync();
     }
 
-    public async Task Remove(Exercise exercise)
+    public async Task Remove(Guid exerciseId)
     {
-        if (exercise.Workspace.Owner.Id != User.Id) throw new OperationNotAllowedException("User is not owner of this exercise");
+        var exercise = await _dbContext.Exercises
+            .Include(e => e.Workspace)
+            .ThenInclude(w => w.Owner)
+            .Include(e => e.Results)
+            .ThenInclude(r => r.Results)
+            .Where(e=>e.Workspace.Owner.Id == User.Id)
+            .FirstOrDefaultAsync(e => e.Id == exerciseId);
+        
+        if (exercise == null) throw new NotFoundException($"{nameof(Exercise)} with id {exerciseId} was not found");
+
+        var resultsService = _usersAuthorizer.GetServiceForUser<IExerciseResultsService>(User);
+        
+        foreach (var result in exercise.Results) await resultsService.Remove(result.Id);
+        
         _dbContext.Exercises.Remove(exercise);
-        await _dbContext.SaveChangesAsync();
     }
 }

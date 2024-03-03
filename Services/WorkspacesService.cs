@@ -11,6 +11,7 @@ namespace Services;
 public class WorkspacesService : IWorkspacesService
 {
     private readonly TrainingToolsDbContext _dbContext;
+    private readonly IUsersAuthorizer _usersAuthorizer;
     private User? _user;
 
     private User User
@@ -19,9 +20,10 @@ public class WorkspacesService : IWorkspacesService
         set => _user = value;
     }
 
-    public WorkspacesService(TrainingToolsDbContext dbContext)
+    public WorkspacesService(TrainingToolsDbContext dbContext, IUsersAuthorizer usersAuthorizer)
     {
         _dbContext = dbContext;
+        _usersAuthorizer = usersAuthorizer;
     }
 
     public void SetUser(User user)
@@ -33,7 +35,6 @@ public class WorkspacesService : IWorkspacesService
     {
         workspace.OwnerId = User.Id;
         await _dbContext.Workspaces.AddAsync(workspace);
-        await _dbContext.SaveChangesAsync();
     }
 
     public async Task<Workspace?> Get(Expression<Func<Workspace, bool>> expression)
@@ -65,14 +66,26 @@ public class WorkspacesService : IWorkspacesService
         updater(workspace);
         
         // I can paste here all checks and security. Like check user changed or another errors.
-
-        await _dbContext.SaveChangesAsync();
+        
     }
 
-    public async Task Remove(Workspace workspace)
+    public async Task Remove(Guid workspaceId)
     {
-        if (workspace.Owner.Id != User.Id) throw new OperationNotAllowedException("User is not owner of this workspace");
+        var workspace = await _dbContext.Workspaces
+            .Include(w => w.Owner)
+            .Include(w => w.Groups)
+            .Include(w => w.Exercises)
+            .Where(w => w.Owner.Id == User.Id)
+            .FirstOrDefaultAsync(w => w.Id == workspaceId);
+        
+        if (workspace == null) throw new NotFoundException($"{nameof(Workspace)} with id {workspaceId} was not found");
+
+        var groupsService = _usersAuthorizer.GetServiceForUser<IGroupsService>(User);
+        var exercisesService = _usersAuthorizer.GetServiceForUser<IExercisesService>(User);
+
+        foreach (var group in workspace.Groups) await groupsService.Remove(group.Id);
+        foreach(var exercise in workspace.Exercises) await exercisesService.Remove(exercise.Id);
+        
         _dbContext.Workspaces.Remove(workspace);
-        await _dbContext.SaveChangesAsync();
     }
 }

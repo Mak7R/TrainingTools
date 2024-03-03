@@ -1,0 +1,172 @@
+﻿@model UserViewModel
+
+@{
+    ViewBag.Title = "Login";
+    ViewBag.CurrentPage = ActivePage.Profile;
+}
+
+<div class="container">
+  <div class="container">
+    <h2>Profile</h2>
+    
+    <h4>ID: @Model.Id</h4>
+    <h4>Email: @Model.Email</h4>
+    <h4>Name: @Model.Name</h4>
+  </div>
+  
+
+  <div class="container mt-2">
+    <h2>Actions</h2>
+
+    <a class="btn btn-primary" asp-controller="Users" asp-action="Edit">Edit</a>
+    <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteAccountModal">
+      Delete Account
+    </button>
+    <div class="modal fade" id="deleteAccountModal" tabindex="-1" aria-labelledby="changePasswordLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h1 class="modal-title fs-4 text-danger" id="deleteAccountLabel">Delete Account</h1>
+          </div>
+          <form id="deleteAccountForm">
+            <div class="modal-body">
+              <div class="form-group">
+                <label for="passwordForDeleteAccount">Password: </label>
+                <input id="passwordForDeleteAccount" type="password" class="form-control" required>
+                <span id="errorWhenDeleteAccount" class="text-danger"></span>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
+              <button type="submit" class="btn btn-danger">Delete</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#changePasswordModal">
+      Change password
+    </button>
+    <div class="modal fade" id="changePasswordModal" tabindex="-1" aria-labelledby="changePasswordLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h1 class="modal-title fs-5" id="changePasswordLabel">Change Password</h1>
+          </div>
+          <form id="changePasswordForm">
+            <div class="modal-body">
+            
+              <div class="form-group">
+                <label for="currentPassword">Current Password</label>
+                <input type="password" class="form-control" id="currentPassword" required>
+              </div>
+              <div class="form-group">
+                <label for="newPassword">New Password</label>
+                <input type="password" class="form-control" id="newPassword" required>
+              </div>
+              <div class="form-group">
+                <label for="confirmPassword">Confirm New Password</label>
+                <input type="password" class="form-control" id="confirmPassword" required>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+              <button type="submit" class="btn btn-primary">Change</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+@section scripts
+{
+  <script>
+    document.getElementById('changePasswordForm').addEventListener('submit', function(event) {
+      event.preventDefault();
+      
+      let currentPassword = document.getElementById('currentPassword').value;
+      let newPassword = document.getElementById('newPassword').value;
+      let confirmPassword = document.getElementById('confirmPassword').value;
+      
+      // Check if new password matches confirmation
+      if (newPassword !== confirmPassword) {
+        alert("New password and confirmation password do not match.");
+        return;
+      }
+      
+      let formData = {
+        CurrentPassword: currentPassword,
+        NewPassword: newPassword
+      };
+      
+      fetch('/account/ChangePassword', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(formData)
+      })
+      .then(response => {
+          if (response.ok) {
+              // Handle success response
+              alert("Password changed successfully.");
+              // Reset form values
+              document.getElementById('currentPassword').value = '';
+              document.getElementById('newPassword').value = '';
+              document.getElementById('confirmPassword').value = '';
+          } else {
+              return response.json();
+          }
+      })
+      .then(data => {
+        if (data) {
+          alert("Error: " + data.message);
+        }
+      })
+      .catch((error) => {
+          console.error('Error:', error);                     
+      });
+    });
+  </script>
+  
+  <script>
+    document.getElementById('deleteAccountForm').addEventListener('submit', function(event) {
+      event.preventDefault();
+      
+      let Password = document.getElementById('passwordForDeleteAccount').value;
+      
+      let formData = {
+        Password: Password,
+      };
+      
+      fetch('/account/delete', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(formData)
+      })
+      .then(response => {
+          if (response.ok) {
+              // Handle success response
+              alert("Account was successful deleted");
+              window.location.href = "/";
+          } else {
+              return response.json();
+          }
+      })
+      .then(data => {
+        if (data) {
+          const errorLabel = document.getElementById("errorWhenDeleteAccount");
+          errorLabel.innerText = data.message;
+        }
+      })
+      .catch((error) => {
+          console.error('Error:', error);                     
+      });
+    });
+  </script>
+}

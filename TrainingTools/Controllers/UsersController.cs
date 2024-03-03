@@ -1,4 +1,5 @@
 ﻿
+using System.ComponentModel.DataAnnotations;
 using Contracts.Models;
 using Contracts.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -7,7 +8,7 @@ using TrainingTools.Models;
 
 namespace TrainingTools.Controllers;
 
-[Route("[action]")]
+[Route("account/[action]")]
 public class UsersController : Controller
 {
     private readonly IServiceScopeFactory _scopeFactory;
@@ -15,6 +16,20 @@ public class UsersController : Controller
     public UsersController(IServiceScopeFactory scopeFactory)
     {
         _scopeFactory = scopeFactory;
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> Index()
+    {
+        var userId = HttpContext.GetIdFromSession();
+        if (userId == null) return RedirectToAction("Login", "Users");
+        
+        using var scope = _scopeFactory.CreateScope();
+        var usersCollectionService = scope.ServiceProvider.GetRequiredService<IUsersAuthorizer>();
+        var user = await usersCollectionService.Get(u => u.Id == userId);
+        if (user == null) return View("Error", (404, "User was not found"));
+
+        return View(new UserViewModel(user));
     }
 
     [HttpGet]
@@ -73,6 +88,7 @@ public class UsersController : Controller
             using var scope = _scopeFactory.CreateScope();
             var usersAuthorizer = scope.ServiceProvider.GetRequiredService<IUsersAuthorizer>();
             await usersAuthorizer.Add(user);
+            await usersAuthorizer.SaveChanges();
 
             HttpContext.AddIdToSession(user.Id);
             return RedirectToAction("Index", "Home");
@@ -89,32 +105,88 @@ public class UsersController : Controller
         //     return View(model);
         // }
     }
-
-    [HttpGet]
-    [ActionName("DeleteAccount")]
-    public IActionResult Delete()
-    {
-        throw new NotImplementedException();
-    }
     
-    [HttpPost]
-    [ActionName("DeleteAccount")]
-    public IActionResult Delete(int model)
+    [HttpDelete]
+    public async Task<IActionResult> Delete([Required, FromBody] DeleteUserModel model)
     {
-        throw new NotImplementedException();
+        var userId = HttpContext.GetIdFromSession();
+        if (userId == null) return RedirectToAction("Login", "Users");
+
+        if (!ModelState.IsValid)
+            return BadRequest(new
+                {
+                    message = string.Join('\n', 
+                        ModelState.Values
+                            .SelectMany(s => s.Errors)
+                            .Select(e => e.ErrorMessage))
+                });
+        
+        using var scope = _scopeFactory.CreateScope();
+        var usersCollectionService = scope.ServiceProvider.GetRequiredService<IUsersAuthorizer>();
+        var user = await usersCollectionService.Get(u => u.Id == userId);
+        if (user == null) return NotFound(new { message = "User was not found" });
+        if (user.Password != model.Password) return BadRequest(new { message = "Wrong password" });
+        
+        try
+        {
+            await usersCollectionService.Remove(userId.Value);
+            await usersCollectionService.SaveChanges();
+            HttpContext.RemoveIdFromSession();
+            return Ok();
+        }
+        catch (Exception e)
+        {
+            return StatusCode(500, new {message = e.Message});
+        }
     }
 
     [HttpGet]
-    [ActionName("EditAccount")]
     public IActionResult Edit()
     {
         throw new NotImplementedException();
     }
 
     [HttpPost]
-    [ActionName("EditAccount")]
     public IActionResult Edit(int model)
     {
         throw new NotImplementedException();
+    }
+
+    [HttpPatch]
+    public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordModel model)
+    {
+        var userId = HttpContext.GetIdFromSession();
+        if (userId == null) return RedirectToAction("Login", "Users");
+
+        if (!ModelState.IsValid)
+            return StatusCode(400, 
+                new
+                {
+                    message = string.Join('\n', 
+                        ModelState.Values
+                        .SelectMany(s => s.Errors)
+                        .Select(e => e.ErrorMessage))
+                });
+        
+        using var scope = _scopeFactory.CreateScope();
+        var usersCollectionService = scope.ServiceProvider.GetRequiredService<IUsersAuthorizer>();
+        try
+        {
+            await usersCollectionService.Update(userId.Value, u =>
+            {
+                if (u.Password != model.CurrentPassword)
+                {
+                    throw new Exception("Wrong current password");
+                }
+
+                u.Password = model.NewPassword;
+            });
+            await usersCollectionService.SaveChanges();
+            return Ok();
+        }
+        catch (Exception e)
+        {
+            return StatusCode(500, new {message = e.Message});
+        }
     }
 }

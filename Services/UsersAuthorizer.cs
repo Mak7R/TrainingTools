@@ -1,5 +1,4 @@
 ﻿using System.Linq.Expressions;
-using Contracts;
 using Contracts.Exceptions;
 using Contracts.Models;
 using Contracts.Services;
@@ -9,20 +8,20 @@ using Services.DbContexts;
 
 namespace Services;
 
-public class UsersAuthorizer : IDisposable, IUsersAuthorizer
+public class UsersAuthorizer : IUsersAuthorizer
 {
-    private readonly IServiceScope _scope;
+    private readonly IServiceProvider _serviceProvider;
     private readonly TrainingToolsDbContext _dbContext;
 
-    public UsersAuthorizer(IServiceScopeFactory scopeFactory)
+    public UsersAuthorizer(IServiceProvider serviceProvider)
     {
-        _scope = scopeFactory.CreateScope();
-        _dbContext = _scope.ServiceProvider.GetRequiredService<TrainingToolsDbContext>();
+        _serviceProvider = serviceProvider;
+        _dbContext = _serviceProvider.GetRequiredService<TrainingToolsDbContext>();
     }
     
     public T GetServiceForUser<T>(User user) where T: IAuthorizeService
     {
-        var service = _scope.ServiceProvider.GetRequiredService<T>();
+        var service = _serviceProvider.GetRequiredService<T>();
         service.SetUser(user);
         return service;
     }
@@ -30,7 +29,6 @@ public class UsersAuthorizer : IDisposable, IUsersAuthorizer
     public async Task Add(User user)
     {
         await _dbContext.Users.AddAsync(user);
-        await _dbContext.SaveChangesAsync();
     }
 
     public async Task<User?> Get(Expression<Func<User, bool>> expression)
@@ -51,18 +49,29 @@ public class UsersAuthorizer : IDisposable, IUsersAuthorizer
         updater(user);
         
         // I can paste here all checks and security. Like check user changed or another errors.
-
-        await _dbContext.SaveChangesAsync();
+        
     }
 
-    public async Task Remove(User user)
+    public async Task Remove(Guid userId)
     {
+        var user = await _dbContext.Users
+            .Include(u => u.Workspaces)
+            .Include(u => u.UserResults)
+            .FirstOrDefaultAsync(u => u.Id == userId);
+        
+        if (user == null) throw new NotFoundException($"{nameof(User)} with id {userId} was not found");
+
+        var workspacesService = GetServiceForUser<IWorkspacesService>(user);
+        var exerciseResultsService = GetServiceForUser<IExerciseResultsService>(user);
+
+        foreach (var workspace in user.Workspaces) await workspacesService.Remove(workspace.Id);
+        foreach (var userResult in user.UserResults) await exerciseResultsService.Remove(userResult.Id);
+        
         _dbContext.Users.Remove(user);
-        await _dbContext.SaveChangesAsync();
     }
-    
-    public void Dispose() // danger | virtual Dispose(true)
+
+    public async Task SaveChanges()
     {
-        _scope.Dispose();
+        await _dbContext.SaveChangesAsync();
     }
 }

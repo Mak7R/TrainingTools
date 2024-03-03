@@ -37,7 +37,6 @@ public class ExerciseResultsService : IExerciseResultsService
         results.OwnerId = User.Id;
         
         await _dbContext.ExerciseResults.AddAsync(results);
-        await _dbContext.SaveChangesAsync();
     }
 
 
@@ -89,8 +88,6 @@ public class ExerciseResultsService : IExerciseResultsService
         updater(exerciseResults);
         
         // I can paste here all checks and security. Like check user changed or another errors.
-        
-        await _dbContext.SaveChangesAsync();
     }
 
     public async Task UpdateResults(Guid exerciseResultsId, List<ExerciseResultEntry> newResults)
@@ -135,14 +132,21 @@ public class ExerciseResultsService : IExerciseResultsService
                 oldResults.Add(entry);
             }
         }
-        
-        await _dbContext.SaveChangesAsync();
     }
 
-    public async Task Remove(ExerciseResults exerciseResults)
+    public async Task Remove(Guid exerciseResultsId)
     {
-        if (exerciseResults.Owner.Id != User.Id) throw new OperationNotAllowedException("User is not owner of this exercise results");
+        var exerciseResults = await _dbContext.ExerciseResults
+            .Include(r => r.Owner)
+            .Include(r => r.Results)
+            .Include(r => r.Exercise)
+            .ThenInclude(e => e.Workspace)
+            .ThenInclude(w => w.Owner)
+            .Where(r => r.Owner.Id == User.Id || r.Exercise.Workspace.Owner.Id == User.Id)
+            .FirstOrDefaultAsync(r => r.Id == exerciseResultsId);
+        
+        if (exerciseResults == null) throw new NotFoundException($"{nameof(ExerciseResults)} with id {exerciseResultsId} was not found");
+        
         _dbContext.ExerciseResults.Remove(exerciseResults);
-        await _dbContext.SaveChangesAsync();
     }
 }

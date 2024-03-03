@@ -1,6 +1,4 @@
-﻿
-using Contracts;
-using Contracts.Services;
+﻿using Contracts.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -29,4 +27,22 @@ public static class SessionContainerExtension
     }
 
     public static Guid? GetIdFromSession(this HttpContext httpContext) => (Guid?)httpContext.Items[AuthMiddleware.HttpContextItemsKey];
+    
+    public static void RemoveIdFromSession(this HttpContext context)
+    {
+        var container = context.RequestServices.GetRequiredService<ISessionContainer<Guid, Guid>>();
+        
+        if (context.Request.Cookies.ContainsKey(AuthMiddleware.SessionIdKey))
+        {
+            try
+            {
+                container.RemoveAuthorization(Guid.Parse(context.Request.Cookies[AuthMiddleware.SessionIdKey]!));
+                context.Response.Cookies.Delete(AuthMiddleware.SessionIdKey);
+            }
+            catch
+            {
+                // ignored
+            }
+        }
+    }
 }

@@ -106,7 +106,8 @@ public class WorkspacesController : Controller
         };
 
         await workspacesService.Add(workspace);
-
+        await usersCollectionService.SaveChanges();
+        
         return RedirectToAction("Index");
     }
 
@@ -203,9 +204,17 @@ public class WorkspacesController : Controller
 
         var workspace = await workspacesService.Get(w => w.Id == workspaceId);
         if (workspace == null) return View("Error", (404, "Workspace was not found"));
-            
-        await workspacesService.Remove(workspace);
 
+        try
+        {
+            await workspacesService.Remove(workspaceId);
+            await usersCollectionService.SaveChanges();
+        }
+        catch (Exception e)
+        {
+            return View("Error", (500, e.Message));
+        }
+        
         return RedirectToAction("Index");
     }
 
@@ -247,6 +256,7 @@ public class WorkspacesController : Controller
         var workspacesService = usersCollectionService.GetServiceForUser<IWorkspacesService>(user);
 
         await workspacesService.Update(workspaceId, w => w.Name = model.Name);
+        await usersCollectionService.SaveChanges();
 
         return RedirectToAction("Index");
     }

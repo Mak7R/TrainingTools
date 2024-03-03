@@ -10,6 +10,7 @@ namespace Services;
 public class GroupsService : IGroupsService
 {
     private readonly TrainingToolsDbContext _dbContext;
+    private readonly IUsersAuthorizer _usersAuthorizer;
     private User? _user;
 
     private User User
@@ -18,9 +19,10 @@ public class GroupsService : IGroupsService
         set => _user = value;
     }
 
-    public GroupsService(TrainingToolsDbContext dbContext)
+    public GroupsService(TrainingToolsDbContext dbContext, IUsersAuthorizer usersAuthorizer)
     {
         _dbContext = dbContext;
+        _usersAuthorizer = usersAuthorizer;
     }
 
     public void SetUser(User user)
@@ -38,7 +40,6 @@ public class GroupsService : IGroupsService
         group.Workspace = workspace;
         
         await _dbContext.Groups.AddAsync(group);
-        await _dbContext.SaveChangesAsync();
     }
 
     public async Task<Group?> Get(Expression<Func<Group, bool>> expression)
@@ -75,13 +76,22 @@ public class GroupsService : IGroupsService
 
         // I can paste here all checks and security. Like check user changed or another errors.
         
-        await _dbContext.SaveChangesAsync();
     }
 
-    public async Task Remove(Group group)
+    public async Task Remove(Guid groupId)
     {
-        if (group.Workspace.Owner.Id != User.Id) throw new OperationNotAllowedException("User is not owner of this exercise");
+        var group = await _dbContext.Groups
+            .Include(g => g.Workspace)
+            .ThenInclude(w => w.Owner)
+            .Include(g => g.Exercises)
+            .Where(g => g.Workspace.Owner.Id == User.Id)
+            .FirstOrDefaultAsync(g => g.Id == groupId);
+        
+        if (group == null) throw new NotFoundException($"{nameof(Group)} with id {groupId} was not found");
+
+        var exercisesService = _usersAuthorizer.GetServiceForUser<IExercisesService>(User);
+        foreach (var exercise in group.Exercises) await exercisesService.Update(exercise.Id, e => e.Group = null);
+        
         _dbContext.Groups.Remove(group);
-        await _dbContext.SaveChangesAsync();
     }
 }

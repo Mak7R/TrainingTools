@@ -10,5 +10,7 @@ public interface IUsersAuthorizer
     Task<User?> Get(Expression<Func<User, bool>> expression);
     Task<IEnumerable<User>> GetAll();
     Task Update(Guid userId, Action<User> updater);
-    Task Remove(User user);
+    Task Remove(Guid userId);
+
+    Task SaveChanges();
 }

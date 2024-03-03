@@ -9,5 +9,5 @@ public interface IExercisesService : IAuthorizeService
     Task<Exercise?> Get(Expression<Func<Exercise, bool>> expression);
     Task<IEnumerable<Exercise>> GetAll();
     Task Update(Guid exerciseId, Action<Exercise> updater);
-    Task Remove(Exercise exercise);
+    Task Remove(Guid exerciseId);
 }

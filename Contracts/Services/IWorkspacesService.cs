@@ -9,5 +9,5 @@ public interface IWorkspacesService : IAuthorizeService
     Task<Workspace?> Get(Expression<Func<Workspace, bool>> expression);
     Task<IEnumerable<Workspace>> GetAll();
     Task Update(Guid workspaceId, Action<Workspace> updater);
-    Task Remove(Workspace workspace);
+    Task Remove(Guid workspaceId);
 }

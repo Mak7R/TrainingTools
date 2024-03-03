@@ -19,4 +19,7 @@ public class User
     
     [StringLength(MaxPasswordLength)]
     public string Password { get; set; }
+    
+    public List<ExerciseResults> UserResults { get; set; }
+    public List<Workspace> Workspaces { get; set; }
 }

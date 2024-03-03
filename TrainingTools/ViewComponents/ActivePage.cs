@@ -7,4 +7,5 @@ public enum ActivePage
     Workspaces,
     Register,
     Login,
+    Profile,
 }

@@ -34,6 +34,7 @@ public class ExerciseResultsController : Controller
             var exerciseResultsService = usersCollectionService.GetServiceForUser<IExerciseResultsService>(user);
             var results = new ExerciseResults { Id = Guid.NewGuid(), ExerciseId = exerciseId };
             await exerciseResultsService.Add(results);
+            await usersCollectionService.SaveChanges();
         }
         catch
         {
@@ -46,6 +47,7 @@ public class ExerciseResultsController : Controller
     [Route("")]
     public async Task<IActionResult> Delete([FromQuery] Guid resultsId)
     {
+        throw new NotImplementedException();
         try
         {
             var userId = HttpContext.GetIdFromSession();
@@ -57,9 +59,16 @@ public class ExerciseResultsController : Controller
             if (user == null) return View("Error", (404, "User was not found"));
 
             var exerciseResultsService = usersCollectionService.GetServiceForUser<IExerciseResultsService>(user);
-            var results = await exerciseResultsService.Get(r => r.Id == resultsId);
-            if (results == null) return StatusCode(500);
-            await exerciseResultsService.Remove(results);
+            try
+            {
+                await exerciseResultsService.Remove(resultsId);
+                await usersCollectionService.SaveChanges();
+            }
+            catch (Exception e)
+            {
+                return View("Error", (500, e.Message));
+            }
+            
         }
         catch
         {
@@ -91,6 +100,7 @@ public class ExerciseResultsController : Controller
                 model.ExerciseResultsEntries
                     .Select(e => new ExerciseResultEntry { Count = e.Count, Weight = e.Weight })
                     .ToList());
+            await usersCollectionService.SaveChanges();
         }
         catch
         {
