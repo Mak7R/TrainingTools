@@ -110,7 +110,6 @@ public class ExercisesService : IExercisesService
             .Include(e => e.Workspace)
             .ThenInclude(w => w.Owner)
             .Include(e => e.Results)
-            .ThenInclude(r => r.Results)
             .Where(e=>e.Workspace.Owner.Id == User.Id)
             .FirstOrDefaultAsync(e => e.Id == exerciseId);
         

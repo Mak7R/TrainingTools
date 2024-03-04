@@ -1,9 +1,14 @@
-﻿namespace TrainingTools.Models;
+﻿using System.ComponentModel.DataAnnotations;
+using Contracts.Models;
+
+namespace TrainingTools.Models;
 
 public class UpdateExerciseResultsModel
 {
     public Guid ExerciseResultsId { get; set; }
-    public List<Entry> ExerciseResultsEntries { get; set; }
+    
+    [Required]
+    public ExerciseResultsObject ExerciseResultsModel { get; set; }
 
-    public record Entry(int Count, int Weight);
+    
 }

@@ -1,4 +1,5 @@
 ﻿
+using System.Text.Json;
 using Contracts.Models;
 using Contracts.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -32,7 +33,7 @@ public class ExerciseResultsController : Controller
             if (user == null) return View("Error", (404, "User was not found"));
 
             var exerciseResultsService = usersCollectionService.GetServiceForUser<IExerciseResultsService>(user);
-            var results = new ExerciseResults { Id = Guid.NewGuid(), ExerciseId = exerciseId };
+            var results = new ExerciseResults { Id = Guid.NewGuid(), ExerciseId = exerciseId, ResultsJson = JsonSerializer.Serialize(new ExerciseResultsObject())};
             await exerciseResultsService.Add(results);
             await usersCollectionService.SaveChanges();
         }
@@ -83,6 +84,19 @@ public class ExerciseResultsController : Controller
     {
         try
         {
+            if (!ModelState.IsValid)
+                return BadRequest(new
+                    { 
+                        message = string.Join
+                        (
+                            '\n', 
+                            ModelState.Values
+                                .SelectMany(v => v.Errors)
+                                .Select(e => e.ErrorMessage)
+                        )
+                    }
+                );
+            
             var userId = HttpContext.GetIdFromSession();
             if (userId == null) return RedirectToAction("Login", "Users");
 
@@ -92,14 +106,12 @@ public class ExerciseResultsController : Controller
             if (user == null) return View("Error", (404, "User was not found"));
 
             var exerciseResultsService = usersCollectionService.GetServiceForUser<IExerciseResultsService>(user);
-            
-            // here can be update of exercise results body. See IExerciseResultsService.Update(id, action);
 
-            await exerciseResultsService.UpdateResults(
-                model.ExerciseResultsId,
-                model.ExerciseResultsEntries
-                    .Select(e => new ExerciseResultEntry { Count = e.Count, Weight = e.Weight })
-                    .ToList());
+            await exerciseResultsService.Update(
+                model.ExerciseResultsId, er =>
+                {
+                    er.ResultsJson = JsonSerializer.Serialize(model.ExerciseResultsModel);
+                });
             await usersCollectionService.SaveChanges();
         }
         catch

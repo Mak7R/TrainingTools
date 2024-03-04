@@ -45,7 +45,6 @@ public class ExerciseResultsService : IExerciseResultsService
         return await _dbContext.ExerciseResults
             .AsNoTracking()
             .Include(r => r.Owner)
-            .Include(r => r.Results)
             .Include(r => r.Exercise)
             .ThenInclude(e => e.Workspace)
             .ThenInclude(w => w.Owner)
@@ -60,7 +59,6 @@ public class ExerciseResultsService : IExerciseResultsService
         return await _dbContext.ExerciseResults
             .AsNoTracking()
             .Include(r => r.Owner)
-            .Include(r => r.Results)
             .Include(r => r.Exercise)
             .ThenInclude(e => e.Workspace)
             .ThenInclude(w => w.Owner)
@@ -74,7 +72,6 @@ public class ExerciseResultsService : IExerciseResultsService
     {
         var exerciseResults = await _dbContext.ExerciseResults
             .Include(r => r.Owner)
-            .Include(r => r.Results)
             .Include(r => r.Exercise)
             .ThenInclude(e => e.Workspace)
             .ThenInclude(w => w.Owner)
@@ -90,55 +87,10 @@ public class ExerciseResultsService : IExerciseResultsService
         // I can paste here all checks and security. Like check user changed or another errors.
     }
 
-    public async Task UpdateResults(Guid exerciseResultsId, List<ExerciseResultEntry> newResults)
-    {
-        var exerciseResults = await _dbContext.ExerciseResults
-            .Include(r => r.Owner)
-            .Include(r => r.Results)
-            .Include(r => r.Exercise)
-            .ThenInclude(e => e.Workspace)
-            .ThenInclude(w => w.Owner)
-            .Include(r => r.Exercise)
-            .ThenInclude(e => e.Group)
-            .Where(r => r.Owner.Id == User.Id)
-            .FirstOrDefaultAsync(r => r.Id == exerciseResultsId);
-        
-        if (exerciseResults == null) throw new NotFoundException($"{nameof(ExerciseResults)} with id {exerciseResultsId} was not found");
-        
-        var oldResults = exerciseResults.Results;
-        
-        for (int i = 0; i < Math.Min(oldResults.Count, newResults.Count); i++)
-        {
-            oldResults[i].Count = newResults[i].Count;
-            oldResults[i].Weight = newResults[i].Weight;
-        }
-
-        if (oldResults.Count > newResults.Count)
-        {
-            _dbContext.ExerciseResultEntries.RemoveRange(oldResults.GetRange(newResults.Count, oldResults.Count - newResults.Count));
-            oldResults.RemoveRange(newResults.Count, oldResults.Count - newResults.Count);
-        }
-        else
-        {
-            for (int i = oldResults.Count; i < newResults.Count; i++)
-            {
-                var entry = new ExerciseResultEntry
-                {
-                    Id = Guid.NewGuid(), 
-                    Weight = newResults[i].Weight, 
-                    Count = newResults[i].Count
-                };
-                await _dbContext.ExerciseResultEntries.AddAsync(entry);
-                oldResults.Add(entry);
-            }
-        }
-    }
-
     public async Task Remove(Guid exerciseResultsId)
     {
         var exerciseResults = await _dbContext.ExerciseResults
             .Include(r => r.Owner)
-            .Include(r => r.Results)
             .Include(r => r.Exercise)
             .ThenInclude(e => e.Workspace)
             .ThenInclude(w => w.Owner)

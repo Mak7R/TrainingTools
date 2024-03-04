@@ -10,6 +10,4 @@ public interface IExerciseResultsService : IAuthorizeService
     Task<IEnumerable<ExerciseResults>> GetAll();
     Task Update(Guid exerciseResultsId, Action<ExerciseResults> updater);
     Task Remove(Guid exerciseResultsId);
-
-    Task UpdateResults(Guid exerciseResultsId, List<ExerciseResultEntry> newResults);
 }

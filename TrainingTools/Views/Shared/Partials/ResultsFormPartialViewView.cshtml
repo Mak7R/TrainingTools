@@ -30,14 +30,14 @@
             </tr>
             </thead>
             <tbody id="edit-exercise-results-root">
-            @foreach (var result in Model.Results)
+            @foreach (var row in Model.Results)
             {
                 <tr class="results-entry">
                     <td>
-                        <input class="input-exercise-results form-control text-center input-exercise-results-weight" disabled type="number" value="@result.Weight"/>
+                        <input class="input-exercise-results form-control text-center input-exercise-results-weight" disabled type="number" value="@row.Weight"/>
                     </td>
                     <td>
-                        <input class="input-exercise-results form-control text-center input-exercise-results-count" disabled type="number" value="@result.Count"/>
+                        <input class="input-exercise-results form-control text-center input-exercise-results-count" disabled type="number" value="@row.Count"/>
                     </td>
                     <td class="edit-mode-only">
                         <button class="btn btn-danger delete-results-entry-button">Delete</button>
@@ -82,17 +82,15 @@
         root.appendChild(newRow);
         newRow.classList.add("results-entry");
         newRow.innerHTML = `
-                <tr class="results-entry">
-                    <td>
-                        <input class="input-exercise-results form-control text-center input-exercise-results-weight" type="number" value="0"/>
-                    </td>
-                    <td>
-                        <input class="input-exercise-results form-control text-center input-exercise-results-count" type="number" value="0"/>
-                    </td>
-                    <td class="edit-mode-only">
-                        <button class="btn btn-danger delete-results-entry-button">Delete</button>
-                    </td>
-                </tr>
+                <td>
+                    <input class="input-exercise-results form-control text-center input-exercise-results-weight" type="number" value="0"/>
+                </td>
+                <td>
+                    <input class="input-exercise-results form-control text-center input-exercise-results-count" type="number" value="0"/>
+                </td>
+                <td class="edit-mode-only">
+                    <button class="btn btn-danger delete-results-entry-button">Delete</button>
+                </td>
             `;
     
         newRow.querySelector(".delete-results-entry-button").addEventListener("click", function () {this.closest('.results-entry').remove();})
@@ -101,7 +99,7 @@
     
     function SaveChanges(){
         const entries = document.querySelectorAll('.results-entry');
-        const data = [];
+        const resultsModel = [];
     
         entries.forEach(entry => {
             let Weight;
@@ -115,12 +113,12 @@
                 Weight = 0;
                 Count = 0;
             }
-            data.push({ Weight, Count });
+            resultsModel.push({ Weight, Count });
         });
     
         const requestBody = {
             ExerciseResultsId: resultsId,
-            ExerciseResultsEntries: data
+            ExerciseResultsModel: resultsModel
         };
     
         fetch('/api/workspaces/exercises/results', {
