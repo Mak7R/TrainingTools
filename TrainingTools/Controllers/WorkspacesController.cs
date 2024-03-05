@@ -22,7 +22,7 @@ public class WorkspacesController : Controller
     [Route("")]
     public async Task<IActionResult> Index(
         FilterModel filter, 
-        SortBindingModel sorter)
+        OrderModel order)
     {
         var userId = HttpContext.GetIdFromSession();
         if (userId == null) return RedirectToAction("Login", "Users");
@@ -30,48 +30,17 @@ public class WorkspacesController : Controller
         using var scope = _scopeFactory.CreateScope();
         var usersCollectionService = scope.ServiceProvider.GetRequiredService<IUsersAuthorizer>();
         var user = await usersCollectionService.Get(u => u.Id == userId);
-            
         if (user == null) return View("Error", (404, "User was not found"));
 
         var workspacesService = usersCollectionService.GetServiceForUser<IWorkspacesService>(user);
-
         var workspaces = await workspacesService.GetAll();
-
-        var workspacesModels = workspaces.Select(w => new WorkspaceViewModel(w));
         
-        if (filter.HasFilters)
-        {
-            ViewBag.SearchBy = filter.SearchBy!;
-            ViewBag.SearchValue = filter.SearchValue!;
-
-            workspacesModels = workspacesModels.Where(filter.SearchBy switch
-            {
-                nameof(WorkspaceViewModel.Id) => w => w.Id.ToString().Contains(filter.SearchValue!),
-                nameof(WorkspaceViewModel.Name) => w => w.Name.Contains(filter.SearchValue!),
-                _ => _ => false
-            });
-        }
-
-        if (sorter.HasSorters)
-        {
-            ViewBag.SortBy = sorter.SortBy!;
-            ViewBag.SortingOption = sorter.SortingOption!;
-            
-            workspacesModels = (sorter.SortBy, sorter.SortingOption) switch
-            {
-                (nameof(WorkspaceViewModel.Name), "A-Z") => 
-                    workspacesModels.OrderBy(w => w.Name),
-                (nameof(WorkspaceViewModel.Name), "Z-A") => 
-                    workspacesModels.OrderBy(w => w.Name).Reverse(),
-                (nameof(WorkspaceViewModel.Id), "ASCENDING") => 
-                    workspacesModels.OrderBy(w => w.Id),
-                (nameof(WorkspaceViewModel.Id), "DESCENDING") => 
-                    workspacesModels.OrderBy(w => w.Id).Reverse(),
-                _ => workspacesModels
-            };
-        }
+        ViewBag.FilterBy = filter.FilterBy;
+        ViewBag.FilterValue = filter.FilterValue;
+        ViewBag.OrderBy = order.OrderBy;
+        ViewBag.OrderOption = order.OrderOption;
         
-        return View(workspacesModels);
+        return View(new WorkspacesViewCollectionBuilder(workspaces).Filter(filter).Order(order).Build());
     }
 
     [HttpGet]
@@ -115,7 +84,7 @@ public class WorkspacesController : Controller
     [Route("{workspaceId:guid}")]
     public async Task<IActionResult> Get([FromRoute,Required] Guid workspaceId,
         FilterModel filter, 
-        SortBindingModel sorter)
+        OrderModel order)
     {
         var userId = HttpContext.GetIdFromSession();
         if (userId == null) return RedirectToAction("Login", "Users");
@@ -135,40 +104,13 @@ public class WorkspacesController : Controller
 
         var groups = (await groupsService.GetAll()).Where(g => g.Workspace.Id == workspace.Id);
         var exercises = (await exercisesService.GetAll()).Where(e => e.Workspace.Id == workspace.Id);
-
-        if (filter.HasFilters)
-        {
-            ViewBag.SearchBy = filter.SearchBy!;
-            ViewBag.SearchValue = filter.SearchValue!;
-
-            exercises = exercises.Where(filter.SearchBy switch
-            {
-                nameof(Exercise.Id) => e => e.Id.ToString().Contains(filter.SearchValue!),
-                nameof(Exercise.Name) => e => e.Name.Contains(filter.SearchValue!),
-                _ => _ => false
-            });
-        }
-
-        if (sorter.HasSorters)
-        {
-            ViewBag.SortBy = sorter.SortBy!;
-            ViewBag.SortingOption = sorter.SortingOption!;
-            
-            exercises = (sorter.SortBy, sorter.SortingOption) switch
-            {
-                (nameof(Exercise.Name), "A-Z") => 
-                    exercises.OrderBy(w => w.Name),
-                (nameof(Exercise.Name), "Z-A") => 
-                    exercises.OrderBy(w => w.Name).Reverse(),
-                (nameof(Exercise.Id), "ASCENDING") => 
-                    exercises.OrderBy(w => w.Id),
-                (nameof(Exercise.Id), "DESCENDING") => 
-                    exercises.OrderBy(w => w.Id).Reverse(),
-                _ => exercises
-            };
-        }
         
-        return View(new FullWorkspaceViewModel(workspace, groups, exercises));
+        ViewBag.FilterBy = filter.FilterBy;
+        ViewBag.FilterValue = filter.FilterValue;
+        ViewBag.OrderBy = order.OrderBy;
+        ViewBag.OrderOption = order.OrderOption;
+        
+        return View(new FullWorkspaceViewModel(workspace, new GroupsViewCollectionBuilder(groups).Build(), new ExercisesViewCollectionBuilder(exercises).Filter(filter).Order(order).Build()));
     }
     
     [HttpGet]

@@ -6,30 +6,25 @@
 }
 
 @{
-    var searchOptions = new Dictionary<string, string>
-    {
-        { nameof(GroupViewModel.Id), "Id" },
-        { nameof(GroupViewModel.Name), "Name" },
-    };
     const string partialIconsPath = "Partials/SmallItems/";
     var workspaceId = Context.Request.RouteValues["workspaceId"]?.ToString();
 }
 
 <div class="container-fluid">
-    @await Html.PartialAsync("Partials/SearchPartialView", new FilterModel{SearchByOptions = searchOptions}, ViewData)
+    @await Html.PartialAsync("Partials/FilterPartialView", new FilterModel{FilterByOptions = GroupsViewCollectionBuilder.FilterByOptions}, ViewData)
     <table class="table table-striped table-hover">
         <thead>
             <tr>
                 <th class="col-4">
                     @await Component.InvokeAsync("Sort", new SortingComponentView
+                    {
+                        Value = nameof(GroupViewModel.Id),
+                        Display = "Id",
+                        Options = new Dictionary<string, string>()
                         {
-                            Value = nameof(GroupViewModel.Id), 
-                            Display = "Id",
-                            Options = new Dictionary<string, string>()
-                            {
-                                {"",$"{partialIconsPath}None"}, {"DESCENDING", $"{partialIconsPath}Down"}, {"ASCENDING", $"{partialIconsPath}Up"}
-                            }
-                        })
+                            { "", $"{partialIconsPath}None" }, { "DESCENDING", $"{partialIconsPath}Down" }, { "ASCENDING", $"{partialIconsPath}Up" }
+                        }
+                    })
                 </th>
                 <th class="col-4">
                     @await Component.InvokeAsync("Sort", new SortingComponentView

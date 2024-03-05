@@ -1,9 +1,9 @@
-﻿@model SortingViewModel
+﻿@model OrderViewModel
 
-<form method="get" action="@Context.Request.Path" id="sort-form-@Model.SortBy" style="cursor: pointer;user-select: none;">
-    <input name="SearchBy" value="@ViewBag.SearchBy" type="hidden"/>
-    <input name="SearchValue" value="@ViewBag.SearchValue" type="hidden"/>
-    <input name="SortBy" value="@Model.SortBy" hidden="hidden"/>
-    <input name="SortingOption" value="@Model.Option" hidden="hidden"/>
-    <a onclick="document.getElementById('sort-form-@Model.SortBy').submit()" class="link-dark">@Model.Display@await Html.PartialAsync(Model.IconPartialView)</a>
+<form method="get" id="sort-form-@Model.OrderBy" style="cursor: pointer;user-select: none;">
+    <input name="FilterBy" value="@ViewBag.FilterBy" type="hidden"/>
+    <input name="FilterValue" value="@ViewBag.FilterValue" type="hidden"/>
+    <input name="OrderBy" value="@Model.OrderBy" hidden="hidden"/>
+    <input name="OrderOption" value="@Model.Option" hidden="hidden"/>
+    <a onclick="document.getElementById('sort-form-@Model.OrderBy').submit()" class="link-dark">@Model.Display@await Html.PartialAsync(Model.IconPartialView)</a>
 </form>

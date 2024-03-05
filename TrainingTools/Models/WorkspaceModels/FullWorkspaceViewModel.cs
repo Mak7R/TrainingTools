@@ -12,12 +12,12 @@ public class FullWorkspaceViewModel
     
     public IEnumerable<ExerciseViewModel> Exercises { get; set; }
     
-    public FullWorkspaceViewModel(Workspace workspace, IEnumerable<Group> groups, IEnumerable<Exercise> exercises)
+    public FullWorkspaceViewModel(Workspace workspace, IEnumerable<GroupViewModel> groups, IEnumerable<ExerciseViewModel> exercises)
     {
         Id = workspace.Id;
         Name = workspace.Name;
         Owner = new UserViewModel(workspace.Owner);
-        Groups = groups.Select(g => new GroupViewModel(g));
-        Exercises = exercises.Select(e => new ExerciseViewModel(e));
+        Groups = groups;
+        Exercises = exercises;
     }
 }

@@ -10,13 +10,13 @@ public class SortViewComponent : ViewComponent
     {
         string? icon = null;
         string? nextOption = null;
-        if (model.Value == ViewBag.SortBy)
+        if (model.Value == ViewBag.OrderBy)
         {
             using (var enumerator = model.Options.GetEnumerator())
             {
                 for ( ;enumerator.MoveNext(); )
                 {
-                    if (enumerator.Current.Key != ViewBag.SortingOption) continue;
+                    if (enumerator.Current.Key != ViewBag.OrderOption) continue;
                 
                     icon = enumerator.Current.Value;
 
@@ -33,9 +33,9 @@ public class SortViewComponent : ViewComponent
         int i = 0;
         nextOption ??= model.Options.First(_ => i++ == 1).Key;
         
-        return View(new SortingViewModel
+        return View(new OrderViewModel
         {
-            SortBy = model.Value,
+            OrderBy = model.Value,
             Display = model.Display,
             Option = nextOption,
             IconPartialView = icon,

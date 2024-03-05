@@ -22,7 +22,7 @@ public class ExercisesController : Controller
     public async Task<IActionResult> Index(
         [Required, FromRoute] Guid workspaceId,
         FilterModel filter, 
-        SortBindingModel sorter)
+        OrderModel order)
     {
         var userId = HttpContext.GetIdFromSession();
         if (userId == null) return RedirectToAction("Login", "Users");
@@ -35,45 +35,14 @@ public class ExercisesController : Controller
 
         var exercisesService = usersCollectionService.GetServiceForUser<IExercisesService>(user);
 
-        var exercises = await exercisesService.GetAll();
-
-        var exerciseViewModels = exercises
-            .Where(e => e.Workspace.Id == workspaceId)
-            .Select(e => new ExerciseViewModel(e));
+        var exercises = (await exercisesService.GetAll()).Where(e => e.Workspace.Id == workspaceId);
         
-        if (filter.HasFilters)
-        {
-            ViewBag.SearchBy = filter.SearchBy!;
-            ViewBag.SearchValue = filter.SearchValue!;
-
-            exerciseViewModels = exerciseViewModels.Where(filter.SearchBy switch
-            {
-                nameof(ExerciseViewModel.Id) => e => e.Id.ToString().Contains(filter.SearchValue!),
-                nameof(ExerciseViewModel.Name) => e => e.Name.Contains(filter.SearchValue!),
-                _ => _ => false
-            });
-        }
-
-        if (sorter.HasSorters)
-        {
-            ViewBag.SortBy = sorter.SortBy!;
-            ViewBag.SortingOption = sorter.SortingOption!;
-            
-            exerciseViewModels = (sorter.SortBy, sorter.SortingOption) switch
-            {
-                (nameof(ExerciseViewModel.Name), "A-Z") => 
-                    exerciseViewModels.OrderBy(w => w.Name),
-                (nameof(ExerciseViewModel.Name), "Z-A") => 
-                    exerciseViewModels.OrderBy(w => w.Name).Reverse(),
-                (nameof(ExerciseViewModel.Id), "ASCENDING") => 
-                    exerciseViewModels.OrderBy(w => w.Id),
-                (nameof(ExerciseViewModel.Id), "DESCENDING") => 
-                    exerciseViewModels.OrderBy(w => w.Id).Reverse(),
-                _ => exerciseViewModels
-            };
-        }
+        ViewBag.FilterBy = filter.FilterBy;
+        ViewBag.FilterValue = filter.FilterValue;
+        ViewBag.OrderBy = order.OrderBy;
+        ViewBag.OrderOption = order.OrderOption;
         
-        return View(exerciseViewModels);
+        return View(new ExercisesViewCollectionBuilder(exercises).Filter(filter).Order(order).Build());
     }
 
     [HttpGet]

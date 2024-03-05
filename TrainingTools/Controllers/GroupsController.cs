@@ -22,7 +22,7 @@ public class GroupsController : Controller
     public async Task<IActionResult> Index(
         [Required, FromRoute] Guid workspaceId,
         FilterModel filter, 
-        SortBindingModel sorter)
+        OrderModel order)
     {
         var userId = HttpContext.GetIdFromSession();
         if (userId == null) return RedirectToAction("Login", "Users");
@@ -35,45 +35,14 @@ public class GroupsController : Controller
 
         var groupsService = usersCollectionService.GetServiceForUser<IGroupsService>(user);
 
-        var groups = await groupsService.GetAll();
+        var groups = (await groupsService.GetAll()).Where(g => g.Workspace.Id == workspaceId);
 
-        var groupViewModels = groups
-            .Where(g => g.Workspace.Id == workspaceId)
-            .Select(g => new GroupViewModel(g));
+        ViewBag.FilterBy = filter.FilterBy;
+        ViewBag.FilterValue = filter.FilterValue;
+        ViewBag.OrderBy = order.OrderBy;
+        ViewBag.OrderOption = order.OrderOption;
         
-        if (filter.HasFilters)
-        {
-            ViewBag.SearchBy = filter.SearchBy!;
-            ViewBag.SearchValue = filter.SearchValue!;
-
-            groupViewModels = groupViewModels.Where(filter.SearchBy switch
-            {
-                nameof(GroupViewModel.Id) => e => e.Id.ToString().Contains(filter.SearchValue!),
-                nameof(GroupViewModel.Name) => e => e.Name.Contains(filter.SearchValue!),
-                _ => _ => false
-            });
-        }
-
-        if (sorter.HasSorters)
-        {
-            ViewBag.SortBy = sorter.SortBy!;
-            ViewBag.SortingOption = sorter.SortingOption!;
-            
-            groupViewModels = (sorter.SortBy, sorter.SortingOption) switch
-            {
-                (nameof(ExerciseViewModel.Name), "A-Z") => 
-                    groupViewModels.OrderBy(w => w.Name),
-                (nameof(ExerciseViewModel.Name), "Z-A") => 
-                    groupViewModels.OrderBy(w => w.Name).Reverse(),
-                (nameof(ExerciseViewModel.Id), "ASCENDING") => 
-                    groupViewModels.OrderBy(w => w.Id),
-                (nameof(ExerciseViewModel.Id), "DESCENDING") => 
-                    groupViewModels.OrderBy(w => w.Id).Reverse(),
-                _ => groupViewModels
-            };
-        }
-        
-        return View(groupViewModels);
+        return View(new GroupsViewCollectionBuilder(groups).Filter(filter).Order(order).Build());
     }
 
     [HttpGet]
