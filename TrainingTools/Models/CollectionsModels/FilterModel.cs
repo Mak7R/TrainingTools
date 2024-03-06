@@ -1,6 +1,6 @@
-﻿using Contracts.Models;
+﻿using Contracts.ModelContracts;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
-using Microsoft.AspNetCore.Server.HttpSys;
+
 
 namespace TrainingTools.Models;
 

@@ -30,7 +30,9 @@ builder.Services.AddDbContext<TrainingToolsDbContext>(options =>
         b => b.MigrationsAssembly("TrainingTools"));
 });
 
-builder.Services.AddScoped<IUsersAuthorizer, UsersAuthorizer>();
+builder.Services.AddScoped<ICookiesSession, CookiesSession>();
+builder.Services.AddScoped<IAuthorizedUser, AuthorizedUser>();
+builder.Services.AddScoped<IUsersService, UsersService>();
 builder.Services.AddScoped<IWorkspacesService, WorkspacesService>();
 builder.Services.AddScoped<IExercisesService, ExercisesService>();
 builder.Services.AddScoped<IGroupsService, GroupsService>();
@@ -53,11 +55,6 @@ else
 {
     app.UseDeveloperExceptionPage();
 }
-
-var authSettings = app.Configuration.GetSection("AuthSettings");
-AuthMiddleware.SessionIdKey = authSettings["SessionIdKey"] ?? throw new Exception("AuthSetting:SessionIdKey was missed");
-AuthMiddleware.HttpContextItemsKey = authSettings["HttpContextItemsKey"] ?? throw new Exception("AuthSetting:HttpContextItemsKey was missed");
-app.UseAuthMiddleware();
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();

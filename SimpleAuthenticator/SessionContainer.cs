@@ -1,27 +1,26 @@
-﻿using Contracts;
-using Contracts.Services;
+﻿using Contracts.Services;
 
 namespace SimpleAuthorizer;
 
 public class SessionContainer : ISessionContainer<Guid, Guid>
 {
-    protected List<SessionRecord> Authorizations { get; } = new ();
+    protected List<SessionRecord> Authentications { get; } = new ();
 
-    public Guid AddAuthorization(Guid valueId)
+    public Guid AddAuthentication(Guid valueId)
     {
         var sessionRecord = new SessionRecord(valueId);
-        Authorizations.Add(sessionRecord);
+        Authentications.Add(sessionRecord);
         return sessionRecord.SessionId;
     }
 
-    public void RemoveAuthorization(Guid sessionId)
+    public void RemoveAuthentication(Guid sessionId)
     {
-        Authorizations.RemoveAll(s => s.SessionId == sessionId);
+        Authentications.RemoveAll(s => s.SessionId == sessionId);
     }
 
-    public bool FindAuthorization(Guid sessionId, out Guid valueId)
+    public bool GetAuthentication(Guid sessionId, out Guid valueId)
     {
-        var id = Authorizations.FirstOrDefault(s => s.SessionId == sessionId)?.ValueId;
+        var id = Authentications.FirstOrDefault(s => s.SessionId == sessionId)?.ValueId;
         
         if (id.HasValue)
         {

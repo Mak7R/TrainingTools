@@ -8,22 +8,17 @@ using Services.DbContexts;
 
 namespace Services;
 
-public class UsersAuthorizer : IUsersAuthorizer
+public class UsersService : IUsersService
 {
     private readonly IServiceProvider _serviceProvider;
+    private readonly IAuthorizedUser _authorizedUser;
     private readonly TrainingToolsDbContext _dbContext;
-
-    public UsersAuthorizer(IServiceProvider serviceProvider)
+    
+    public UsersService(IServiceProvider serviceProvider, IAuthorizedUser authorizedUser, TrainingToolsDbContext dbContext)
     {
         _serviceProvider = serviceProvider;
-        _dbContext = _serviceProvider.GetRequiredService<TrainingToolsDbContext>();
-    }
-    
-    public T GetServiceForUser<T>(User user) where T: IAuthorizeService
-    {
-        var service = _serviceProvider.GetRequiredService<T>();
-        service.SetUser(user);
-        return service;
+        _authorizedUser = authorizedUser;
+        _dbContext = dbContext;
     }
 
     public async Task Add(User user)
@@ -61,17 +56,19 @@ public class UsersAuthorizer : IUsersAuthorizer
         
         if (user == null) throw new NotFoundException($"{nameof(User)} with id {userId} was not found");
 
-        var workspacesService = GetServiceForUser<IWorkspacesService>(user);
-        var exerciseResultsService = GetServiceForUser<IExerciseResultsService>(user);
+        if (user.Id == _authorizedUser.User.Id /*or _authorizedUser.User.IsAdmin*/)
+        {
+            var workspacesService = _serviceProvider.GetRequiredService<IWorkspacesService>();
+            var exerciseResultsService = _serviceProvider.GetRequiredService<IWorkspacesService>();
 
-        foreach (var workspace in user.Workspaces) await workspacesService.Remove(workspace.Id);
-        foreach (var userResult in user.UserResults) await exerciseResultsService.Remove(userResult.Id);
-        
-        _dbContext.Users.Remove(user);
-    }
+            foreach (var workspace in user.Workspaces) await workspacesService.Remove(workspace.Id);
+            foreach (var userResult in user.UserResults) await exerciseResultsService.Remove(userResult.Id);
 
-    public async Task SaveChanges()
-    {
-        await _dbContext.SaveChangesAsync();
+            _dbContext.Users.Remove(user);
+        }
+        else
+        {
+            throw new OperationNotAllowedException();
+        }
     }
 }

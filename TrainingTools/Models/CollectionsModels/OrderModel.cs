@@ -1,4 +1,5 @@
-﻿using Contracts.Models;
+﻿using Contracts.ModelContracts;
+using Contracts.Models;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace TrainingTools.Models;

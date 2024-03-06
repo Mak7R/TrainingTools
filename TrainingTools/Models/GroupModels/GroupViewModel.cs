@@ -1,4 +1,5 @@
-﻿using Contracts.Models;
+﻿using Contracts.ModelContracts;
+using Contracts.Models;
 using Services;
 
 namespace TrainingTools.Models;

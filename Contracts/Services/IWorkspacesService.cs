@@ -3,7 +3,7 @@ using Contracts.Models;
 
 namespace Contracts.Services;
 
-public interface IWorkspacesService : IAuthorizeService
+public interface IWorkspacesService
 {
     Task Add(Workspace workspace);
     Task<Workspace?> Get(Expression<Func<Workspace, bool>> expression);

@@ -10,31 +10,21 @@ namespace Services;
 public class ExerciseResultsService : IExerciseResultsService
 {
     private readonly TrainingToolsDbContext _dbContext;
-    private User? _user;
+    private readonly IAuthorizedUser _authorized;
 
-    private User User
-    {
-        get => _user ?? throw new NullReferenceException("User was null");
-        set => _user = value;
-    }
-
-    public ExerciseResultsService(TrainingToolsDbContext dbContext)
+    public ExerciseResultsService(TrainingToolsDbContext dbContext, IAuthorizedUser authorized)
     {
         _dbContext = dbContext;
-    }
-
-    public void SetUser(User user)
-    {
-        User = user;
+        _authorized = authorized;
     }
 
     public async Task Add(ExerciseResults results)
     {
         var existResults = await _dbContext.ExerciseResults
-            .FirstOrDefaultAsync(er => er.OwnerId == User.Id && er.ExerciseId == results.ExerciseId);
+            .FirstOrDefaultAsync(er => er.OwnerId == _authorized.User.Id && er.ExerciseId == results.ExerciseId);
         
         if (existResults != null) throw new Exception("Results Already Exists");
-        results.OwnerId = User.Id;
+        results.OwnerId = _authorized.User.Id;
         
         await _dbContext.ExerciseResults.AddAsync(results);
     }
@@ -50,7 +40,7 @@ public class ExerciseResultsService : IExerciseResultsService
             .ThenInclude(w => w.Owner)
             .Include(r => r.Exercise)
             .ThenInclude(e => e.Group)
-            .Where(r => r.Owner.Id == User.Id)
+            .Where(r => r.Owner.Id == _authorized.User.Id)
             .FirstOrDefaultAsync(expression);
     }
 
@@ -64,7 +54,7 @@ public class ExerciseResultsService : IExerciseResultsService
             .ThenInclude(w => w.Owner)
             .Include(r => r.Exercise)
             .ThenInclude(e => e.Group)
-            .Where(r => r.Owner.Id == User.Id)
+            .Where(r => r.Owner.Id == _authorized.User.Id)
             .ToListAsync();
     }
 
@@ -77,7 +67,7 @@ public class ExerciseResultsService : IExerciseResultsService
             .ThenInclude(w => w.Owner)
             .Include(r => r.Exercise)
             .ThenInclude(e => e.Group)
-            .Where(r => r.Owner.Id == User.Id)
+            .Where(r => r.Owner.Id == _authorized.User.Id)
             .FirstOrDefaultAsync(r => r.Id == exerciseResultsId);
         
         if (exerciseResults == null) throw new NotFoundException($"{nameof(ExerciseResults)} with id {exerciseResultsId} was not found");
@@ -94,7 +84,7 @@ public class ExerciseResultsService : IExerciseResultsService
             .Include(r => r.Exercise)
             .ThenInclude(e => e.Workspace)
             .ThenInclude(w => w.Owner)
-            .Where(r => r.Owner.Id == User.Id || r.Exercise.Workspace.Owner.Id == User.Id)
+            .Where(r => r.Owner.Id == _authorized.User.Id || r.Exercise.Workspace.Owner.Id == _authorized.User.Id)
             .FirstOrDefaultAsync(r => r.Id == exerciseResultsId);
         
         if (exerciseResults == null) throw new NotFoundException($"{nameof(ExerciseResults)} with id {exerciseResultsId} was not found");

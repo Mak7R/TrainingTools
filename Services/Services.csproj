@@ -15,4 +15,8 @@
       <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.2" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="Middlewares\" />
+    </ItemGroup>
+
 </Project>

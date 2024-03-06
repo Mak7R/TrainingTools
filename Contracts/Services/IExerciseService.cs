@@ -3,7 +3,7 @@ using Contracts.Models;
 
 namespace Contracts.Services;
 
-public interface IExercisesService : IAuthorizeService
+public interface IExercisesService
 {
     Task Add(Exercise exercise);
     Task<Exercise?> Get(Expression<Func<Exercise, bool>> expression);

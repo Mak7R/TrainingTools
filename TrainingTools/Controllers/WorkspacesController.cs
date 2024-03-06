@@ -1,8 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using Contracts.Exceptions;
 using Contracts.Models;
 using Contracts.Services;
 using Microsoft.AspNetCore.Mvc;
-using SimpleAuthorizer;
 using TrainingTools.Models;
 
 namespace TrainingTools.Controllers;
@@ -24,15 +24,12 @@ public class WorkspacesController : Controller
         FilterModel filter, 
         OrderModel order)
     {
-        var userId = HttpContext.GetIdFromSession();
-        if (userId == null) return RedirectToAction("Login", "Users");
-
         using var scope = _scopeFactory.CreateScope();
-        var usersCollectionService = scope.ServiceProvider.GetRequiredService<IUsersAuthorizer>();
-        var user = await usersCollectionService.Get(u => u.Id == userId);
-        if (user == null) return View("Error", (404, "User was not found"));
+        var authorizedUser = scope.ServiceProvider.GetRequiredService<IAuthorizedUser>();
+        try { if (!await authorizedUser.Authorize(HttpContext)) return RedirectToAction("Login", "Users"); }
+        catch (NotFoundException e) { return View("Error", (404, e.Message)); }
 
-        var workspacesService = usersCollectionService.GetServiceForUser<IWorkspacesService>(user);
+        var workspacesService = scope.ServiceProvider.GetRequiredService<IWorkspacesService>();
         var workspaces = await workspacesService.GetAll();
         
         ViewBag.FilterBy = filter.FilterBy;
@@ -45,10 +42,12 @@ public class WorkspacesController : Controller
 
     [HttpGet]
     [Route("[action]")]
-    public IActionResult Add()
+    public async Task<IActionResult> Add()
     {
-        var userId = HttpContext.GetIdFromSession();
-        if (userId == null) return RedirectToAction("Login", "Users");
+        using var scope = _scopeFactory.CreateScope();
+        var authorizedUser = scope.ServiceProvider.GetRequiredService<IAuthorizedUser>();
+        try { if (!await authorizedUser.Authorize(HttpContext)) return RedirectToAction("Login", "Users"); }
+        catch (NotFoundException e) { return View("Error", (404, e.Message)); }
         
         return View();
     }
@@ -57,16 +56,12 @@ public class WorkspacesController : Controller
     [Route("[action]")]
     public async Task<IActionResult> Add([FromForm] AddWorkspaceModel workspaceModel)
     {
-        var userId = HttpContext.GetIdFromSession();
-        if (userId == null) return RedirectToAction("Login", "Users");
-
         using var scope = _scopeFactory.CreateScope();
-        var usersCollectionService = scope.ServiceProvider.GetRequiredService<IUsersAuthorizer>();
-        var user = await usersCollectionService.Get(u => u.Id == userId);
-            
-        if (user == null) return View("Error", (404, "User was not found"));
+        var authorizedUser = scope.ServiceProvider.GetRequiredService<IAuthorizedUser>();
+        try { if (!await authorizedUser.Authorize(HttpContext)) return RedirectToAction("Login", "Users"); }
+        catch (NotFoundException e) { return View("Error", (404, e.Message)); }
 
-        var workspacesService = usersCollectionService.GetServiceForUser<IWorkspacesService>(user);
+        var workspacesService = scope.ServiceProvider.GetRequiredService<IWorkspacesService>();
 
         var workspace = new Workspace
         {
@@ -75,7 +70,7 @@ public class WorkspacesController : Controller
         };
 
         await workspacesService.Add(workspace);
-        await usersCollectionService.SaveChanges();
+        await authorizedUser.SaveChanges();
         
         return RedirectToAction("Index");
     }
@@ -86,18 +81,14 @@ public class WorkspacesController : Controller
         FilterModel filter, 
         OrderModel order)
     {
-        var userId = HttpContext.GetIdFromSession();
-        if (userId == null) return RedirectToAction("Login", "Users");
-
         using var scope = _scopeFactory.CreateScope();
-        var usersCollectionService = scope.ServiceProvider.GetRequiredService<IUsersAuthorizer>();
-        var user = await usersCollectionService.Get(u => u.Id == userId);
-            
-        if (user == null) return View("Error", (404, "User was not found"));
+        var authorizedUser = scope.ServiceProvider.GetRequiredService<IAuthorizedUser>();
+        try { if (!await authorizedUser.Authorize(HttpContext)) return RedirectToAction("Login", "Users"); }
+        catch (NotFoundException e) { return View("Error", (404, e.Message)); }
 
-        var workspacesService = usersCollectionService.GetServiceForUser<IWorkspacesService>(user);
-        var groupsService = usersCollectionService.GetServiceForUser<IGroupsService>(user);
-        var exercisesService = usersCollectionService.GetServiceForUser<IExercisesService>(user);
+        var workspacesService = scope.ServiceProvider.GetRequiredService<IWorkspacesService>();
+        var groupsService = scope.ServiceProvider.GetRequiredService<IGroupsService>();
+        var exercisesService = scope.ServiceProvider.GetRequiredService<IExercisesService>();
         
         var workspace = await workspacesService.Get(w => w.Id == workspaceId);
         if (workspace == null) return View("Error", (404, "Workspace was not found"));
@@ -117,19 +108,13 @@ public class WorkspacesController : Controller
     [Route("{workspaceId:guid}/info")]
     public async Task<IActionResult> GetInfo([FromRoute][Required] Guid workspaceId)
     {
-        var userId = HttpContext.GetIdFromSession();
-        if (userId == null) return RedirectToAction("Login", "Users");
-
         using var scope = _scopeFactory.CreateScope();
-        var usersCollectionService = scope.ServiceProvider.GetRequiredService<IUsersAuthorizer>();
-        var user = await usersCollectionService.Get(u => u.Id == userId);
-            
-        if (user == null) return View("Error", (404, "User was not found"));
+        var authorizedUser = scope.ServiceProvider.GetRequiredService<IAuthorizedUser>();
+        try { if (!await authorizedUser.Authorize(HttpContext)) return RedirectToAction("Login", "Users"); }
+        catch (NotFoundException e) { return View("Error", (404, e.Message)); }
 
-        var workspacesService = usersCollectionService.GetServiceForUser<IWorkspacesService>(user);
-            
+        var workspacesService = scope.ServiceProvider.GetRequiredService<IWorkspacesService>();
         var workspace = await workspacesService.Get(w => w.Id == workspaceId);
-
         if (workspace == null) return View("Error", (404, "Workspace was not found"));
 
         return View(new WorkspaceViewModel(workspace));
@@ -139,22 +124,18 @@ public class WorkspacesController : Controller
     [Route("{workspaceId:guid}/[action]")]
     public async Task<IActionResult> Delete([FromRoute, Required] Guid workspaceId, [FromBody] DeleteModel model)
     {
-        var userId = HttpContext.GetIdFromSession();
-        if (userId == null) return RedirectToAction("Login", "Users");
-
         using var scope = _scopeFactory.CreateScope();
-        var usersCollectionService = scope.ServiceProvider.GetRequiredService<IUsersAuthorizer>();
-        var user = await usersCollectionService.Get(u => u.Id == userId);
-            
-        if (user == null) return NotFound(new {message = "User was not found"});
-
-        if (user.Password != model.Password)
+        var authorizedUser = scope.ServiceProvider.GetRequiredService<IAuthorizedUser>();
+        try { if (!await authorizedUser.Authorize(HttpContext)) return RedirectToAction("Login", "Users"); }
+        catch (NotFoundException e) { return View("Error", (404, e.Message)); }
+        
+        if (!authorizedUser.ConfirmPassword(model.Password))
         {
             ModelState.AddModelError(nameof(DeleteWorkspaceModel.Password), "Wrong password");
             return BadRequest(new {message = "Wrong password"});
         }
 
-        var workspacesService = usersCollectionService.GetServiceForUser<IWorkspacesService>(user);
+        var workspacesService = scope.ServiceProvider.GetRequiredService<IWorkspacesService>();
 
         var workspace = await workspacesService.Get(w => w.Id == workspaceId);
         if (workspace == null) return NotFound(new { message = "Workspace was not found" });
@@ -162,7 +143,7 @@ public class WorkspacesController : Controller
         try
         {
             await workspacesService.Remove(workspaceId);
-            await usersCollectionService.SaveChanges();
+            await authorizedUser.SaveChanges();
         }
         catch (Exception e)
         {
@@ -176,16 +157,12 @@ public class WorkspacesController : Controller
     [Route("{workspaceId:guid}/[action]")]
     public async Task<IActionResult> Edit([FromRoute][Required] Guid workspaceId)
     {
-        var userId = HttpContext.GetIdFromSession();
-        if (userId == null) return RedirectToAction("Login", "Users");
-
         using var scope = _scopeFactory.CreateScope();
-        var usersCollectionService = scope.ServiceProvider.GetRequiredService<IUsersAuthorizer>();
-        var user = await usersCollectionService.Get(u => u.Id == userId);
-            
-        if (user == null) return View("Error", (404, "User was not found"));
+        var authorizedUser = scope.ServiceProvider.GetRequiredService<IAuthorizedUser>();
+        try { if (!await authorizedUser.Authorize(HttpContext)) return RedirectToAction("Login", "Users"); }
+        catch (NotFoundException e) { return View("Error", (404, e.Message)); }
 
-        var workspacesService = usersCollectionService.GetServiceForUser<IWorkspacesService>(user);
+        var workspacesService = scope.ServiceProvider.GetRequiredService<IWorkspacesService>();
             
         var workspace = await workspacesService.Get(w => w.Id == workspaceId);
 
@@ -198,19 +175,15 @@ public class WorkspacesController : Controller
     [Route("{workspaceId:guid}/[action]")]
     public async Task<IActionResult> Edit([FromRoute, Required] Guid workspaceId, [FromForm, Required] EditWorkspaceModel model)
     {
-        var userId = HttpContext.GetIdFromSession();
-        if (userId == null) return RedirectToAction("Login", "Users");
-
         using var scope = _scopeFactory.CreateScope();
-        var usersCollectionService = scope.ServiceProvider.GetRequiredService<IUsersAuthorizer>();
-        var user = await usersCollectionService.Get(u => u.Id == userId);
-            
-        if (user == null) return View("Error", (404, "User was not found"));
+        var authorizedUser = scope.ServiceProvider.GetRequiredService<IAuthorizedUser>();
+        try { if (!await authorizedUser.Authorize(HttpContext)) return RedirectToAction("Login", "Users"); }
+        catch (NotFoundException e) { return View("Error", (404, e.Message)); }
 
-        var workspacesService = usersCollectionService.GetServiceForUser<IWorkspacesService>(user);
+        var workspacesService = scope.ServiceProvider.GetRequiredService<IWorkspacesService>();
 
         await workspacesService.Update(workspaceId, w => w.Name = model.Name);
-        await usersCollectionService.SaveChanges();
+        await authorizedUser.SaveChanges();
 
         return RedirectToAction("Index");
     }

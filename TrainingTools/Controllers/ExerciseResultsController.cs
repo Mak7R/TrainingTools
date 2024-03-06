@@ -1,5 +1,6 @@
 ﻿
 using System.Text.Json;
+using Contracts.Exceptions;
 using Contracts.Models;
 using Contracts.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -24,18 +25,15 @@ public class ExerciseResultsController : Controller
     {
         try
         {
-            var userId = HttpContext.GetIdFromSession();
-            if (userId == null) return RedirectToAction("Login", "Users");
-
             using var scope = _scopeFactory.CreateScope();
-            var usersCollectionService = scope.ServiceProvider.GetRequiredService<IUsersAuthorizer>();
-            var user = await usersCollectionService.Get(u => u.Id == userId);
-            if (user == null) return View("Error", (404, "User was not found"));
+            var authorizedUser = scope.ServiceProvider.GetRequiredService<IAuthorizedUser>();
+            try { if (!await authorizedUser.Authorize(HttpContext)) return RedirectToAction("Login", "Users"); }
+            catch (NotFoundException e) { return View("Error", (404, e.Message)); }
 
-            var exerciseResultsService = usersCollectionService.GetServiceForUser<IExerciseResultsService>(user);
+            var exerciseResultsService = scope.ServiceProvider.GetRequiredService<IExerciseResultsService>();
             var results = new ExerciseResults { Id = Guid.NewGuid(), ExerciseId = exerciseId, ResultsJson = JsonSerializer.Serialize(new ExerciseResultsObject())};
             await exerciseResultsService.Add(results);
-            await usersCollectionService.SaveChanges();
+            await authorizedUser.SaveChanges();
         }
         catch
         {
@@ -51,19 +49,16 @@ public class ExerciseResultsController : Controller
         throw new NotImplementedException();
         try
         {
-            var userId = HttpContext.GetIdFromSession();
-            if (userId == null) return RedirectToAction("Login", "Users");
-
             using var scope = _scopeFactory.CreateScope();
-            var usersCollectionService = scope.ServiceProvider.GetRequiredService<IUsersAuthorizer>();
-            var user = await usersCollectionService.Get(u => u.Id == userId);
-            if (user == null) return View("Error", (404, "User was not found"));
+            var authorizedUser = scope.ServiceProvider.GetRequiredService<IAuthorizedUser>();
+            try { if (!await authorizedUser.Authorize(HttpContext)) return RedirectToAction("Login", "Users"); }
+            catch (NotFoundException e) { return View("Error", (404, e.Message)); }
 
-            var exerciseResultsService = usersCollectionService.GetServiceForUser<IExerciseResultsService>(user);
+            var exerciseResultsService = scope.ServiceProvider.GetRequiredService<IExerciseResultsService>();
             try
             {
                 await exerciseResultsService.Remove(resultsId);
-                await usersCollectionService.SaveChanges();
+                await authorizedUser.SaveChanges();
             }
             catch (Exception e)
             {
@@ -97,22 +92,19 @@ public class ExerciseResultsController : Controller
                     }
                 );
             
-            var userId = HttpContext.GetIdFromSession();
-            if (userId == null) return RedirectToAction("Login", "Users");
-
             using var scope = _scopeFactory.CreateScope();
-            var usersCollectionService = scope.ServiceProvider.GetRequiredService<IUsersAuthorizer>();
-            var user = await usersCollectionService.Get(u => u.Id == userId);
-            if (user == null) return View("Error", (404, "User was not found"));
+            var authorizedUser = scope.ServiceProvider.GetRequiredService<IAuthorizedUser>();
+            try { if (!await authorizedUser.Authorize(HttpContext)) return RedirectToAction("Login", "Users"); }
+            catch (NotFoundException e) { return View("Error", (404, e.Message)); }
 
-            var exerciseResultsService = usersCollectionService.GetServiceForUser<IExerciseResultsService>(user);
+            var exerciseResultsService = scope.ServiceProvider.GetRequiredService<IExerciseResultsService>();
 
             await exerciseResultsService.Update(
                 model.ExerciseResultsId, er =>
                 {
                     er.ResultsJson = JsonSerializer.Serialize(model.ExerciseResultsModel);
                 });
-            await usersCollectionService.SaveChanges();
+            await authorizedUser.SaveChanges();
         }
         catch
         {

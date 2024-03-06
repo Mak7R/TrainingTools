@@ -3,37 +3,29 @@ using Contracts.Exceptions;
 using Contracts.Models;
 using Contracts.Services;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Services.DbContexts;
 
 namespace Services;
 
 public class GroupsService : IGroupsService
 {
+    private readonly IServiceProvider _serviceProvider;
     private readonly TrainingToolsDbContext _dbContext;
-    private readonly IUsersAuthorizer _usersAuthorizer;
-    private User? _user;
+    private readonly IAuthorizedUser _authorized;
 
-    private User User
-    {
-        get => _user ?? throw new NullReferenceException("User was null");
-        set => _user = value;
-    }
 
-    public GroupsService(TrainingToolsDbContext dbContext, IUsersAuthorizer usersAuthorizer)
+    public GroupsService(IServiceProvider serviceProvider, TrainingToolsDbContext dbContext, IAuthorizedUser authorized)
     {
+        _serviceProvider = serviceProvider;
         _dbContext = dbContext;
-        _usersAuthorizer = usersAuthorizer;
+        _authorized = authorized;
     }
-
-    public void SetUser(User user)
-    {
-        User = user;
-    }
-
+    
     public async Task Add(Group group)
     {
         var workspace = await _dbContext.Workspaces
-            .Where(w => w.Owner.Id == User.Id)
+            .Where(w => w.Owner.Id == _authorized.User.Id)
             .FirstOrDefaultAsync(w => w.Id == group.WorkspaceId);
         if (workspace == null) throw new NotFoundException("Workspace was not found");
         
@@ -48,7 +40,7 @@ public class GroupsService : IGroupsService
             .AsNoTracking()
             .Include(g => g.Workspace)
             .ThenInclude(w => w.Owner)
-            .Where(g => g.Workspace.Owner.Id == User.Id)
+            .Where(g => g.Workspace.Owner.Id == _authorized.User.Id)
             .FirstOrDefaultAsync(expression);
     }
 
@@ -58,7 +50,7 @@ public class GroupsService : IGroupsService
             .AsNoTracking()
             .Include(g => g.Workspace)
             .ThenInclude(w => w.Owner)
-            .Where(g => g.Workspace.Owner.Id == User.Id)
+            .Where(g => g.Workspace.Owner.Id == _authorized.User.Id)
             .ToListAsync();
     }
 
@@ -67,7 +59,7 @@ public class GroupsService : IGroupsService
         var group = await _dbContext.Groups
             .Include(g => g.Workspace)
             .ThenInclude(w => w.Owner)
-            .Where(g => g.Workspace.Owner.Id == User.Id)
+            .Where(g => g.Workspace.Owner.Id == _authorized.User.Id)
             .FirstOrDefaultAsync(g => g.Id == groupId);
         
         if (group == null) throw new NotFoundException($"{nameof(Group)} with id {groupId} was not found");
@@ -84,12 +76,12 @@ public class GroupsService : IGroupsService
             .Include(g => g.Workspace)
             .ThenInclude(w => w.Owner)
             .Include(g => g.Exercises)
-            .Where(g => g.Workspace.Owner.Id == User.Id)
+            .Where(g => g.Workspace.Owner.Id == _authorized.User.Id)
             .FirstOrDefaultAsync(g => g.Id == groupId);
         
         if (group == null) throw new NotFoundException($"{nameof(Group)} with id {groupId} was not found");
 
-        var exercisesService = _usersAuthorizer.GetServiceForUser<IExercisesService>(User);
+        var exercisesService = _serviceProvider.GetRequiredService<IExercisesService>();
         foreach (var exercise in group.Exercises) await exercisesService.Update(exercise.Id, e => e.Group = null);
         
         _dbContext.Groups.Remove(group);

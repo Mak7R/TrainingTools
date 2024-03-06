@@ -3,7 +3,7 @@ using Contracts.Models;
 
 namespace Contracts.Services;
 
-public interface IGroupsService : IAuthorizeService
+public interface IGroupsService
 {
     Task Add(Group group);
     Task<Group?> Get(Expression<Func<Group, bool>> expression);

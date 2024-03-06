@@ -1,6 +1,4 @@
-﻿using Contracts.Models;
-
-namespace Services;
+﻿namespace Contracts.ModelContracts;
 
 
 public interface IViewCollectionBuilder<out T>

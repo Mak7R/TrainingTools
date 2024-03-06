@@ -62,7 +62,7 @@ public class AutoClearedSessionContainer : SessionContainer
     private void Clear()
     {
         var currentTime = DateTime.Now;
-        Authorizations.RemoveAll(s => (currentTime - s.AuthDateTime) > SessionTime);
+        Authentications.RemoveAll(s => (currentTime - s.AuthDateTime) > SessionTime);
     }
 
     public void RunClearing()
