@@ -8,6 +8,12 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Services", "Services\Servic
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TrainingTools", "TrainingTools\TrainingTools.csproj", "{EAD3D988-9170-4C78-8524-594610B23B63}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Contracts.Client", "Contracts.Client\Contracts.Client.csproj", "{50EFA993-E789-4AB1-8D3F-BF9343D9A6D6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Services.Client", "Services.Client\Services.Client.csproj", "{B5214F51-0939-4EB1-84E9-9A5725F5B4C3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ViewModels", "ViewModels\ViewModels.csproj", "{B8906B9D-099A-4DC9-B5B0-163171CC6055}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -30,5 +36,17 @@ Global
 		{EAD3D988-9170-4C78-8524-594610B23B63}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EAD3D988-9170-4C78-8524-594610B23B63}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EAD3D988-9170-4C78-8524-594610B23B63}.Release|Any CPU.Build.0 = Release|Any CPU
+		{50EFA993-E789-4AB1-8D3F-BF9343D9A6D6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{50EFA993-E789-4AB1-8D3F-BF9343D9A6D6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{50EFA993-E789-4AB1-8D3F-BF9343D9A6D6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{50EFA993-E789-4AB1-8D3F-BF9343D9A6D6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B5214F51-0939-4EB1-84E9-9A5725F5B4C3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B5214F51-0939-4EB1-84E9-9A5725F5B4C3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B5214F51-0939-4EB1-84E9-9A5725F5B4C3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B5214F51-0939-4EB1-84E9-9A5725F5B4C3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B8906B9D-099A-4DC9-B5B0-163171CC6055}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B8906B9D-099A-4DC9-B5B0-163171CC6055}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B8906B9D-099A-4DC9-B5B0-163171CC6055}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B8906B9D-099A-4DC9-B5B0-163171CC6055}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

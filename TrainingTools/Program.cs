@@ -1,6 +1,8 @@
+using Contracts.Client.Services;
 using Contracts.Services;
 using Microsoft.EntityFrameworkCore;
 using Services;
+using Services.Client;
 using Services.DbContexts;
 using SimpleAuthorizer;
 using TrainingTools.Components;
@@ -35,6 +37,16 @@ builder.Services.AddDbContext<TrainingToolsDbContext>(options =>
         b => b.MigrationsAssembly("TrainingTools"));
 });
 
+
+// client-side
+builder.Services.AddHttpClient();
+builder.Services.AddScoped<IFetchService, FetchService>();
+builder.Services.AddTransient<ICookiesProvider, BrowserCookiesProvider>();
+
+// both-side
+builder.Services.AddHttpContextAccessor();
+
+// server-side
 builder.Services.AddScoped<ICookiesSession, CookiesSession>();
 builder.Services.AddScoped<IAuthorizedUser, AuthorizedUser>();
 builder.Services.AddScoped<IUsersService, UsersService>();

@@ -43,10 +43,13 @@ public class AuthorizedUser : IAuthorizedUser
         return true;
     }
 
-    public async Task Authorize(HttpContext context, string email)
+    public async Task<bool> Authorize(HttpContext context, string email, string password)
     {
         await Authorize(u => u.Email == email);
+        
+        if (!ConfirmPassword(password)) return false;
         _session.AddAuthentication(context, User.Id);
+        return true;
     }
 
     public void EndAuthorization(HttpContext context)

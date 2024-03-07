@@ -9,11 +9,21 @@
     <ItemGroup>
       <_ContentIncludedByDefault Remove="wwwroot\bootstrap\bootstrap.min.css" />
       <_ContentIncludedByDefault Remove="wwwroot\bootstrap\bootstrap.min.css.map" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\cookie\HISTORY.md" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\cookie\index.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\cookie\LICENSE" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\cookie\package-lock.json" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\cookie\package.json" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\cookie\README.md" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\cookie\SECURITY.md" />
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\Contracts.Client\Contracts.Client.csproj" />
       <ProjectReference Include="..\Contracts\Contracts.csproj" />
+      <ProjectReference Include="..\Services.Client\Services.Client.csproj" />
       <ProjectReference Include="..\Services\Services.csproj" />
+      <ProjectReference Include="..\ViewModels\ViewModels.csproj" />
     </ItemGroup>
 
     <ItemGroup>

@@ -23,66 +23,40 @@ public class UsersController : Controller
     {
         using var scope = _scopeFactory.CreateScope();
         var authorizedUser = scope.ServiceProvider.GetRequiredService<IAuthorizedUser>();
-        try
-        {
-            if (!await authorizedUser.Authorize(HttpContext)) return RedirectToAction("Login", "Users");
-        }
-        catch (NotFoundException e)
-        {
-            return View("Error", (404, e.Message));
-        }
+        try { if (!await authorizedUser.Authorize(HttpContext)) return Unauthorized(new ErrorModel("User was not authorized")); }
+        catch (NotFoundException e) { return NotFound(new ErrorModel(e.Message)); }
 
-        return View(new UserViewModel(authorizedUser.User)); // what should be authorizedUser.User or service.Get ???
-    }
-
-    [HttpGet]
-    public IActionResult Login()
-    {
-        return View();
+        return Json(new UserViewModel(authorizedUser.User)); // what should be authorizedUser.User or service.Get ???
     }
 
     [HttpPost]
-    public async Task<IActionResult> Login([FromForm] LoginUserModel model)
+    public async Task<IActionResult> Login([FromBody] LoginUserModel model)
     {
-        if (!ModelState.IsValid) return View(model);
+        if (!ModelState.IsValid) return BadRequest(new ErrorModel("Model is not valid"));
         
         using var scope = _scopeFactory.CreateScope();
         var authorizedUser = scope.ServiceProvider.GetRequiredService<IAuthorizedUser>();
-        
-        try
-        {
-            await authorizedUser.Authorize(HttpContext, model.Email);
+        try {
+            if (!await authorizedUser.Authorize(HttpContext, model.Email, model.Password))
+            {
+                return BadRequest(new ErrorModel("Wrong email or password"));
+            } 
         }
-        catch (NotFoundException e)
-        {
-            ModelState.AddModelError(nameof(LoginUserModel.Email), e.Message);
-            return View(model);
-        }
+        catch (NotFoundException e) { return NotFound(new ErrorModel(e.Message)); }
         
-        if (!authorizedUser.ConfirmPassword(model.Password))
-        {
-            ModelState.AddModelError(nameof(LoginUserModel.Password), "Wrong password");
-            return View(model);
-        }
-        
-        return RedirectToAction("Index", "Home");
+        return Ok();
     }
 
+    [HttpGet]
     public IActionResult Logout()
     {
         throw new NotImplementedException();
     }
     
-    [HttpGet]
-    public IActionResult Register()
-    {
-        return View();
-    }
-    
     [HttpPost]
-    public async Task<IActionResult> Register([FromForm] RegisterUserModel model)
+    public async Task<IActionResult> Register([FromBody] RegisterUserModel model)
     {
-        if (!ModelState.IsValid) return View(model);
+        if (!ModelState.IsValid) return BadRequest(new ErrorModel("Model is not valid"));
 
         var user = new User
         {
@@ -99,15 +73,15 @@ public class UsersController : Controller
             await usersService.Add(user);
             
             var authorizedUser = scope.ServiceProvider.GetRequiredService<IAuthorizedUser>();
-            await authorizedUser.Authorize(HttpContext, user.Email);
             await authorizedUser.SaveChanges();
-            
-            return RedirectToAction("Index", "Home");
+            await authorizedUser.Authorize(HttpContext, user.Email, user.Password);
+
+            return Ok();
         }
         catch (Exception)
         {
-            ModelState.AddModelError(nameof(RegisterUserModel.Email), "Email already exists");
-            return View(model);
+            // email doesnt exist
+            return BadRequest(new ErrorModel("Email already exist"));
         }
         // catch (Exception ex)
         // {
@@ -121,13 +95,16 @@ public class UsersController : Controller
     public async Task<IActionResult> Delete([Required, FromBody] DeleteUserModel model)
     {
         if (!ModelState.IsValid)
-            return BadRequest(new
-                {
-                    message = string.Join('\n', 
+            return BadRequest(
+                new ErrorModel(
+                    string.Join(
+                        '\n', 
                         ModelState.Values
                             .SelectMany(s => s.Errors)
-                            .Select(e => e.ErrorMessage))
-                });
+                            .Select(e => e.ErrorMessage)
+                    )
+                )
+            );
         
         using var scope = _scopeFactory.CreateScope();
         var authorizedUser = scope.ServiceProvider.GetRequiredService<IAuthorizedUser>();
@@ -148,29 +125,12 @@ public class UsersController : Controller
         }
         catch (Exception e)
         {
-            return StatusCode(500, new {message = e.Message});
+            return StatusCode(500, new ErrorModel(e.Message));
         }
-    }
-
-    [HttpGet]
-    public async Task<IActionResult> Edit()
-    {
-        using var scope = _scopeFactory.CreateScope();
-        var authorizedUser = scope.ServiceProvider.GetRequiredService<IAuthorizedUser>();
-        try
-        {
-            if (!await authorizedUser.Authorize(HttpContext)) return RedirectToAction("Login", "Users");
-        }
-        catch (NotFoundException e)
-        {
-            return View("Error", (404, e.Message));
-        }
-
-        return View(new EditUserModel{Name = authorizedUser.User.Name, Email = authorizedUser.User.Email});
     }
 
     [HttpPost]
-    public async Task<IActionResult> Edit([Required, FromForm] EditUserModel model)
+    public async Task<IActionResult> Edit([Required, FromBody] EditUserModel model)
     {
         if (!ModelState.IsValid) return View(model);
         
