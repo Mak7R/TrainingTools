@@ -2,7 +2,7 @@
 
 namespace TrainingTools.Controllers;
 
-[Route("/")]
+[Route("[controller]")]
 public class HomeController : Controller
 {
     [HttpGet]

@@ -3,8 +3,13 @@ using Microsoft.EntityFrameworkCore;
 using Services;
 using Services.DbContexts;
 using SimpleAuthorizer;
+using TrainingTools.Components;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddControllers();
+builder.Services.AddRazorComponents()
+    .AddInteractiveServerComponents();
 
 builder.Services.AddSingleton<ISessionContainer<Guid, Guid>, AutoClearedSessionContainer>((_) =>
 {
@@ -23,7 +28,7 @@ builder.Services.AddSingleton<ISessionContainer<Guid, Guid>, AutoClearedSessionC
     return sessionContainer;
 });
         
-builder.Services.AddControllersWithViews().AddRazorRuntimeCompilation();
+
 builder.Services.AddDbContext<TrainingToolsDbContext>(options =>
 {
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"),
@@ -46,10 +51,13 @@ using (var scope = app.Services.CreateScope())
     db.Migrate();
 }
 
+// Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
-    app.UseExceptionHandler("/error");
+    app.UseExceptionHandler("/Error", createScopeForErrors: true);
     // app.UseExceptionHandlingMiddleware();
+    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+    app.UseHsts();
 }
 else
 {
@@ -57,13 +65,11 @@ else
 }
 
 app.UseHttpsRedirection();
-app.UseStaticFiles();
-app.UseRouting();
 
+app.UseStaticFiles();
+app.UseAntiforgery();
+
+app.MapRazorComponents<App>().AddInteractiveServerRenderMode();
 app.MapControllers();
 
 app.Run();
-
-// TODO
-// Create SQL Requests to DB
-// Create Cache for Responses from DB
