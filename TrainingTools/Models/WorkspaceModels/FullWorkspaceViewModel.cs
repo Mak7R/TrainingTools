@@ -1,4 +1,5 @@
 ﻿using Contracts.Models;
+using TrainingTools.ViewModels;
 
 namespace TrainingTools.Models;
 

@@ -1,11 +1,17 @@
+using System.ComponentModel.DataAnnotations;
 using Contracts.Client.Services;
 using Contracts.Services;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Controllers;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.EntityFrameworkCore;
 using Services;
 using Services.Client;
 using Services.DbContexts;
 using SimpleAuthorizer;
 using TrainingTools.Components;
+using TrainingTools.Controllers;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -41,7 +47,7 @@ builder.Services.AddDbContext<TrainingToolsDbContext>(options =>
 // client-side
 builder.Services.AddHttpClient();
 builder.Services.AddScoped<IFetchService, FetchService>();
-builder.Services.AddTransient<ICookiesProvider, BrowserCookiesProvider>();
+builder.Services.AddScoped<ICookiesProvider, BrowserCookiesProvider>();
 
 // both-side
 builder.Services.AddHttpContextAccessor();

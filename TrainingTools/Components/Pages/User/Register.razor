@@ -7,6 +7,7 @@
 @inject IFetchService FetchService
 @inject ICookiesProvider CookiesProvider
 @inject NavigationManager NavigationManager
+@inject LinkGenerator LinkGenerator
 
 <div class="container">
     <div id="register-form">
@@ -63,19 +64,19 @@
             };
 
             var request = new HttpRequest(
-                "http://localhost:5219/account/register",
+                NavigationManager.ToAbsoluteUri(
+                    LinkGenerator.GetPathByAction("Register", "Users") 
+                    ?? throw new Exception("Uri was not found")).AbsoluteUri,
                 "POST",
                 JsonSerializer.Serialize(registerModel));
             
             await CookiesProvider.ToRequest(request);
-            
             var response = await FetchService.Fetch(request);
-    
             await CookiesProvider.FromResponse(response);
             
             if (response.IsSuccessStatusCode)
             {
-                NavigationManager.NavigateTo("/");
+                NavigationManager.NavigateTo("/", true);
             }
         }
         catch (Exception e)

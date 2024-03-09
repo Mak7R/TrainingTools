@@ -1,4 +1,8 @@
-﻿<!DOCTYPE html>
+﻿@using Contracts.Services
+
+@inject IHttpContextAccessor HttpContextAccessor
+@inject ICookiesSession CookiesSession
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -14,8 +18,27 @@
 
 <body>
 <Routes/>
+<script>
+    function setCookie(cookieString) {
+        document.cookie = cookieString;
+    }
+    
+    function getCookies(){
+        return document.cookie.split(';');
+    }
+</script>
 <script src="_framework/blazor.web.js"></script>
-<script src="/js/main.lib.js"></script>
 </body>
 
 </html>
+
+@code
+{
+    public bool IsAuthorized { get; private set; } = false;
+    protected override void OnInitialized()
+    {
+        if (HttpContextAccessor.HttpContext == null) return;
+        IsAuthorized = CookiesSession.GetAuthentication(HttpContextAccessor.HttpContext, out _);
+        // can create scoped server but it works only for static rendered components
+    }
+}

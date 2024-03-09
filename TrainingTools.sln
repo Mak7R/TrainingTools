@@ -12,7 +12,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Contracts.Client", "Contrac
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Services.Client", "Services.Client\Services.Client.csproj", "{B5214F51-0939-4EB1-84E9-9A5725F5B4C3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ViewModels", "ViewModels\ViewModels.csproj", "{B8906B9D-099A-4DC9-B5B0-163171CC6055}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TrainingTools.ViewModels", "TrainingTools.ViewModels\TrainingTools.ViewModels.csproj", "{7D9DBFD8-561B-40EC-AF8C-DC6EC9D2C30D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -44,9 +44,9 @@ Global
 		{B5214F51-0939-4EB1-84E9-9A5725F5B4C3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B5214F51-0939-4EB1-84E9-9A5725F5B4C3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B5214F51-0939-4EB1-84E9-9A5725F5B4C3}.Release|Any CPU.Build.0 = Release|Any CPU
-		{B8906B9D-099A-4DC9-B5B0-163171CC6055}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{B8906B9D-099A-4DC9-B5B0-163171CC6055}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{B8906B9D-099A-4DC9-B5B0-163171CC6055}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{B8906B9D-099A-4DC9-B5B0-163171CC6055}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7D9DBFD8-561B-40EC-AF8C-DC6EC9D2C30D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7D9DBFD8-561B-40EC-AF8C-DC6EC9D2C30D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7D9DBFD8-561B-40EC-AF8C-DC6EC9D2C30D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7D9DBFD8-561B-40EC-AF8C-DC6EC9D2C30D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

@@ -1,10 +1,7 @@
-﻿
-
-
-using System.Text.Json.Serialization;
+﻿using System.Text.Json.Serialization;
 using Contracts.Models;
 
-namespace TrainingTools.Models;
+namespace TrainingTools.ViewModels;
 
 public class UserViewModel
 {
@@ -22,13 +19,6 @@ public class UserViewModel
         Id = user.Id;
         Name = user.Name;
         Email = user.Email;
-    }
-
-    public UserViewModel(Guid id, string name, string email)
-    {
-        Id = id;
-        Name = name;
-        Email = email;
     }
     
     public UserViewModel()

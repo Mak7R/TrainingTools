@@ -1,15 +1,20 @@
 ﻿
 using System.Collections;
+using System.Text.Json.Serialization;
 using Contracts.ModelContracts;
 using Contracts.Models;
 using Services;
+using TrainingTools.ViewModels;
 
 namespace TrainingTools.Models;
 
 public class WorkspaceViewModel
 {
+    [JsonPropertyName("id")]
     public Guid Id { get; set; }
+    [JsonPropertyName("name")]
     public string Name { get; set; }
+    [JsonPropertyName("owner")]
     public UserViewModel Owner { get; set; }
     
     public WorkspaceViewModel(Workspace workspace)
@@ -17,6 +22,11 @@ public class WorkspaceViewModel
         Id = workspace.Id;
         Name = workspace.Name;
         Owner = new UserViewModel(workspace.Owner);
+    }
+
+    public WorkspaceViewModel()
+    {
+        
     }
 }
 

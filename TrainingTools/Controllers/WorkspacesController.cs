@@ -4,11 +4,12 @@ using Contracts.Models;
 using Contracts.Services;
 using Microsoft.AspNetCore.Mvc;
 using TrainingTools.Models;
+using TrainingTools.ViewModels;
 
 namespace TrainingTools.Controllers;
 
 [Controller]
-[Route("[controller]")]
+[Route("api/v1/[controller]")]
 public class WorkspacesController : Controller
 {
     private readonly IServiceScopeFactory _scopeFactory;
@@ -26,8 +27,8 @@ public class WorkspacesController : Controller
     {
         using var scope = _scopeFactory.CreateScope();
         var authorizedUser = scope.ServiceProvider.GetRequiredService<IAuthorizedUser>();
-        try { if (!await authorizedUser.Authorize(HttpContext)) return RedirectToAction("Login", "Users"); }
-        catch (NotFoundException e) { return View("Error", (404, e.Message)); }
+        try { if (!await authorizedUser.Authorize(HttpContext)) return Unauthorized(new ErrorModel("User was not authorized")); }
+        catch (NotFoundException e) { return NotFound(new ErrorModel(e.Message)); }
 
         var workspacesService = scope.ServiceProvider.GetRequiredService<IWorkspacesService>();
         var workspaces = await workspacesService.GetAll();
@@ -37,7 +38,7 @@ public class WorkspacesController : Controller
         ViewBag.OrderBy = order.OrderBy;
         ViewBag.OrderOption = order.OrderOption;
         
-        return View(new WorkspacesViewCollectionBuilder(workspaces).Filter(filter).Order(order).Build());
+        return Json(new WorkspacesViewCollectionBuilder(workspaces).Filter(filter).Order(order).Build());
     }
 
     [HttpGet]

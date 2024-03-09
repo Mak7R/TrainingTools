@@ -1,0 +1,75 @@
+﻿@page "/Profile"
+
+@rendermode InteractiveServer
+
+@inject IFetchService FetchService
+@inject ICookiesProvider CookiesProvider
+@inject NavigationManager NavigationManager
+@inject LinkGenerator LinkGenerator
+
+@if (_errorMessage == string.Empty)
+{
+    <div class="container">
+        <h3>Profile</h3>
+        @if (_user == null)
+        {
+            <p>
+                <em>Loading...</em>
+            </p>
+        }
+        else
+        {
+            <h4>ID: @_user.Id</h4>
+            <h4>Email: @_user.Email</h4>
+            <h4>Name: @_user.Name</h4>
+        }
+    </div>
+}
+else
+{
+    <h1>Load Error</h1>
+    <h2>@_errorMessage</h2>
+}
+
+@code {
+    private UserViewModel? _user;
+    private string _errorMessage = string.Empty;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            try
+            {
+                var request = new HttpRequest(
+                    NavigationManager.ToAbsoluteUri(
+                        LinkGenerator.GetPathByAction("Index", "Users") 
+                        ?? throw new Exception("Uri was not found")).AbsoluteUri,
+                    "GET",
+                    string.Empty);
+            
+                await CookiesProvider.ToRequest(request);
+                var response = await FetchService.Fetch(request);
+                await CookiesProvider.FromResponse(response);
+            
+                if (response.IsSuccessStatusCode)
+                {
+                    _user = JsonSerializer.Deserialize<UserViewModel>(response.Content);
+                    StateHasChanged();
+                }
+                else if(response.StatusCode == 401)
+                {
+                    NavigationManager.NavigateTo("/login", true);
+                }
+                else
+                {
+                    _errorMessage = JsonSerializer.Deserialize<ErrorModel>(response.Content)?.Message ?? throw new Exception("Unhandled error");
+                }
+            }
+            catch (Exception e)
+            {
+                _errorMessage = e.Message;
+            }
+        }
+    }
+}

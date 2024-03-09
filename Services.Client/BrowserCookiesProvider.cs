@@ -18,11 +18,8 @@ public class BrowserCookiesProvider : ICookiesProvider
     
     public async Task ToRequest(HttpRequest request)
     {
-        var cookies = _httpContextAccessor.HttpContext?.Request.Cookies;
-        if (cookies != null)
-        {
-            request.Headers.Add("Cookie", cookies.Select(cookie => $"{cookie.Key}={cookie.Value}").ToArray());
-        }
+        var cookies = await _jsRuntime.InvokeAsync<IEnumerable<string>>("getCookies");
+        request.Headers.Add("Cookie", cookies);
     }
 
     public async Task FromResponse(HttpResponse response)

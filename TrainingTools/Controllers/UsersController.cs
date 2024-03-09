@@ -4,7 +4,9 @@ using Contracts.Exceptions;
 using Contracts.Models;
 using Contracts.Services;
 using Microsoft.AspNetCore.Mvc;
+using Services.Client;
 using TrainingTools.Models;
+using TrainingTools.ViewModels;
 
 namespace TrainingTools.Controllers;
 
@@ -25,7 +27,7 @@ public class UsersController : Controller
         var authorizedUser = scope.ServiceProvider.GetRequiredService<IAuthorizedUser>();
         try { if (!await authorizedUser.Authorize(HttpContext)) return Unauthorized(new ErrorModel("User was not authorized")); }
         catch (NotFoundException e) { return NotFound(new ErrorModel(e.Message)); }
-
+        
         return Json(new UserViewModel(authorizedUser.User)); // what should be authorizedUser.User or service.Get ???
     }
 
