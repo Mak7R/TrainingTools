@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using Contracts.Models;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using TrainingTools.ViewModels;
 
 namespace TrainingTools.Models;
 

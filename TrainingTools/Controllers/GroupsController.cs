@@ -1,13 +1,14 @@
-﻿using System.ComponentModel.DataAnnotations;
-using Contracts.Exceptions;
+﻿using Contracts.Exceptions;
 using Contracts.Models;
 using Contracts.Services;
 using Microsoft.AspNetCore.Mvc;
+using TrainingTools.Extensions;
 using TrainingTools.Models;
+using TrainingTools.ViewModels;
 
 namespace TrainingTools.Controllers;
 
-[Route("workspaces/[controller]/{groupId:guid}")]
+[Route("api/v1/workspaces")]
 public class GroupsController : Controller
 {
     private readonly IServiceScopeFactory _scopeFactory;
@@ -17,54 +18,37 @@ public class GroupsController : Controller
         _scopeFactory = scopeFactory;
     }
     
-    [HttpGet]
-    [Route("/workspaces/{workspaceId:guid}/[controller]")]
+    [HttpGet("{workspaceId:guid}/[controller]")]
     public async Task<IActionResult> Index(
-        [Required, FromRoute] Guid workspaceId,
+        [FromRoute] Guid workspaceId,
         FilterModel filter, 
         OrderModel order)
     {
         using var scope = _scopeFactory.CreateScope();
         var authorizedUser = scope.ServiceProvider.GetRequiredService<IAuthorizedUser>();
-        try { if (!await authorizedUser.Authorize(HttpContext)) return RedirectToAction("Login", "Users"); }
-        catch (NotFoundException e) { return View("Error", (404, e.Message)); }
+        try { if (!await authorizedUser.Authorize(HttpContext)) return Unauthorized(new ErrorViewModel("User was not authorized")); }
+        catch (NotFoundException e) { return NotFound(new ErrorViewModel(e.Message)); }
 
         var groupsService = scope.ServiceProvider.GetRequiredService<IGroupsService>();
 
         var groups = (await groupsService.GetAll()).Where(g => g.Workspace.Id == workspaceId);
-
-        ViewBag.FilterBy = filter.FilterBy;
-        ViewBag.FilterValue = filter.FilterValue;
-        ViewBag.OrderBy = order.OrderBy;
-        ViewBag.OrderOption = order.OrderOption;
         
-        return View(new GroupsViewCollectionBuilder(groups).Filter(filter).Order(order).Build());
+        return Json(new GroupsViewCollectionBuilder(groups).Filter(filter).Order(order).Build());
     }
 
-    [HttpGet]
-    [Route("/workspaces/{workspaceId:guid}/[controller]/[action]")]
-    public async Task<IActionResult> Add()
+    [HttpPost("{workspaceId:guid}/[controller]")]
+    public async Task<IActionResult> Add([FromRoute] Guid workspaceId, [FromBody] AddGroupModel groupModel)
     {
-        using var scope = _scopeFactory.CreateScope();
-        var authorizedUser = scope.ServiceProvider.GetRequiredService<IAuthorizedUser>();
-        try { if (!await authorizedUser.Authorize(HttpContext)) return RedirectToAction("Login", "Users"); }
-        catch (NotFoundException e) { return View("Error", (404, e.Message)); }
+        if (!ModelState.IsValid) return BadRequest(ModelState.ToModelStateErrorViewModel());
         
-        return View();
-    }
-
-    [HttpPost]
-    [Route("/workspaces/{workspaceId:guid}/[controller]/[action]")]
-    public async Task<IActionResult> Add([Required, FromRoute] Guid workspaceId, [FromForm] AddGroupModel groupModel)
-    {
         using var scope = _scopeFactory.CreateScope();
         var authorizedUser = scope.ServiceProvider.GetRequiredService<IAuthorizedUser>();
-        try { if (!await authorizedUser.Authorize(HttpContext)) return RedirectToAction("Login", "Users"); }
-        catch (NotFoundException e) { return View("Error", (404, e.Message)); }
+        try { if (!await authorizedUser.Authorize(HttpContext)) return Unauthorized(new ErrorViewModel("User was not authorized")); }
+        catch (NotFoundException e) { return NotFound(new ErrorViewModel(e.Message)); }
 
         var groupsService = scope.ServiceProvider.GetRequiredService<IGroupsService>();
 
-        var group = new Group()
+        var group = new Group
         {
             Id = Guid.NewGuid(),
             Name = groupModel.Name,
@@ -74,83 +58,51 @@ public class GroupsController : Controller
         await groupsService.Add(group);
         await authorizedUser.SaveChanges();
 
-        return RedirectToAction("Index", new {workspaceId});
+        return Ok();
     }
 
-    [HttpGet]
-    [Route("")]
-    public async Task<IActionResult> Get([FromRoute, Required] Guid groupId)
+    [HttpGet("[controller]/{groupId:guid}")]
+    public async Task<IActionResult> Get([FromRoute] Guid groupId)
     {
         using var scope = _scopeFactory.CreateScope();
         var authorizedUser = scope.ServiceProvider.GetRequiredService<IAuthorizedUser>();
-        try { if (!await authorizedUser.Authorize(HttpContext)) return RedirectToAction("Login", "Users"); }
-        catch (NotFoundException e) { return View("Error", (404, e.Message)); }
+        try { if (!await authorizedUser.Authorize(HttpContext)) return Unauthorized(new ErrorViewModel("User was not authorized")); }
+        catch (NotFoundException e) { return NotFound(new ErrorViewModel(e.Message)); }
 
         var groupsService = scope.ServiceProvider.GetRequiredService<IGroupsService>();
-            
         var group = await groupsService.Get(g => g.Id == groupId);
-
-        if (group == null) return View("Error", (404, "Group was not found"));
         
-        return View(new GroupViewModel(group));
+        return group == null ? NotFound(new ErrorViewModel("Group was not found")) : Json(new GroupViewModel(group));
     }
     
-    [HttpGet, HttpPost]
-    [Route("[action]")]
-    public async Task<IActionResult> Delete([FromRoute, Required] Guid groupId)
+    [HttpDelete("[controller]/{groupId:guid}")]
+    public async Task<IActionResult> Delete([FromRoute] Guid groupId)
     {
         using var scope = _scopeFactory.CreateScope();
         var authorizedUser = scope.ServiceProvider.GetRequiredService<IAuthorizedUser>();
-        try { if (!await authorizedUser.Authorize(HttpContext)) return RedirectToAction("Login", "Users"); }
-        catch (NotFoundException e) { return View("Error", (404, e.Message)); }
+        try { if (!await authorizedUser.Authorize(HttpContext)) return Unauthorized(new ErrorViewModel("User was not authorized")); }
+        catch (NotFoundException e) { return NotFound(new ErrorViewModel(e.Message)); }
 
         var groupsService = scope.ServiceProvider.GetRequiredService<IGroupsService>();
-        var group = await groupsService.Get(g => g.Id == groupId);
-        try
-        {
-            await groupsService.Remove(groupId);
-            await authorizedUser.SaveChanges();
-        }
-        catch (Exception e)
-        {
-            return View("Error", (500, e.Message));
-        }
         
-        return RedirectToAction("Index", new {workspaceId = group!.Workspace.Id});
+        await groupsService.Remove(groupId);
+        await authorizedUser.SaveChanges();
+        
+        return Ok();
     }
 
-    [HttpGet]
-    [Route("[action]")]
-    public async Task<IActionResult> Edit([FromRoute, Required] Guid groupId)
+    [HttpPatch("[controller]/{groupId:guid}")]
+    public async Task<IActionResult> Edit([FromRoute] Guid groupId, [FromBody] EditExerciseModel model)
     {
         using var scope = _scopeFactory.CreateScope();
         var authorizedUser = scope.ServiceProvider.GetRequiredService<IAuthorizedUser>();
-        try { if (!await authorizedUser.Authorize(HttpContext)) return RedirectToAction("Login", "Users"); }
-        catch (NotFoundException e) { return View("Error", (404, e.Message)); }
-
-        var groupsService = scope.ServiceProvider.GetRequiredService<IGroupsService>();
-        var group = await groupsService.Get(e => e.Id == groupId);
-        if (group == null) return View("Error", (404, "Group was not found"));
-        
-        return View(new EditGroupModel{Name = group.Name});
-    }
-
-    [HttpPost]
-    [Route("[action]")]
-    public async Task<IActionResult> Edit([FromRoute, Required] Guid groupId, [FromForm, Required] EditExerciseModel model)
-    {
-        using var scope = _scopeFactory.CreateScope();
-        var authorizedUser = scope.ServiceProvider.GetRequiredService<IAuthorizedUser>();
-        try { if (!await authorizedUser.Authorize(HttpContext)) return RedirectToAction("Login", "Users"); }
-        catch (NotFoundException e) { return View("Error", (404, e.Message)); }
+        try { if (!await authorizedUser.Authorize(HttpContext)) return Unauthorized(new ErrorViewModel("User was not authorized")); }
+        catch (NotFoundException e) { return NotFound(new ErrorViewModel(e.Message)); }
 
         var groupsService = scope.ServiceProvider.GetRequiredService<IGroupsService>();
         await groupsService.Update(groupId, g => g.Name = model.Name);
         await authorizedUser.SaveChanges();
-        
-        var group = await groupsService.Get(g => g.Id == groupId);
-        if (group == null) return View("Error", (404, "Group was not found"));
 
-        return RedirectToAction("Index", new {workspaceId = group.Workspace.Id});
+        return Ok();
     }
 }

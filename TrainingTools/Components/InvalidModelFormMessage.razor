@@ -1,0 +1,11 @@
+﻿<span class="text-danger">
+    @if (ErrorParameter != null && (BindingError?.Errors.TryGetValue(ErrorParameter, out var parameter) ?? false))
+    {
+        @parameter?.First()
+    }
+</span>
+
+@code {
+    [Parameter] public ModelStateErrorViewModel? BindingError { get; set; }
+    [Parameter] public string? ErrorParameter { get; set; }
+}

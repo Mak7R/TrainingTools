@@ -1,14 +1,18 @@
-﻿using Contracts.ModelContracts;
+﻿using System.Text.Json.Serialization;
+using Contracts.ModelContracts;
 using Contracts.Models;
-using Services;
 
-namespace TrainingTools.Models;
+namespace TrainingTools.ViewModels;
 
 public class ExerciseViewModel
 {
+    [JsonPropertyName("id")]
     public Guid Id { get; set; }
+    [JsonPropertyName("name")]
     public string Name { get; set; }
+    [JsonPropertyName("workspace")]
     public WorkspaceViewModel Workspace { get; set; }
+    [JsonPropertyName("group")]
     public GroupViewModel? Group { get; set; }
     public ExerciseViewModel(Exercise exercise)
     {
@@ -16,6 +20,11 @@ public class ExerciseViewModel
         Name = exercise.Name;
         Workspace = new WorkspaceViewModel(exercise.Workspace);
         Group = exercise.Group == null ? null : new GroupViewModel(exercise.Group);
+    }
+
+    public ExerciseViewModel()
+    {
+        
     }
 }
 

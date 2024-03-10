@@ -1,12 +1,8 @@
-﻿
-using System.Collections;
-using System.Text.Json.Serialization;
+﻿using System.Text.Json.Serialization;
 using Contracts.ModelContracts;
 using Contracts.Models;
-using Services;
-using TrainingTools.ViewModels;
 
-namespace TrainingTools.Models;
+namespace TrainingTools.ViewModels;
 
 public class WorkspaceViewModel
 {

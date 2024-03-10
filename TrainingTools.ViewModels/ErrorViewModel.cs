@@ -2,12 +2,12 @@
 
 namespace TrainingTools.ViewModels;
 
-public class ErrorModel
+public class ErrorViewModel
 {
     [JsonPropertyName("message")]
     public string Message { get; set; }
 
-    public ErrorModel(string message)
+    public ErrorViewModel(string message)
     {
         Message = message;
     }

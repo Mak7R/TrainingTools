@@ -1,7 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 using Contracts.Models;
 
-namespace TrainingTools.Models;
+namespace TrainingTools.ViewModels;
 
 public class RegisterUserModel
 {

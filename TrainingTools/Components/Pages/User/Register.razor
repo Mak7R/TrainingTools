@@ -1,6 +1,4 @@
-﻿@using TrainingTools.Models
-
-@page "/Register"
+﻿@page "/Register"
 
 @rendermode InteractiveServer
 
@@ -15,77 +13,66 @@
         
         <div class="form-group mb-3">
             <label for="register-name" class="control-label">Name: </label>
-            <input id="register-name" name="Name" type="text" class="form-control" @bind="_registerName" required>
-            <span class="text-danger"></span>
+            <input id="register-name" name="Name" type="text" class="form-control" @bind="_registerUserModel.Name" required>
+            <InvalidModelFormMessage BindingError="BindingError" ErrorParameter="@nameof(RegisterUserModel.Name)" />
         </div>
         <div class="form-group mb-3">
             <label for="register-email" class="control-label">Email: </label>
-            <input id="register-email" name="Email" type="email" class="form-control" @bind="_registerEmail" required>
-            <span class="text-danger"></span>
+            <input id="register-email" name="Email" type="email" class="form-control" @bind="_registerUserModel.Email" required>
+            <InvalidModelFormMessage BindingError="BindingError" ErrorParameter="@nameof(RegisterUserModel.Email)" />
         </div>
         <div class="form-group mb-3">
             <label for="register-password" class="control-label">Password: </label>
-            <input id="register-password" name="Password" type="password" class="form-control" @bind="_registerPassword" required>
-            <span class="text-danger"></span>
+            <input id="register-password" name="Password" type="password" class="form-control" @bind="_registerUserModel.Password" required>
+            <InvalidModelFormMessage BindingError="BindingError" ErrorParameter="@nameof(RegisterUserModel.Password)" />
         </div>
         <div class="form-group mb-3">
             <label for="register-confirm-password" class="control-label">Confirm password: </label>
-            <input id="register-confirm-password" name="ConfirmPassword" type="password" class="form-control" @bind="_registerConfirmPassword" required>
-            <span class="text-danger"></span>
+            <input id="register-confirm-password" name="ConfirmPassword" type="password" class="form-control" @bind="_registerUserModel.ConfirmPassword" required>
+            <InvalidModelFormMessage BindingError="BindingError" ErrorParameter="@nameof(RegisterUserModel.ConfirmPassword)" />
         </div>
         
         <div class="form-group">
-            <button class="btn btn-primary" @onclick="SubmitRegister" disabled="@_isSubmitted">Register</button>
+            <button class="btn btn-primary" @onclick="SubmitRegister">Register</button>
         </div>
     </div>
 </div>
 
 @code {
-    private string _registerName = string.Empty;
-    private string _registerEmail = string.Empty;
-    private string _registerPassword = string.Empty;
-    private string _registerConfirmPassword = string.Empty;
-
-    private bool _isSubmitted = false;
+    private readonly RegisterUserModel _registerUserModel = new()
+    {
+        Name = string.Empty,
+        Email = string.Empty,
+        Password = string.Empty,
+        ConfirmPassword = string.Empty
+    };
+    private ModelStateErrorViewModel? BindingError { get; set; }
 
     private async Task SubmitRegister()
     {
-        if (_isSubmitted) return;
-        _isSubmitted = true;
-        
-        try
-        {
-            var registerModel = new RegisterUserModel
-            {
-                Name = _registerName,
-                Email = _registerEmail,
-                Password = _registerPassword,
-                ConfirmPassword = _registerConfirmPassword
-            };
-
-            var request = new HttpRequest(
-                NavigationManager.ToAbsoluteUri(
-                    LinkGenerator.GetPathByAction("Register", "Users") 
-                    ?? throw new Exception("Uri was not found")).AbsoluteUri,
-                "POST",
-                JsonSerializer.Serialize(registerModel));
+        var request = new HttpRequest(
+            NavigationManager.ToAbsoluteUri(
+                LinkGenerator.GetPathByAction("Login", "Users") 
+                ?? throw new Exception("Uri was not found")).AbsoluteUri,
+            "POST",
+            JsonSerializer.Serialize(_registerUserModel));
             
-            await CookiesProvider.ToRequest(request);
-            var response = await FetchService.Fetch(request);
-            await CookiesProvider.FromResponse(response);
+        await CookiesProvider.ToRequest(request);
+        var response = await FetchService.Fetch(request);
+        await CookiesProvider.FromResponse(response);
             
-            if (response.IsSuccessStatusCode)
-            {
-                NavigationManager.NavigateTo("/", true);
-            }
-        }
-        catch (Exception e)
+        if (response.IsSuccessStatusCode)
         {
-            // ignore
+            NavigationManager.NavigateTo("/", true);
         }
-        finally
+        else if (response.StatusCode == StatusCodes.Status400BadRequest)
         {
-            _isSubmitted = false;
+            BindingError = JsonSerializer.Deserialize<ModelStateErrorViewModel>(response.Content);
+            StateHasChanged();
+        }
+        else
+        {
+            throw new Exception("Unhandled status");
         }
     }
 }

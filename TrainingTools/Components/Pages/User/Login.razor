@@ -13,14 +13,14 @@
     <div id="login-form">
         <div class="form-group mb-3">
             <label for="login-email" class="control-label">Email: </label>
-            <input id="login-email" name="email" type="email" class="form-control" @bind="_email" required>
-            <span class="text-danger"></span>
+            <input id="login-email" type="email" class="form-control" @bind="_loginUserModel.Email" required>
+            <InvalidModelFormMessage BindingError="BindingError" ErrorParameter="@nameof(LoginUserModel.Email)" />
         </div>
 
         <div class="form-group mb-3">
             <label for="login-password" class="control-label">Password: </label>
-            <input id="login-password" name="password" type="password" class="form-control" @bind="_password" required>
-            <span class="text-danger"></span>
+            <input id="login-password" type="password" class="form-control" @bind="_loginUserModel.Password" required>
+            <InvalidModelFormMessage BindingError="BindingError" ErrorParameter="@nameof(LoginUserModel.Password)" />
         </div>
 
         <div>
@@ -30,47 +30,38 @@
 </div>
 
 @code {
-    private string _email = string.Empty;
-    private string _password = string.Empty;
-
-    private bool _isSubmitted = false;
+    private readonly LoginUserModel _loginUserModel = new LoginUserModel
+    {
+        Email = string.Empty,
+        Password = string.Empty
+    };
+    private ModelStateErrorViewModel? BindingError { get; set; }
 
     private async Task SubmitLogin()
     {
-        if (_isSubmitted) return;
-        _isSubmitted = true;
-        
-        try
-        {
-            var loginUserModel = new LoginUserModel
-            {
-                Email = _email,
-                Password = _password
-            };
-
-            var request = new HttpRequest(
-                NavigationManager.ToAbsoluteUri(
-                    LinkGenerator.GetPathByAction("Login", "Users") 
-                    ?? throw new Exception("Uri was not found")).AbsoluteUri,
-                "POST",
-                JsonSerializer.Serialize(loginUserModel));
+        var request = new HttpRequest(
+            NavigationManager.ToAbsoluteUri(
+                LinkGenerator.GetPathByAction("Login", "Users") 
+                ?? throw new Exception("Uri was not found")).AbsoluteUri,
+            "POST",
+            JsonSerializer.Serialize(_loginUserModel));
             
-            await CookiesProvider.ToRequest(request);
-            var response = await FetchService.Fetch(request);
-            await CookiesProvider.FromResponse(response);
+        await CookiesProvider.ToRequest(request);
+        var response = await FetchService.Fetch(request);
+        await CookiesProvider.FromResponse(response);
             
-            if (response.IsSuccessStatusCode)
-            {
-                NavigationManager.NavigateTo("/", true);
-            }
-        }
-        catch (Exception e)
+        if (response.IsSuccessStatusCode)
         {
-            // ignore
+            NavigationManager.NavigateTo("/", true);
         }
-        finally
+        else if (response.StatusCode == StatusCodes.Status400BadRequest)
         {
-            _isSubmitted = false;
+            BindingError = JsonSerializer.Deserialize<ModelStateErrorViewModel>(response.Content);
+            StateHasChanged();
+        }
+        else
+        {
+            throw new Exception("Unhandled status");
         }
     }
 }

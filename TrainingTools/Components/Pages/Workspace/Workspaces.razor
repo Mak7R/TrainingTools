@@ -90,7 +90,7 @@ else
                 }
                 else
                 {
-                    _errorMessage = JsonSerializer.Deserialize<ErrorModel>(response.Content)?.Message ?? throw new Exception("Unhandled error");
+                    _errorMessage = JsonSerializer.Deserialize<ErrorViewModel>(response.Content)?.Message ?? throw new Exception("Unhandled error");
                 }
             }
             catch (Exception e)

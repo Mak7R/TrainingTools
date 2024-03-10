@@ -5,10 +5,6 @@ namespace TrainingTools.Models;
 
 public class UpdateExerciseResultsModel
 {
-    public Guid ExerciseResultsId { get; set; }
-    
-    [Required]
+    [Required] 
     public ExerciseResultsObject ExerciseResultsModel { get; set; }
-
-    
 }
