@@ -1,4 +1,4 @@
-﻿@page "/workspace/{WorkspaceId:guid}/info"
+﻿@page "/workspaces/{WorkspaceId:guid}/info"
 
 @rendermode InteractiveServer
 
@@ -7,8 +7,10 @@
 @inject NavigationManager NavigationManager
 @inject LinkGenerator LinkGenerator
 
+<PageTitle>Workspace @if(_workspace != null) { <text>: @_workspace.Name</text> }</PageTitle>
+
 <div class="container">
-    <h3>Workspace</h3>
+    
     @if (_workspace == null)
     {
         <p>
@@ -17,9 +19,27 @@
     }
     else
     {
-        <h4>ID: @_workspace.Id</h4>
-        <h4>Name: @_workspace.Name</h4>
-        <h4>Owner: @_workspace.Owner.Name</h4>
+        <div>
+            <h3>Workspace</h3>
+            <h4>ID: @_workspace.Id</h4>
+            <h4>Name: @_workspace.Name</h4>
+            <h4>Owner: @_workspace.Owner.Name</h4>
+        </div>
+        <div>
+            <h3>Actions</h3>
+            <a class="btn btn-success" href="/workspaces/@_workspace.Id/groups">Groups</a>
+            <a class="btn btn-primary" href="/workspaces/@_workspace.Id/edit">Edit</a>
+            <DeleteWithPasswordComponent
+                ButtonName="Delete"
+                ModalTitle=@($"Delete workspace ({_workspace.Name})")
+                OnSuccessRedirectUrl="/workspaces"
+                HandlerUrl="@(
+                            NavigationManager.ToAbsoluteUri(
+                                LinkGenerator.GetPathByAction("Delete", "Workspaces", new {workspaceId = _workspace.Id}) 
+                                ?? throw new Exception("Uri was not found")).AbsoluteUri)">
+                
+            </DeleteWithPasswordComponent>
+        </div>
     }
 </div>
 

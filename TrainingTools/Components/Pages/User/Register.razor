@@ -7,6 +7,8 @@
 @inject NavigationManager NavigationManager
 @inject LinkGenerator LinkGenerator
 
+<PageTitle>Register</PageTitle>
+
 <div class="container">
     <div id="register-form">
         <div asp-validation-summary="ModelOnly" class="text-danger"></div>
@@ -52,7 +54,7 @@
     {
         var request = new HttpRequest(
             NavigationManager.ToAbsoluteUri(
-                LinkGenerator.GetPathByAction("Login", "Users") 
+                LinkGenerator.GetPathByAction("Register", "Users") 
                 ?? throw new Exception("Uri was not found")).AbsoluteUri,
             "POST",
             JsonSerializer.Serialize(_registerUserModel));

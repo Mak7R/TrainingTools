@@ -1,0 +1,73 @@
+﻿@page "/workspaces/groups/{GroupId:guid}"
+
+@rendermode InteractiveServer
+
+@inject IFetchService FetchService
+@inject ICookiesProvider CookiesProvider
+@inject NavigationManager NavigationManager
+@inject LinkGenerator LinkGenerator
+
+<PageTitle>Group @if(_group != null) { <text>: @_group.Name</text> }</PageTitle>
+
+<div class="container">
+    
+    @if (_group == null)
+    {
+        <p>
+            <em>Loading...</em>
+        </p>
+    }
+    else
+    {
+        <div>
+            <h3>Group</h3>
+            <h4>ID: @_group.Id</h4>
+            <h4>Name: @_group.Name</h4>
+            <h4>Owner: @_group.Workspace.Owner.Name</h4>
+        </div>
+        <div>
+            <h3>Actions</h3>
+            <a class="btn btn-primary" href="/workspaces/groups/@_group.Id/edit">Edit</a>
+            <DeleteModalComponent
+                ButtonName="Delete"
+                ModalTitle=@($"Delete group ({_group.Name})")
+                OnSuccessRedirectUrl=@($"/workspaces/{_group.Workspace.Id}/groups")
+                HandlerUrl="@(
+                            NavigationManager.ToAbsoluteUri(
+                                LinkGenerator.GetPathByAction("Delete", "Groups", new {groupId = _group.Id}) 
+                                ?? throw new Exception("Uri was not found")).AbsoluteUri)"/>
+        </div>
+    }
+</div>
+
+@code{
+    [Parameter] public Guid GroupId { get; set; }
+    private GroupViewModel? _group;
+    
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var request = new HttpRequest(
+                NavigationManager.ToAbsoluteUri(
+                    LinkGenerator.GetPathByAction("Get", "Groups", new {groupId = GroupId}) 
+                    ?? throw new Exception("Uri was not found")).AbsoluteUri,
+                "GET",
+                string.Empty);
+            
+            await CookiesProvider.ToRequest(request);
+            var response = await FetchService.Fetch(request);
+            await CookiesProvider.FromResponse(response);
+            
+            if (response.IsSuccessStatusCode)
+            {
+                _group = JsonSerializer.Deserialize<GroupViewModel>(response.Content);
+                StateHasChanged();
+            }
+            else if(response.StatusCode == 401)
+            {
+                NavigationManager.NavigateTo("/login", true);
+            }
+        }
+    }
+}

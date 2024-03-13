@@ -18,7 +18,8 @@ public class BrowserCookiesProvider : ICookiesProvider
     
     public async Task ToRequest(HttpRequest request)
     {
-        var cookies = await _jsRuntime.InvokeAsync<IEnumerable<string>>("getCookies");
+        var cookies = (await _jsRuntime.InvokeAsync<IEnumerable<string>>("getCookies"))
+            .Where(str => !string.IsNullOrWhiteSpace(str));
         request.Headers.Add("Cookie", cookies);
     }
 

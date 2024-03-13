@@ -9,6 +9,8 @@
 @inject NavigationManager NavigationManager
 @inject LinkGenerator LinkGenerator
 
+<PageTitle>Login</PageTitle>
+
 <div class="container">
     <div id="login-form">
         <div class="form-group mb-3">
@@ -30,7 +32,7 @@
 </div>
 
 @code {
-    private readonly LoginUserModel _loginUserModel = new LoginUserModel
+    private readonly LoginUserModel _loginUserModel = new()
     {
         Email = string.Empty,
         Password = string.Empty
@@ -58,6 +60,15 @@
         {
             BindingError = JsonSerializer.Deserialize<ModelStateErrorViewModel>(response.Content);
             StateHasChanged();
+        }
+        else if (response.StatusCode == StatusCodes.Status404NotFound)
+        {
+            BindingError = new ModelStateErrorViewModel(
+                new Dictionary<string, IEnumerable<string>?>
+                {
+                    {nameof(LoginUserModel.Email), new []{"User with this email was not found"}}
+                }
+            );
         }
         else
         {

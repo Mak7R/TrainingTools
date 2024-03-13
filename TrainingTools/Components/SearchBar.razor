@@ -1,0 +1,50 @@
+﻿@using TrainingTools.Models
+
+<div class="container-fluid">
+    <div class="default-search-form">
+        <div class="input-group input-group-horizontal">
+            <label for="select-filter-option" class="input-group-text form-label d-none d-sm-block" style="margin-bottom: 0">SearchBy</label>
+            <select id="select-filter-option" class="form-select flex-grow-0 w-25" @bind="_filter.FilterBy" required>
+                @{ var first = _filter.FilterByOptions.First(); }
+                @foreach (var item in _filter.FilterByOptions)
+                {
+                    <option value="@item.Key">@item.Value</option>
+                }
+            </select>
+
+            <input
+                class="form-control"
+                placeholder="search"
+                @bind="@_filter.FilterValue"/>
+
+            <button @onclick="OnSearchButtonClick" class="btn btn-success">Search</button>
+        </div>
+    </div>
+</div>
+
+@code
+{
+    [Parameter] public Dictionary<string, string> FilterByOptions
+    {
+        get => _filter.FilterByOptions;
+        set
+        {
+            _filter.FilterByOptions = value;
+            if (value.Count != 0 && string.IsNullOrEmpty(_filter.FilterBy)) _filter.FilterBy = value.First().Key;
+        }
+    }
+
+    [Parameter] public Func<FilterModel, Task> OnSearch { get; set; } = _ => Task.CompletedTask;
+
+    private readonly FilterModel _filter = new()
+    {
+        FilterBy = string.Empty,
+        FilterValue = string.Empty,
+        FilterByOptions = new Dictionary<string, string>()
+    };
+
+    private async Task OnSearchButtonClick()
+    {
+        await OnSearch(_filter);
+    }
+}

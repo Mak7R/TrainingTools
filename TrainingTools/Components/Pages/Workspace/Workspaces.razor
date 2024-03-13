@@ -8,10 +8,12 @@
 @inject NavigationManager NavigationManager
 @inject LinkGenerator LinkGenerator
 
+<PageTitle>Workspaces</PageTitle>
+
 @if (_errorMessage == string.Empty)
 {
-    <div class="container">
-        <h3>Profile</h3>
+    <div class="container-fluid">
+        <h3>Workspaces</h3>
         @if (_workspaces == null)
         {
             <p>
@@ -20,35 +22,45 @@
         }
         else
         {
+            <SearchBar FilterByOptions="WorkspacesViewCollectionBuilder.FilterByOptions" OnSearch="OnSearchBarButtonClicked"/>
             <table class="table table-striped table-hover">
                 <thead>
-                    <tr>
-                        <th class="col-2">
-                            Id
-                        </th>
-                        <th class="col-2">
-                            Name
-                        </th>
-                        <th class="col-2">
-                            Actions
-                        </th>
-                    </tr>
+                <tr>
+                    <th class="col-2">
+                        Id
+                    </th>
+                    <th class="col-2">
+                        Name
+                    </th>
+                    <th class="col-2">
+                        Actions
+                    </th>
+                </tr>
                 </thead>
                 <tbody>
-                    @foreach(var workspace in _workspaces)
-                    {
-                        <tr>
-                            <td><a href="/workspace/@workspace.Id/info">@workspace.Id</a></td>
-                            <td>
-                                <a>@workspace.Name</a>
-                            </td>
-                            <td>
-                                
-                            </td>
-                        </tr>
-                    }
+                @foreach(var workspace in _workspaces)
+                {
+                    <tr>
+                        <td><a href="/workspaces/@workspace.Id/info">@workspace.Id</a></td>
+                        <td>
+                            <a>@workspace.Name</a>
+                        </td>
+                        <td>
+                            <a class="btn btn-success" href="/workspaces/@workspace.Id/groups">Groups</a>
+                            <a class="btn btn-primary" href="/workspaces/@workspace.Id/edit">Edit</a>
+                            <DeleteWithPasswordComponent
+                                ButtonName="Delete"
+                                ModalTitle="@($"Delete workspace ({workspace.Name})")"
+                                OnSuccessRedirectUrl="/workspaces"
+                                HandlerUrl="@(NavigationManager.ToAbsoluteUri(LinkGenerator.GetPathByAction("Delete", "Workspaces", new { workspaceId = workspace.Id }) ?? throw new Exception("Uri was not found")).AbsoluteUri)">
+
+                            </DeleteWithPasswordComponent>
+                        </td>
+                    </tr>
+                }
                 </tbody>
             </table>
+            <a href="/workspaces/add" class="btn btn-success btn-block w-100">Add Workspace</a>
         }
     </div>
 }
@@ -100,4 +112,27 @@ else
         }
     }
 
+    private async Task OnSearchBarButtonClicked(FilterModel filter)
+    {
+        var request = new HttpRequest(
+            NavigationManager.ToAbsoluteUri(
+                LinkGenerator.GetPathByAction("Index", "Workspaces", new {filter.FilterBy, filter.FilterValue}) 
+                ?? throw new Exception("Uri was not found")).AbsoluteUri,
+            "GET",
+            string.Empty);
+            
+        await CookiesProvider.ToRequest(request);
+        var response = await FetchService.Fetch(request);
+        await CookiesProvider.FromResponse(response);
+                
+        if (response.IsSuccessStatusCode)
+        {
+            _workspaces = JsonSerializer.Deserialize<List<WorkspaceViewModel>>(response.Content);
+            StateHasChanged();
+        }
+        else if (response.StatusCode == 401)
+        {
+            NavigationManager.NavigateTo("/login", true);
+        }
+    }
 }

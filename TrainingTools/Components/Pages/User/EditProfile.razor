@@ -1,0 +1,108 @@
+﻿@page "/EditProfile"
+
+@rendermode InteractiveServer
+
+@using TrainingTools.Models
+
+@inject IFetchService FetchService
+@inject ICookiesProvider CookiesProvider
+@inject NavigationManager NavigationManager
+@inject LinkGenerator LinkGenerator
+
+<div class="container">
+    <h3>Edit Profile</h3>
+    
+    <div class="form-group mb-3">
+        <label for="edit-profile-name" class="control-label">Name: </label>
+        <input id="edit-profile-name" type="text" class="form-control" @bind="_editUserModel.Name" required>
+        <InvalidModelFormMessage BindingError="BindingError" ErrorParameter="@nameof(EditUserModel.Name)"></InvalidModelFormMessage>
+    </div>
+    <div class="form-group mb-3">
+        <label for="edit-profile-email" class="control-label">Email: </label>
+        <input id="edit-profile-email" type="email" class="form-control" @bind="_editUserModel.Email" required>
+        <InvalidModelFormMessage BindingError="BindingError" ErrorParameter="@nameof(EditUserModel.Email)"></InvalidModelFormMessage>
+    </div>
+    
+    <div class="form-group mt-5 mb-3">
+        <hr/>
+        <label class="text-primary" for="edit-profile-password">Write your password for save changes: </label>
+        <input id="edit-profile-password" type="password" class="form-control" @bind="_editUserModel.Password" required>
+        <InvalidModelFormMessage BindingError="BindingError" ErrorParameter="@nameof(EditUserModel.Password)"></InvalidModelFormMessage>
+    </div>
+
+    <div class="form-group">
+        <a class="btn btn-primary" href="/profile">To Profile</a>
+        <button @onclick="OnEditUserClick" class="btn btn-success">Save changes</button>
+    </div>
+</div>
+
+@code {
+
+    [Parameter] public Guid WorkspaceId { get; set; }
+    
+    private readonly EditUserModel _editUserModel = new()
+    {
+        Name = string.Empty,
+        Email = string.Empty,
+        Password = string.Empty
+    };
+    private ModelStateErrorViewModel? BindingError { get; set; }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var request = new HttpRequest(
+                NavigationManager.ToAbsoluteUri(
+                    LinkGenerator.GetPathByAction("Index", "Users") 
+                    ?? throw new Exception("Uri was not found")).AbsoluteUri,
+                "GET",
+                string.Empty);
+            
+            await CookiesProvider.ToRequest(request);
+            var response = await FetchService.Fetch(request);
+            await CookiesProvider.FromResponse(response);
+            
+            if (response.IsSuccessStatusCode)
+            {
+                var user = JsonSerializer.Deserialize<UserViewModel>(response.Content);
+                if (user == null) throw new NullReferenceException("user was null");
+                _editUserModel.Name = user.Name;
+                _editUserModel.Email = user.Email;
+                StateHasChanged();
+            }
+            else if(response.StatusCode == 401)
+            {
+                NavigationManager.NavigateTo("/login", true);
+            }
+        }
+    }
+
+    private async Task OnEditUserClick()
+    {
+        var request = new HttpRequest(
+            NavigationManager.ToAbsoluteUri(
+                LinkGenerator.GetPathByAction("Edit", "Users") 
+                ?? throw new Exception("Uri was not found")).AbsoluteUri,
+            "PATCH",
+            JsonSerializer.Serialize(_editUserModel));
+            
+        await CookiesProvider.ToRequest(request);
+        var response = await FetchService.Fetch(request);
+        await CookiesProvider.FromResponse(response);
+            
+        if (response.IsSuccessStatusCode)
+        {
+            NavigationManager.NavigateTo($"/profile", true);
+        }
+        else if (response.StatusCode == StatusCodes.Status400BadRequest)
+        {
+            BindingError = JsonSerializer.Deserialize<ModelStateErrorViewModel>(response.Content);
+            StateHasChanged();
+        }
+        else
+        {
+            throw new Exception("Unhandled status");
+        }
+    }
+}

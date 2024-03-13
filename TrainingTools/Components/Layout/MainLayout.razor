@@ -1,13 +1,8 @@
 ﻿@inherits LayoutComponentBase
 
-<div class="page">
-    <div class="sidebar">
-        <NavMenu/>
-    </div>
-
-    <main>
-        <article class="content px-4">
-            @Body
-        </article>
-    </main>
-</div>
+<main style="min-height: 100vh; width: 100%">
+  <NavMenu/>
+  <div class="container-fluid p-2">
+    @Body
+  </div>
+</main>

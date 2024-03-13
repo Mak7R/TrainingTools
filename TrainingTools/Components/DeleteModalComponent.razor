@@ -1,0 +1,56 @@
+﻿@rendermode InteractiveServer
+
+@inject IFetchService FetchService
+@inject ICookiesProvider CookiesProvider
+@inject NavigationManager NavigationManager
+
+<button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal-@_componentId">
+    @ButtonName
+</button>
+
+<div class="modal fade" id="deleteModal-@_componentId" tabindex="-1" aria-labelledby="deleteLabel-@_componentId" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-4 text-danger" id="deleteLabel-@_componentId">@ModalTitle</h1>
+            </div>
+            <div class="modal-body">
+                
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
+                <button @onclick="OnDeleteClick" class="btn btn-danger">Delete</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code
+{
+    private readonly Guid _componentId = Guid.NewGuid();
+    [Parameter] public string ButtonName { get; set; } = "Delete";
+    [Parameter] public string ModalTitle { get; set; } = "Delete";
+    [Parameter] public string HandlerUrl { get; set; }
+    [Parameter] public string OnSuccessRedirectUrl { get; set; } = "/";
+    
+    private async Task OnDeleteClick()
+    {
+        var request = new HttpRequest(
+            HandlerUrl,
+            "DELETE",
+            string.Empty);
+            
+        await CookiesProvider.ToRequest(request);
+        var response = await FetchService.Fetch(request);
+        await CookiesProvider.FromResponse(response);
+            
+        if (response.IsSuccessStatusCode)
+        {
+            NavigationManager.NavigateTo(OnSuccessRedirectUrl, true);
+        }
+        else
+        {
+            throw new Exception("Unhandled status");
+        }
+    }
+}
