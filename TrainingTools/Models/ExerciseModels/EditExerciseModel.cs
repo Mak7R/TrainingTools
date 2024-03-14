@@ -14,7 +14,4 @@ public class EditExerciseModel
     
     [Display(Name = "Group")]
     public Guid? GroupId { get; set; }
-    
-    [BindNever]
-    public IEnumerable<GroupViewModel> Groups { get; set; }
 }

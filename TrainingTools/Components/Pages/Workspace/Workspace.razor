@@ -27,6 +27,8 @@
         </div>
         <div>
             <h3>Actions</h3>
+            <a class="btn btn-success" href="/workspaces/@_workspace.Id">Workspace</a>
+            <a class="btn btn-success" href="/workspaces/@_workspace.Id/exercises">Exercises</a>
             <a class="btn btn-success" href="/workspaces/@_workspace.Id/groups">Groups</a>
             <a class="btn btn-primary" href="/workspaces/@_workspace.Id/edit">Edit</a>
             <DeleteWithPasswordComponent
@@ -46,42 +48,34 @@
 @code{
     [Parameter] public Guid WorkspaceId { get; set; }
     private WorkspaceViewModel? _workspace;
-    private string _errorMessage = string.Empty;
     
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
-            try
+            var request = new HttpRequest(
+                NavigationManager.ToAbsoluteUri(
+                    LinkGenerator.GetPathByAction("GetInfo", "Workspaces", new {workspaceId = WorkspaceId}) 
+                    ?? throw new Exception("Uri was not found")).AbsoluteUri,
+                "GET",
+                string.Empty);
+            
+            await CookiesProvider.ToRequest(request);
+            var response = await FetchService.Fetch(request);
+            await CookiesProvider.FromResponse(response);
+            
+            if (response.IsSuccessStatusCode)
             {
-                var request = new HttpRequest(
-                    NavigationManager.ToAbsoluteUri(
-                        LinkGenerator.GetPathByAction("GetInfo", "Workspaces", new {workspaceId = WorkspaceId}) 
-                        ?? throw new Exception("Uri was not found")).AbsoluteUri,
-                    "GET",
-                    string.Empty);
-            
-                await CookiesProvider.ToRequest(request);
-                var response = await FetchService.Fetch(request);
-                await CookiesProvider.FromResponse(response);
-            
-                if (response.IsSuccessStatusCode)
-                {
-                    _workspace = JsonSerializer.Deserialize<WorkspaceViewModel>(response.Content);
-                    StateHasChanged();
-                }
-                else if(response.StatusCode == 401)
-                {
-                    NavigationManager.NavigateTo("/login", true);
-                }
-                else
-                {
-                    _errorMessage = JsonSerializer.Deserialize<ErrorViewModel>(response.Content)?.Message ?? throw new Exception("Unhandled error");
-                }
+                _workspace = JsonSerializer.Deserialize<WorkspaceViewModel>(response.Content);
+                StateHasChanged();
             }
-            catch (Exception e)
+            else if(response.StatusCode == 401)
             {
-                _errorMessage = e.Message;
+                NavigationManager.NavigateTo("/login", true);
+            }
+            else
+            {
+                throw new Exception("Unhandled status");
             }
         }
     }

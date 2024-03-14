@@ -1,0 +1,41 @@
+﻿@using TrainingTools.Models
+
+<a @onclick="OnOrderClick" class="link-dark order-link">@Display @((MarkupString)Options[_index].OptionHtmlView)</a>
+
+@code {
+    [Parameter] public string Value { get; set; }
+    [Parameter] public string Display { get; set; }
+    [Parameter] public List<(string OptionName, string OptionHtmlView)> Options { get; set; }
+    [Parameter] public RequestCollectionsHelper RequestCollectionsHelper { get; set; }
+    
+    private int _index = 0;
+    private readonly OrderModel _order = new();
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _order.OrderBy = Value;
+            _order.OrderOption = Options[_index].OptionName;
+            
+            RequestCollectionsHelper.OnSetOrder += order =>
+            {
+                if (order.OrderBy != Value)
+                {
+                    _index = 0;
+                }
+                StateHasChanged();
+            };
+        }
+    }
+
+    private void OnOrderClick()
+    {
+        if (_index + 1 == Options.Count) _index = 0;
+        else _index++;
+
+        _order.OrderOption = Options[_index].OptionName;
+        
+        RequestCollectionsHelper.SetOrder(_order);
+    }
+}

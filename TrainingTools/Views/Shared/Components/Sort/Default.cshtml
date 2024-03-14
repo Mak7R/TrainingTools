@@ -1,9 +1,0 @@
-﻿@model OrderViewModel
-
-<form method="get" id="sort-form-@Model.OrderBy" style="cursor: pointer;user-select: none;">
-    <input name="FilterBy" value="@ViewBag.FilterBy" type="hidden"/>
-    <input name="FilterValue" value="@ViewBag.FilterValue" type="hidden"/>
-    <input name="OrderBy" value="@Model.OrderBy" hidden="hidden"/>
-    <input name="OrderOption" value="@Model.Option" hidden="hidden"/>
-    <a onclick="document.getElementById('sort-form-@Model.OrderBy').submit()" class="link-dark">@Model.Display@await Html.PartialAsync(Model.IconPartialView)</a>
-</form>

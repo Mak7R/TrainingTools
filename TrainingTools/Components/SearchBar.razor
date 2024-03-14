@@ -5,7 +5,6 @@
         <div class="input-group input-group-horizontal">
             <label for="select-filter-option" class="input-group-text form-label d-none d-sm-block" style="margin-bottom: 0">SearchBy</label>
             <select id="select-filter-option" class="form-select flex-grow-0 w-25" @bind="_filter.FilterBy" required>
-                @{ var first = _filter.FilterByOptions.First(); }
                 @foreach (var item in _filter.FilterByOptions)
                 {
                     <option value="@item.Key">@item.Value</option>
@@ -34,7 +33,7 @@
         }
     }
 
-    [Parameter] public Func<FilterModel, Task> OnSearch { get; set; } = _ => Task.CompletedTask;
+    [Parameter] public RequestCollectionsHelper RequestCollectionsHelper { get; set; }
 
     private readonly FilterModel _filter = new()
     {
@@ -43,8 +42,8 @@
         FilterByOptions = new Dictionary<string, string>()
     };
 
-    private async Task OnSearchButtonClick()
+    private void OnSearchButtonClick()
     {
-        await OnSearch(_filter);
+        RequestCollectionsHelper.SetFilter(_filter);
     }
 }

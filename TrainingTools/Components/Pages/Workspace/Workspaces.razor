@@ -10,9 +10,7 @@
 
 <PageTitle>Workspaces</PageTitle>
 
-@if (_errorMessage == string.Empty)
-{
-    <div class="container-fluid">
+<div class="container-fluid">
         <h3>Workspaces</h3>
         @if (_workspaces == null)
         {
@@ -22,15 +20,15 @@
         }
         else
         {
-            <SearchBar FilterByOptions="WorkspacesViewCollectionBuilder.FilterByOptions" OnSearch="OnSearchBarButtonClicked"/>
+            <SearchBar FilterByOptions="WorkspacesViewCollectionBuilder.FilterByOptions" RequestCollectionsHelper="_requestCollectionsHelper"/>
             <table class="table table-striped table-hover">
                 <thead>
                 <tr>
                     <th class="col-2">
-                        Id
+                        <OrderComponent RequestCollectionsHelper="_requestCollectionsHelper" Value="@nameof(WorkspaceViewModel.Id)" Display="Id" Options="@(new List<(string OptionName, string OptionHtmlView)> { ("", StaticHtml.OrderIcons.None), ("ASCENDING", StaticHtml.OrderIcons.ArrowUp), ("DESCENDING", StaticHtml.OrderIcons.ArrowDown) })"/>
                     </th>
                     <th class="col-2">
-                        Name
+                        <OrderComponent RequestCollectionsHelper="_requestCollectionsHelper" Value="@nameof(WorkspaceViewModel.Name)" Display="Name" Options="@(new List<(string OptionName, string OptionHtmlView)> { ("", StaticHtml.OrderIcons.None), ("A-Z", StaticHtml.OrderIcons.ArrowUp), ("Z-A", StaticHtml.OrderIcons.ArrowDown) })"/>
                     </th>
                     <th class="col-2">
                         Actions
@@ -41,11 +39,15 @@
                 @foreach(var workspace in _workspaces)
                 {
                     <tr>
-                        <td><a href="/workspaces/@workspace.Id/info">@workspace.Id</a></td>
                         <td>
-                            <a>@workspace.Name</a>
+                            @workspace.Id
                         </td>
                         <td>
+                            <a href="/workspaces/@workspace.Id">@workspace.Name</a>
+                        </td>
+                        <td>
+                            <a class="btn btn-success" href="/workspaces/@workspace.Id/info">Info</a>
+                            <a class="btn btn-success" href="/workspaces/@workspace.Id/exercises">Exercises</a>
                             <a class="btn btn-success" href="/workspaces/@workspace.Id/groups">Groups</a>
                             <a class="btn btn-primary" href="/workspaces/@workspace.Id/edit">Edit</a>
                             <DeleteWithPasswordComponent
@@ -63,61 +65,49 @@
             <a href="/workspaces/add" class="btn btn-success btn-block w-100">Add Workspace</a>
         }
     </div>
-}
-else
-{
-    <h1>Load Error</h1>
-    <h2>@_errorMessage</h2>
-}
 
 @code {
     private IEnumerable<WorkspaceViewModel>? _workspaces;
-    private string _errorMessage = string.Empty;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
-            try
-            {
-                var request = new HttpRequest(
-                    NavigationManager.ToAbsoluteUri(
-                        LinkGenerator.GetPathByAction("Index", "Workspaces") 
-                        ?? throw new Exception("Uri was not found")).AbsoluteUri,
-                    "GET",
-                    string.Empty);
+            _requestCollectionsHelper.OnSet += RequestWorkspaces;
             
-                await CookiesProvider.ToRequest(request);
-                var response = await FetchService.Fetch(request);
-                await CookiesProvider.FromResponse(response);
+            var request = new HttpRequest(
+                NavigationManager.ToAbsoluteUri(
+                    LinkGenerator.GetPathByAction("Index", "Workspaces") 
+                    ?? throw new Exception("Uri was not found")).AbsoluteUri,
+                "GET",
+                string.Empty);
+            
+            await CookiesProvider.ToRequest(request);
+            var response = await FetchService.Fetch(request);
+            await CookiesProvider.FromResponse(response);
                 
-                if (response.IsSuccessStatusCode)
-                {
-                    _workspaces = JsonSerializer.Deserialize<List<WorkspaceViewModel>>(response.Content);
-                    StateHasChanged();
-                }
-                else if (response.StatusCode == 401)
-                {
-                    NavigationManager.NavigateTo("/login", true);
-                }
-                else
-                {
-                    _errorMessage = JsonSerializer.Deserialize<ErrorViewModel>(response.Content)?.Message ?? throw new Exception("Unhandled error");
-                }
-            }
-            catch (Exception e)
+            if (response.IsSuccessStatusCode)
             {
-                _errorMessage = e.Message;
+                _workspaces = JsonSerializer.Deserialize<List<WorkspaceViewModel>>(response.Content);
+                StateHasChanged();
+            }
+            else if (response.StatusCode == 401)
+            {
+                NavigationManager.NavigateTo("/login", true);
+            }
+            else
+            {
+                throw new Exception("Unhandled status");
             }
         }
     }
 
-    private async Task OnSearchBarButtonClicked(FilterModel filter)
+    private readonly RequestCollectionsHelper _requestCollectionsHelper = new();
+
+    private async void RequestWorkspaces(string query)
     {
         var request = new HttpRequest(
-            NavigationManager.ToAbsoluteUri(
-                LinkGenerator.GetPathByAction("Index", "Workspaces", new {filter.FilterBy, filter.FilterValue}) 
-                ?? throw new Exception("Uri was not found")).AbsoluteUri,
+             $"{NavigationManager.ToAbsoluteUri(LinkGenerator.GetPathByAction("Index", "Workspaces") ?? throw new Exception("Uri was not found")).AbsoluteUri}?{query}",
             "GET",
             string.Empty);
             

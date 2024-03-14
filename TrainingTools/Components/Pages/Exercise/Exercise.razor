@@ -1,0 +1,144 @@
+﻿@page "/workspaces/exercises/{ExerciseId:guid}"
+
+@rendermode InteractiveServer
+
+@inject IFetchService FetchService
+@inject ICookiesProvider CookiesProvider
+@inject NavigationManager NavigationManager
+@inject LinkGenerator LinkGenerator
+
+<PageTitle>Exercise @if(_exercise != null) { <text>: @_exercise.Name</text> }</PageTitle>
+
+<div class="container">
+    
+    @if (_exercise == null)
+    {
+        <p>
+            <em>Loading...</em>
+        </p>
+    }
+    else
+    {
+        <div>
+            <h3>Exercise</h3>
+            <h4>ID: @_exercise.Id</h4>
+            <h4>Name: @_exercise.Name</h4>
+            <h4>Group: @if (_exercise.Group == null)
+                       {
+                           <text>No Group</text>
+                       }
+                       else
+                       {
+                           <text>@_exercise.Group.Name</text>
+                       }
+            </h4>
+            <h4>Owner: @_exercise.Workspace.Owner.Name</h4>
+        </div>
+        
+        <div class="mb-4">
+            <h3>Actions</h3>
+            <a class="btn btn-primary" href="/workspaces/exercises/@_exercise.Id/edit">Edit</a>
+            <DeleteModalComponent
+                ButtonName="Delete"
+                ModalTitle=@($"Delete exercise ({_exercise.Name})")
+                OnSuccessRedirectUrl=@($"/workspaces/{_exercise.Workspace.Id}/exercises")
+                HandlerUrl="@(
+                            NavigationManager.ToAbsoluteUri(
+                                LinkGenerator.GetPathByAction("Delete", "Exercises", new {exerciseId = _exercise.Id}) 
+                                ?? throw new Exception("Uri was not found")).AbsoluteUri)"/>
+        </div>
+        
+        <div>
+            @if(_exercise.Results == null){
+                <div>
+                    <button class="btn btn-success" @onclick="AddResults">Add Results</button>
+                </div>
+            }
+            else
+            {
+                <div>
+                    <button class="btn btn-danger" @onclick="DeleteResults">Delete Results</button>
+                </div>
+                <ResultsComponent ExerciseResults="_exercise.Results"/>
+            }
+        </div>
+    }
+</div>
+
+@code{
+    [Parameter] public Guid ExerciseId { get; set; }
+    private FullExerciseViewModel? _exercise;
+    
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var request = new HttpRequest(
+                NavigationManager.ToAbsoluteUri(
+                    LinkGenerator.GetPathByAction("Get", "Exercises", new {exerciseId = ExerciseId}) 
+                    ?? throw new Exception("Uri was not found")).AbsoluteUri,
+                "GET",
+                string.Empty);
+            
+            await CookiesProvider.ToRequest(request);
+            var response = await FetchService.Fetch(request);
+            await CookiesProvider.FromResponse(response);
+            
+            if (response.IsSuccessStatusCode)
+            {
+                _exercise = JsonSerializer.Deserialize<FullExerciseViewModel>(response.Content);
+                StateHasChanged();
+            }
+            else if(response.StatusCode == 401)
+            {
+                NavigationManager.NavigateTo("/login", true);
+            }
+        }
+    }
+
+    private async Task AddResults()
+    {
+        var request = new HttpRequest(
+            NavigationManager.ToAbsoluteUri(
+                LinkGenerator.GetPathByAction("Add", "ExerciseResults", new {exerciseId = ExerciseId}) 
+                ?? throw new Exception("Uri was not found")).AbsoluteUri,
+            "POST",
+            string.Empty);
+            
+        await CookiesProvider.ToRequest(request);
+        var response = await FetchService.Fetch(request);
+        await CookiesProvider.FromResponse(response);
+            
+        if (response.IsSuccessStatusCode)
+        {
+            NavigationManager.Refresh(true);
+        }
+        else if(response.StatusCode == 401)
+        {
+            NavigationManager.NavigateTo("/login", true);
+        }
+    }
+        
+    private async Task DeleteResults()
+    {
+        var request = new HttpRequest(
+            NavigationManager.ToAbsoluteUri(
+                LinkGenerator.GetPathByAction("Delete", "ExerciseResults", new {resultsId = _exercise!.Results!.Id}) 
+                ?? throw new Exception("Uri was not found")).AbsoluteUri,
+            "DELETE",
+            string.Empty);
+            
+        await CookiesProvider.ToRequest(request);
+        var response = await FetchService.Fetch(request);
+        await CookiesProvider.FromResponse(response);
+            
+        if (response.IsSuccessStatusCode)
+        {
+            NavigationManager.Refresh(true);
+        }
+        else if(response.StatusCode == 401)
+        {
+            NavigationManager.NavigateTo("/login", true);
+        }
+    }    
+}

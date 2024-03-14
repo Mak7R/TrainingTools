@@ -1,0 +1,112 @@
+﻿@page "/workspaces/{WorkspaceId:guid}/exercises/add"
+
+@rendermode InteractiveServer
+
+@using TrainingTools.Models
+
+@inject IFetchService FetchService
+@inject ICookiesProvider CookiesProvider
+@inject NavigationManager NavigationManager
+@inject LinkGenerator LinkGenerator
+
+<PageTitle>Add Exercise</PageTitle>
+
+<div class="container">
+    <h3>Add Exercise</h3>
+    
+    @if (_groups == null)
+    {
+        <p>
+            <em>Loading...</em>
+        </p>
+    }
+    else
+    {
+        <div class="form-group mb-3">
+            <label for="add-exercise-name">Exercise name: </label>
+            <input id="add-exercise-name" @bind="_addExerciseModel.Name" class="form-control">
+            <InvalidModelFormMessage BindingError="BindingError" ErrorParameter="@nameof(AddExerciseModel.Name)"></InvalidModelFormMessage>
+        </div>
+        
+        <div class="form-group mb-3">
+            <label for="edit-exercise-group">Group: </label>
+            <select id="edit-exercise-group" class="form-select" @bind="_addExerciseModel.GroupId">
+                <option value="">No Group</option>
+                @foreach (var group in _groups)
+                {
+                    <option value="@group.Id">@group.Name</option>
+                }
+            </select>
+            <InvalidModelFormMessage BindingError="BindingError" ErrorParameter="@nameof(AddExerciseModel.GroupId)"></InvalidModelFormMessage>
+        </div>
+
+        <button @onclick="OnAddClick" class="btn btn-primary">Add</button>
+    }
+    
+</div>
+
+@code {
+    [Parameter] public Guid WorkspaceId { get; set; }
+    private readonly AddExerciseModel _addExerciseModel = new()
+    {
+        Name = string.Empty
+    };
+    private ModelStateErrorViewModel? BindingError { get; set; }
+
+    private IEnumerable<GroupViewModel>? _groups;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var request = new HttpRequest(
+                NavigationManager.ToAbsoluteUri(
+                    LinkGenerator.GetPathByAction("Index", "Groups", new {workspaceId = WorkspaceId}) 
+                    ?? throw new Exception("Uri was not found")).AbsoluteUri,
+                "GET",
+                string.Empty);
+            
+            await CookiesProvider.ToRequest(request);
+            var response = await FetchService.Fetch(request);
+            await CookiesProvider.FromResponse(response);
+                
+            if (response.IsSuccessStatusCode)
+            {
+                _groups = JsonSerializer.Deserialize<List<GroupViewModel>>(response.Content);
+                StateHasChanged();
+            }
+            else if (response.StatusCode == 401)
+            {
+                NavigationManager.NavigateTo("/login", true);
+            }
+        }
+    }
+
+    private async Task OnAddClick()
+    {
+        var request = new HttpRequest(
+            NavigationManager.ToAbsoluteUri(
+                LinkGenerator.GetPathByAction("Add", "Exercises", new {workspaceId = WorkspaceId}) 
+                ?? throw new Exception("Uri was not found")).AbsoluteUri,
+            "POST",
+            JsonSerializer.Serialize(_addExerciseModel));
+            
+        await CookiesProvider.ToRequest(request);
+        var response = await FetchService.Fetch(request);
+        await CookiesProvider.FromResponse(response);
+            
+        if (response.IsSuccessStatusCode)
+        {
+            NavigationManager.NavigateTo($"/workspaces/{WorkspaceId}/exercises", true);
+        }
+        else if (response.StatusCode == StatusCodes.Status400BadRequest)
+        {
+            BindingError = JsonSerializer.Deserialize<ModelStateErrorViewModel>(response.Content);
+            StateHasChanged();
+        }
+        else
+        {
+            throw new Exception("Unhandled status");
+        }
+    }
+}

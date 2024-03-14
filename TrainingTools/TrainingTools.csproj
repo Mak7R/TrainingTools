@@ -16,6 +16,17 @@
       <_ContentIncludedByDefault Remove="wwwroot\lib\cookie\package.json" />
       <_ContentIncludedByDefault Remove="wwwroot\lib\cookie\README.md" />
       <_ContentIncludedByDefault Remove="wwwroot\lib\cookie\SECURITY.md" />
+      <_ContentIncludedByDefault Remove="Views\Groups\Add.cshtml" />
+      <_ContentIncludedByDefault Remove="Views\Groups\Edit.cshtml" />
+      <_ContentIncludedByDefault Remove="Views\Groups\Get.cshtml" />
+      <_ContentIncludedByDefault Remove="Views\Groups\Index.cshtml" />
+      <_ContentIncludedByDefault Remove="Views\Home\Index.cshtml" />
+      <_ContentIncludedByDefault Remove="Views\Shared\Components\Sort\Default.cshtml" />
+      <_ContentIncludedByDefault Remove="Views\Shared\Partials\SmallItems\Down.cshtml" />
+      <_ContentIncludedByDefault Remove="Views\Shared\Partials\SmallItems\None.cshtml" />
+      <_ContentIncludedByDefault Remove="Views\Shared\Partials\SmallItems\Up.cshtml" />
+      <_ContentIncludedByDefault Remove="Views\_ViewImports.cshtml" />
+      <_ContentIncludedByDefault Remove="Views\_ViewStart.cshtml" />
     </ItemGroup>
 
     <ItemGroup>
@@ -32,10 +43,6 @@
         <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       </PackageReference>
       <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.2" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <Folder Include="Components\Pages\Exercise\" />
     </ItemGroup>
 
 </Project>
