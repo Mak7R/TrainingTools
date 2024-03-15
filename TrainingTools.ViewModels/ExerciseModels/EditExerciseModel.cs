@@ -3,7 +3,7 @@ using Contracts.Models;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using TrainingTools.ViewModels;
 
-namespace TrainingTools.Models;
+namespace TrainingTools.ViewModels;
 
 public class EditExerciseModel
 {

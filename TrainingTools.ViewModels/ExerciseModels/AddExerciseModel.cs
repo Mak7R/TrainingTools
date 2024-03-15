@@ -3,7 +3,7 @@ using Contracts.Models;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using TrainingTools.ViewModels;
 
-namespace TrainingTools.Models;
+namespace TrainingTools.ViewModels;
 
 public class AddExerciseModel
 {
@@ -14,7 +14,4 @@ public class AddExerciseModel
     
     [Display(Name = "Group")]
     public Guid? GroupId { get; set; }
-    
-    [BindNever]
-    public IEnumerable<GroupViewModel> Groups { get; set; }
 }

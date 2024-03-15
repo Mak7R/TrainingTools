@@ -11,4 +11,9 @@ public class ErrorViewModel
     {
         Message = message;
     }
+
+    public ErrorViewModel()
+    {
+        
+    }
 }

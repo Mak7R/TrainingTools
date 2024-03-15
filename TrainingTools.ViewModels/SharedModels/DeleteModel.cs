@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using Contracts.Models;
 
-namespace TrainingTools.Models;
+namespace TrainingTools.ViewModels;
 
 public class DeleteModel
 {

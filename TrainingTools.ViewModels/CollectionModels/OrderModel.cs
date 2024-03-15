@@ -1,8 +1,6 @@
 ﻿using Contracts.ModelContracts;
-using Contracts.Models;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
 
-namespace TrainingTools.Models;
+namespace TrainingTools.ViewModels;
 
 public class OrderModel : IOrder
 {
@@ -13,7 +11,8 @@ public class OrderModel : IOrder
         set
         {
             if (value == null) return;
-            else _orderBy = value;
+            
+            _orderBy = value;
         }
     }
 
@@ -24,7 +23,8 @@ public class OrderModel : IOrder
         set
         {
             if (value == null) return;
-            else _orderOption = value;
+            
+            _orderOption = value;
         }
     }
 }

@@ -3,7 +3,6 @@ using Contracts.Models;
 using Contracts.Services;
 using Microsoft.AspNetCore.Mvc;
 using TrainingTools.Extensions;
-using TrainingTools.Models;
 using TrainingTools.ViewModels;
 
 namespace TrainingTools.Controllers;

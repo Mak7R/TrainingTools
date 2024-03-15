@@ -1,6 +1,5 @@
 ﻿using System.Text.Json.Serialization;
 using Contracts.Models;
-using TrainingTools.Models;
 
 namespace TrainingTools.ViewModels;
 

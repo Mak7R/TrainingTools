@@ -1,8 +1,6 @@
 ﻿using Contracts.ModelContracts;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
 
-
-namespace TrainingTools.Models;
+namespace TrainingTools.ViewModels;
 
 public class FilterModel : IFilter
 {
@@ -13,7 +11,8 @@ public class FilterModel : IFilter
         set
         {
             if (value == null) return;
-            else _filterBy = value;
+            
+            _filterBy = value;
         }
     }
 
@@ -24,10 +23,8 @@ public class FilterModel : IFilter
         set
         {
             if (value == null) return;
-            else _filterValue = value;
+            
+            _filterValue = value;
         }
     }
-    
-    [BindNever]
-    public Dictionary<string, string> FilterByOptions { get; set; }
 }

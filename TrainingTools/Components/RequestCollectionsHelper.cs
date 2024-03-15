@@ -1,5 +1,5 @@
 ﻿using System.Text;
-using TrainingTools.Models;
+using TrainingTools.ViewModels;
 
 namespace TrainingTools.Components;
 

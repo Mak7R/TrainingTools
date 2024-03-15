@@ -3,7 +3,6 @@ using Contracts.Models;
 using Contracts.Services;
 using Microsoft.AspNetCore.Mvc;
 using TrainingTools.Extensions;
-using TrainingTools.Models;
 using TrainingTools.ViewModels;
 
 namespace TrainingTools.Controllers;
@@ -107,7 +106,7 @@ public class WorkspacesController : Controller
         
         if (!authorizedUser.ConfirmPassword(model.Password))
         {
-            ModelState.AddModelError(nameof(DeleteWorkspaceModel.Password), "Wrong password");
+            ModelState.AddModelError(nameof(DeleteModel.Password), "Wrong password");
             return BadRequest(ModelState.ToModelStateErrorViewModel());
         }
 
