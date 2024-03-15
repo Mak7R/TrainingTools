@@ -46,7 +46,6 @@ public class ExercisesController : Controller
 
         var exercise = new Exercise
         {
-            Id = Guid.NewGuid(),
             Name = exerciseModel.Name,
             GroupId = exerciseModel.GroupId,
             WorkspaceId = workspaceId

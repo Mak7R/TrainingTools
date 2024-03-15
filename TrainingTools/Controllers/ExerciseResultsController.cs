@@ -30,7 +30,6 @@ public class ExerciseResultsController : Controller
         var exerciseResultsService = scope.ServiceProvider.GetRequiredService<IExerciseResultsService>();
         var results = new ExerciseResults
         {
-            Id = Guid.NewGuid(), 
             ExerciseId = exerciseId, 
             ResultsJson = JsonSerializer.Serialize(new ExerciseResultsObject())
         };

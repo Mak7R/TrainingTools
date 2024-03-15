@@ -14,4 +14,8 @@ public class Group
     public Workspace Workspace { get; set; }
     
     public List<Exercise> Exercises { get; set; }
+    
+    public override bool Equals(object? obj) => obj is Group group && Id.Equals(group.Id);
+
+    public override int GetHashCode() => Id.GetHashCode();
 }

@@ -1,6 +1,4 @@
-﻿@using TrainingTools.Models
-
-<a @onclick="OnOrderClick" class="link-dark order-link">@Display @((MarkupString)Options[_index].OptionHtmlView)</a>
+﻿<a @onclick="OnOrderClick" class="link-dark order-link">@Display @((MarkupString)Options[_index].OptionHtmlView)</a>
 
 @code {
     [Parameter] public string Value { get; set; }

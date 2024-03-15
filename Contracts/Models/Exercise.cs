@@ -24,4 +24,8 @@ public class Exercise
     public Group? Group { get; set; }
     
     public List<ExerciseResults> Results { get; set; }
+    
+    public override bool Equals(object? obj) => obj is Exercise exercise && Id.Equals(exercise.Id);
+
+    public override int GetHashCode() => Id.GetHashCode();
 }

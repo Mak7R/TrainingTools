@@ -25,10 +25,11 @@ public class GroupsService : IGroupsService
     public async Task Add(Group group)
     {
         var workspace = await _dbContext.Workspaces
-            .Where(w => w.Owner.Id == _authorized.User.Id)
+            .Where(w => w.Owner.Equals(_authorized.User))
             .FirstOrDefaultAsync(w => w.Id == group.WorkspaceId);
         if (workspace == null) throw new NotFoundException("Workspace was not found");
-        
+
+        group.Id = Guid.NewGuid();
         group.Workspace = workspace;
         
         await _dbContext.Groups.AddAsync(group);
@@ -38,9 +39,11 @@ public class GroupsService : IGroupsService
     {
         return await _dbContext.Groups
             .AsNoTracking()
+            
             .Include(g => g.Workspace)
             .ThenInclude(w => w.Owner)
-            .Where(g => g.Workspace.Owner.Id == _authorized.User.Id)
+            
+            .Where(g => g.Workspace.Owner.Equals(_authorized.User))
             .FirstOrDefaultAsync(expression);
     }
 
@@ -48,9 +51,11 @@ public class GroupsService : IGroupsService
     {
         return await _dbContext.Groups
             .AsNoTracking()
+            
             .Include(g => g.Workspace)
             .ThenInclude(w => w.Owner)
-            .Where(g => g.Workspace.Owner.Id == _authorized.User.Id)
+            
+            .Where(g => g.Workspace.Owner.Equals(_authorized.User))
             .ToListAsync();
     }
 
@@ -59,7 +64,8 @@ public class GroupsService : IGroupsService
         var group = await _dbContext.Groups
             .Include(g => g.Workspace)
             .ThenInclude(w => w.Owner)
-            .Where(g => g.Workspace.Owner.Id == _authorized.User.Id)
+            
+            .Where(g => g.Workspace.Owner.Equals(_authorized.User))
             .FirstOrDefaultAsync(g => g.Id == groupId);
         
         if (group == null) throw new NotFoundException($"{nameof(Group)} with id {groupId} was not found");
@@ -67,7 +73,6 @@ public class GroupsService : IGroupsService
         updater(group);
 
         // I can paste here all checks and security. Like check user changed or another errors.
-        
     }
 
     public async Task Remove(Guid groupId)
@@ -76,7 +81,8 @@ public class GroupsService : IGroupsService
             .Include(g => g.Workspace)
             .ThenInclude(w => w.Owner)
             .Include(g => g.Exercises)
-            .Where(g => g.Workspace.Owner.Id == _authorized.User.Id)
+            
+            .Where(g => g.Workspace.Owner.Equals(_authorized.User))
             .FirstOrDefaultAsync(g => g.Id == groupId);
         
         if (group == null) throw new NotFoundException($"{nameof(Group)} with id {groupId} was not found");

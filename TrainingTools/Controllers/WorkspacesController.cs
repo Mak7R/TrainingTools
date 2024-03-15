@@ -47,7 +47,6 @@ public class WorkspacesController : Controller
 
         var workspace = new Workspace
         {
-            Id = Guid.NewGuid(),
             Name = workspaceModel.Name
         };
 

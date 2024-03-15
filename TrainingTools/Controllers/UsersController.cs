@@ -67,29 +67,29 @@ public class UsersController : Controller
 
         var user = new User
         {
-            Id = Guid.NewGuid(),
             Name = model.Name,
             Email = model.Email,
             Password = model.Password
         };
 
+        using var scope = _scopeFactory.CreateScope();
+        var usersService = scope.ServiceProvider.GetRequiredService<IUsersService>();
+        
         try
         {
-            using var scope = _scopeFactory.CreateScope();
-            var usersService = scope.ServiceProvider.GetRequiredService<IUsersService>();
             await usersService.Add(user);
-            
-            var authorizedUser = scope.ServiceProvider.GetRequiredService<IAuthorizedUser>();
-            await authorizedUser.SaveChanges();
-            await authorizedUser.Authorize(HttpContext, user.Email, user.Password);
-
-            return Ok();
         }
-        catch (Exception)
+        catch (AlreadyExistsException)
         {
-            ModelState.AddModelError(nameof(RegisterUserModel.Email), "Email already exist");
+            ModelState.AddModelError(nameof(RegisterUserModel.Email), "User with this email already exists");
             return BadRequest(ModelState.ToModelStateErrorViewModel());
         }
+        
+        var authorizedUser = scope.ServiceProvider.GetRequiredService<IAuthorizedUser>();
+        await authorizedUser.SaveChanges();
+        await authorizedUser.Authorize(HttpContext, user.Email, user.Password);
+
+        return Ok();
     }
     
     [HttpDelete]

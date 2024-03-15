@@ -49,7 +49,6 @@ public class GroupsController : Controller
 
         var group = new Group
         {
-            Id = Guid.NewGuid(),
             Name = groupModel.Name,
             WorkspaceId = workspaceId
         };

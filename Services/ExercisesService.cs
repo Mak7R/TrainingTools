@@ -1,5 +1,4 @@
 ﻿using System.Linq.Expressions;
-using Contracts;
 using Contracts.Exceptions;
 using Contracts.Models;
 using Contracts.Services;
@@ -24,21 +23,22 @@ public class ExercisesService : IExercisesService
 
     public async Task Add(Exercise exercise)
     {
+        exercise.Id = Guid.NewGuid();
+        
         var workspace = await _dbContext.Workspaces
-            .Where(w => w.Owner.Id == _authorized.User.Id)
+            .Where(w => w.Owner.Equals(_authorized.User)) // this is a check of rights to add exercise to workspace
             .FirstOrDefaultAsync(w => w.Id == exercise.WorkspaceId);
         
         if (workspace == null) throw new NotFoundException("Workspace was not found");
+        
         exercise.Workspace = workspace;
         
         if (exercise.GroupId.HasValue)
         {
             var group = await _dbContext.Groups
                 .Include(g => g.Workspace)
+                .Where(g => g.Workspace.Equals(workspace)) // this is a check of rights to use group for exercise (Is a group in same workspace with exercise)
                 .FirstOrDefaultAsync(g => g.Id == exercise.GroupId.Value);
-
-            if (group != null && group.WorkspaceId != exercise.WorkspaceId)
-                throw new OperationNotAllowedException("Group and exercise exists in different workspaces");
                 
             exercise.Group = group;
         }
@@ -54,12 +54,14 @@ public class ExercisesService : IExercisesService
     {
         return await _dbContext.Exercises
             .AsNoTracking()
+            
             .Include(e => e.Workspace)
             .ThenInclude(w => w.Owner)
             .Include(e => e.Group)
             .ThenInclude(g => g.Workspace)
             .ThenInclude(w => w.Owner)
-            .Where(e => e.Workspace.Owner.Id == _authorized.User.Id)
+            
+            .Where(e => e.Workspace.Owner.Equals(_authorized.User))
             .FirstOrDefaultAsync(expression);
     }
 
@@ -67,12 +69,14 @@ public class ExercisesService : IExercisesService
     {
         return await _dbContext.Exercises
             .AsNoTracking()
+            
             .Include(e => e.Workspace)
             .ThenInclude(w => w.Owner)
             .Include(e => e.Group)
             .ThenInclude(g => g.Workspace)
             .ThenInclude(w => w.Owner)
-            .Where(e => e.Workspace.Owner.Id == _authorized.User.Id)
+            
+            .Where(e => e.Workspace.Owner.Equals(_authorized.User))
             .ToListAsync();
     }
 
@@ -84,15 +88,14 @@ public class ExercisesService : IExercisesService
             .Include(e => e.Group)
             .ThenInclude(g => g.Workspace)
             .ThenInclude(w => w.Owner)
-            .Where(e => e.Workspace.Owner.Id == _authorized.User.Id)
+            
+            .Where(e => e.Workspace.Owner.Equals(_authorized.User))
             .FirstOrDefaultAsync(e => e.Id == exerciseId);
         
         if (exercise == null) throw new NotFoundException($"{nameof(Exercise)} with id {exerciseId} was not found");
-
+        
         updater(exercise);
-        
         // I can paste here all checks and security. Like check user changed or another errors.
-        
     }
 
     public async Task Remove(Guid exerciseId)
@@ -101,7 +104,8 @@ public class ExercisesService : IExercisesService
             .Include(e => e.Workspace)
             .ThenInclude(w => w.Owner)
             .Include(e => e.Results)
-            .Where(e=>e.Workspace.Owner.Id == _authorized.User.Id)
+            
+            .Where(e=> e.Workspace.Owner.Equals(_authorized.User))
             .FirstOrDefaultAsync(e => e.Id == exerciseId);
         
         if (exercise == null) throw new NotFoundException($"{nameof(Exercise)} with id {exerciseId} was not found");
