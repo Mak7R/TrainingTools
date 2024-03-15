@@ -129,24 +129,31 @@
     
     private async Task SaveChanges()
     {
-        var request = new HttpRequest(
-            NavigationManager.ToAbsoluteUri(
-                LinkGenerator.GetPathByAction("Update", "ExerciseResults", new {resultsId = ExerciseResults.Id}) 
-                ?? throw new Exception("Uri was not found")).AbsoluteUri,
-            "PUT",
-            (await Js.InvokeAsync<object>("GetChangesModel")).ToString()!);
-            
-        await CookiesProvider.ToRequest(request);
-        var response = await FetchService.Fetch(request);
-        await CookiesProvider.FromResponse(response);
-            
-        if (response.IsSuccessStatusCode)
+        try
         {
-            await Js.InvokeVoidAsync("ToggleEditMod");
+            var request = new HttpRequest(
+                NavigationManager.ToAbsoluteUri(
+                    LinkGenerator.GetPathByAction("Update", "ExerciseResults", new { resultsId = ExerciseResults.Id })
+                    ?? throw new Exception("Uri was not found")).AbsoluteUri,
+                "PUT",
+                (await Js.InvokeAsync<object>("GetChangesModel")).ToString()!);
+
+            await CookiesProvider.ToRequest(request);
+            var response = await FetchService.Fetch(request);
+            await CookiesProvider.FromResponse(response);
+
+            if (response.IsSuccessStatusCode)
+            {
+                await Js.InvokeVoidAsync("ToggleEditMod");
+            }
+            else if (response.StatusCode == 401)
+            {
+                NavigationManager.NavigateTo("/login", true);
+            }
         }
-        else if(response.StatusCode == 401)
+        catch (Exception e)
         {
-            NavigationManager.NavigateTo("/login", true);
+            NavigationManager.NavigateTo($"/error/600/{e.Message}");
         }
     }
 }

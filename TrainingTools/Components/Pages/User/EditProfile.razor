@@ -48,59 +48,77 @@
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender)
+        try
         {
-            var request = new HttpRequest(
-                NavigationManager.ToAbsoluteUri(
-                    LinkGenerator.GetPathByAction("Index", "Users") 
-                    ?? throw new Exception("Uri was not found")).AbsoluteUri,
-                "GET",
-                string.Empty);
-            
-            await CookiesProvider.ToRequest(request);
-            var response = await FetchService.Fetch(request);
-            await CookiesProvider.FromResponse(response);
-            
-            if (response.IsSuccessStatusCode)
+            if (firstRender)
             {
-                var user = JsonSerializer.Deserialize<UserViewModel>(response.Content);
-                if (user == null) throw new NullReferenceException("user was null");
-                _editUserModel.Name = user.Name;
-                _editUserModel.Email = user.Email;
-                StateHasChanged();
+                var request = new HttpRequest(
+                    NavigationManager.ToAbsoluteUri(
+                        LinkGenerator.GetPathByAction("Index", "Users")
+                        ?? throw new Exception("Uri was not found")).AbsoluteUri,
+                    "GET",
+                    string.Empty);
+
+                await CookiesProvider.ToRequest(request);
+                var response = await FetchService.Fetch(request);
+                await CookiesProvider.FromResponse(response);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var user = JsonSerializer.Deserialize<UserViewModel>(response.Content);
+                    if (user == null) throw new NullReferenceException("user was null");
+                    _editUserModel.Name = user.Name;
+                    _editUserModel.Email = user.Email;
+                    StateHasChanged();
+                }
+                else if (response.StatusCode == 401)
+                {
+                    NavigationManager.NavigateTo("/login", true);
+                }
+                else
+                {
+                    NavigationManager.NavigateTo($"/error/{response.StatusCode}");
+                }
             }
-            else if(response.StatusCode == 401)
-            {
-                NavigationManager.NavigateTo("/login", true);
-            }
+        }
+        catch (Exception e)
+        {
+            NavigationManager.NavigateTo($"/error/600/{e.Message}");
         }
     }
 
     private async Task OnEditUserClick()
     {
-        var request = new HttpRequest(
-            NavigationManager.ToAbsoluteUri(
-                LinkGenerator.GetPathByAction("Edit", "Users") 
-                ?? throw new Exception("Uri was not found")).AbsoluteUri,
-            "PATCH",
-            JsonSerializer.Serialize(_editUserModel));
-            
-        await CookiesProvider.ToRequest(request);
-        var response = await FetchService.Fetch(request);
-        await CookiesProvider.FromResponse(response);
-            
-        if (response.IsSuccessStatusCode)
+        try
         {
-            NavigationManager.NavigateTo($"/profile", true);
+            var request = new HttpRequest(
+                NavigationManager.ToAbsoluteUri(
+                    LinkGenerator.GetPathByAction("Edit", "Users")
+                    ?? throw new Exception("Uri was not found")).AbsoluteUri,
+                "PATCH",
+                JsonSerializer.Serialize(_editUserModel));
+
+            await CookiesProvider.ToRequest(request);
+            var response = await FetchService.Fetch(request);
+            await CookiesProvider.FromResponse(response);
+
+            if (response.IsSuccessStatusCode)
+            {
+                NavigationManager.NavigateTo($"/profile", true);
+            }
+            else if (response.StatusCode == StatusCodes.Status400BadRequest)
+            {
+                BindingError = JsonSerializer.Deserialize<ModelStateErrorViewModel>(response.Content);
+                StateHasChanged();
+            }
+            else
+            {
+                NavigationManager.NavigateTo($"/error/{response.StatusCode}");
+            }
         }
-        else if (response.StatusCode == StatusCodes.Status400BadRequest)
+        catch (Exception e)
         {
-            BindingError = JsonSerializer.Deserialize<ModelStateErrorViewModel>(response.Content);
-            StateHasChanged();
-        }
-        else
-        {
-            throw new Exception("Unhandled status");
+            NavigationManager.NavigateTo($"/error/600/{e.Message}");
         }
     }
 }

@@ -18,6 +18,15 @@
           "ASPNETCORE_ENVIRONMENT": "Development"
         }
       },
+      "http-staging": {
+        "commandName": "Project",
+        "dotnetRunMessages": true,
+        "launchBrowser": true,
+        "applicationUrl": "http://localhost:5219",
+        "environmentVariables": {
+          "ASPNETCORE_ENVIRONMENT": "Staging"
+        }
+      },
       "https": {
         "commandName": "Project",
         "dotnetRunMessages": true,

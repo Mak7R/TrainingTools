@@ -51,32 +51,39 @@
     
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender)
+        try
         {
-            var request = new HttpRequest(
-                NavigationManager.ToAbsoluteUri(
-                    LinkGenerator.GetPathByAction("GetInfo", "Workspaces", new {workspaceId = WorkspaceId}) 
-                    ?? throw new Exception("Uri was not found")).AbsoluteUri,
-                "GET",
-                string.Empty);
-            
-            await CookiesProvider.ToRequest(request);
-            var response = await FetchService.Fetch(request);
-            await CookiesProvider.FromResponse(response);
-            
-            if (response.IsSuccessStatusCode)
+            if (firstRender)
             {
-                _workspace = JsonSerializer.Deserialize<WorkspaceViewModel>(response.Content);
-                StateHasChanged();
+                var request = new HttpRequest(
+                    NavigationManager.ToAbsoluteUri(
+                        LinkGenerator.GetPathByAction("GetInfo", "Workspaces", new { workspaceId = WorkspaceId })
+                        ?? throw new Exception("Uri was not found")).AbsoluteUri,
+                    "GET",
+                    string.Empty);
+
+                await CookiesProvider.ToRequest(request);
+                var response = await FetchService.Fetch(request);
+                await CookiesProvider.FromResponse(response);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    _workspace = JsonSerializer.Deserialize<WorkspaceViewModel>(response.Content);
+                    StateHasChanged();
+                }
+                else if (response.StatusCode == 401)
+                {
+                    NavigationManager.NavigateTo("/login", true);
+                }
+                else
+                {
+                    NavigationManager.NavigateTo($"/error/{response.StatusCode}");
+                }
             }
-            else if(response.StatusCode == 401)
-            {
-                NavigationManager.NavigateTo("/login", true);
-            }
-            else
-            {
-                throw new Exception("Unhandled status");
-            }
+        }
+        catch (Exception e)
+        {
+            NavigationManager.NavigateTo($"/error/600/{e.Message}");
         }
     }
 }

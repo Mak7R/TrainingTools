@@ -39,38 +39,45 @@
 
     private async Task SubmitLogin()
     {
-        var request = new HttpRequest(
-            NavigationManager.ToAbsoluteUri(
-                LinkGenerator.GetPathByAction("Login", "Users") 
-                ?? throw new Exception("Uri was not found")).AbsoluteUri,
-            "POST",
-            JsonSerializer.Serialize(_loginUserModel));
-            
-        await CookiesProvider.ToRequest(request);
-        var response = await FetchService.Fetch(request);
-        await CookiesProvider.FromResponse(response);
-            
-        if (response.IsSuccessStatusCode)
+        try
         {
-            NavigationManager.NavigateTo("/", true);
+            var request = new HttpRequest(
+                NavigationManager.ToAbsoluteUri(
+                    LinkGenerator.GetPathByAction("Login", "Users")
+                    ?? throw new Exception("Uri was not found")).AbsoluteUri,
+                "POST",
+                JsonSerializer.Serialize(_loginUserModel));
+
+            await CookiesProvider.ToRequest(request);
+            var response = await FetchService.Fetch(request);
+            await CookiesProvider.FromResponse(response);
+
+            if (response.IsSuccessStatusCode)
+            {
+                NavigationManager.NavigateTo("/", true);
+            }
+            else if (response.StatusCode == StatusCodes.Status400BadRequest)
+            {
+                BindingError = JsonSerializer.Deserialize<ModelStateErrorViewModel>(response.Content);
+                StateHasChanged();
+            }
+            else if (response.StatusCode == StatusCodes.Status404NotFound)
+            {
+                BindingError = new ModelStateErrorViewModel(
+                    new Dictionary<string, IEnumerable<string>?>
+                    {
+                        { nameof(LoginUserModel.Email), new[] { "User with this email was not found" } }
+                    }
+                );
+            }
+            else
+            {
+                NavigationManager.NavigateTo($"/error/{response.StatusCode}");
+            }
         }
-        else if (response.StatusCode == StatusCodes.Status400BadRequest)
+        catch (Exception e)
         {
-            BindingError = JsonSerializer.Deserialize<ModelStateErrorViewModel>(response.Content);
-            StateHasChanged();
-        }
-        else if (response.StatusCode == StatusCodes.Status404NotFound)
-        {
-            BindingError = new ModelStateErrorViewModel(
-                new Dictionary<string, IEnumerable<string>?>
-                {
-                    {nameof(LoginUserModel.Email), new []{"User with this email was not found"}}
-                }
-            );
-        }
-        else
-        {
-            throw new Exception("Unhandled status");
+            NavigationManager.NavigateTo($"/error/600/{e.Message}");
         }
     }
 }

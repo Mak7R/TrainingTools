@@ -71,74 +71,107 @@
     
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender)
+        try
         {
-            var request = new HttpRequest(
-                NavigationManager.ToAbsoluteUri(
-                    LinkGenerator.GetPathByAction("Get", "Exercises", new {exerciseId = ExerciseId}) 
-                    ?? throw new Exception("Uri was not found")).AbsoluteUri,
-                "GET",
-                string.Empty);
-            
-            await CookiesProvider.ToRequest(request);
-            var response = await FetchService.Fetch(request);
-            await CookiesProvider.FromResponse(response);
-            
-            if (response.IsSuccessStatusCode)
+            if (firstRender)
             {
-                _exercise = JsonSerializer.Deserialize<FullExerciseViewModel>(response.Content);
-                StateHasChanged();
+                var request = new HttpRequest(
+                    NavigationManager.ToAbsoluteUri(
+                        LinkGenerator.GetPathByAction("Get", "Exercises", new { exerciseId = ExerciseId })
+                        ?? throw new Exception("Uri was not found")).AbsoluteUri,
+                    "GET",
+                    string.Empty);
+
+                await CookiesProvider.ToRequest(request);
+                var response = await FetchService.Fetch(request);
+                await CookiesProvider.FromResponse(response);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    _exercise = JsonSerializer.Deserialize<FullExerciseViewModel>(response.Content);
+                    StateHasChanged();
+                }
+                else if (response.StatusCode == 401)
+                {
+                    NavigationManager.NavigateTo("/login", true);
+                }
+                else
+                {
+                    NavigationManager.NavigateTo($"/error/{response.StatusCode}");
+                }
             }
-            else if(response.StatusCode == 401)
-            {
-                NavigationManager.NavigateTo("/login", true);
-            }
+        }
+        catch (Exception e)
+        {
+            NavigationManager.NavigateTo($"/error/600/{e.Message}");
         }
     }
 
     private async Task AddResults()
     {
-        var request = new HttpRequest(
-            NavigationManager.ToAbsoluteUri(
-                LinkGenerator.GetPathByAction("Add", "ExerciseResults", new {exerciseId = ExerciseId}) 
-                ?? throw new Exception("Uri was not found")).AbsoluteUri,
-            "POST",
-            string.Empty);
-            
-        await CookiesProvider.ToRequest(request);
-        var response = await FetchService.Fetch(request);
-        await CookiesProvider.FromResponse(response);
-            
-        if (response.IsSuccessStatusCode)
+        try
         {
-            NavigationManager.Refresh(true);
+            var request = new HttpRequest(
+                NavigationManager.ToAbsoluteUri(
+                    LinkGenerator.GetPathByAction("Add", "ExerciseResults", new { exerciseId = ExerciseId })
+                    ?? throw new Exception("Uri was not found")).AbsoluteUri,
+                "POST",
+                string.Empty);
+
+            await CookiesProvider.ToRequest(request);
+            var response = await FetchService.Fetch(request);
+            await CookiesProvider.FromResponse(response);
+
+            if (response.IsSuccessStatusCode)
+            {
+                NavigationManager.Refresh(true);
+            }
+            else if (response.StatusCode == 401)
+            {
+                NavigationManager.NavigateTo("/login", true);
+            }
+            else
+            {
+                NavigationManager.NavigateTo($"/error/{response.StatusCode}");
+            }
         }
-        else if(response.StatusCode == 401)
+        catch (Exception e)
         {
-            NavigationManager.NavigateTo("/login", true);
+            NavigationManager.NavigateTo($"/error/600/{e.Message}");
         }
     }
         
     private async Task DeleteResults()
     {
-        var request = new HttpRequest(
-            NavigationManager.ToAbsoluteUri(
-                LinkGenerator.GetPathByAction("Delete", "ExerciseResults", new {resultsId = _exercise!.Results!.Id}) 
-                ?? throw new Exception("Uri was not found")).AbsoluteUri,
-            "DELETE",
-            string.Empty);
-            
-        await CookiesProvider.ToRequest(request);
-        var response = await FetchService.Fetch(request);
-        await CookiesProvider.FromResponse(response);
-            
-        if (response.IsSuccessStatusCode)
+        try
         {
-            NavigationManager.Refresh(true);
+            var request = new HttpRequest(
+                NavigationManager.ToAbsoluteUri(
+                    LinkGenerator.GetPathByAction("Delete", "ExerciseResults", new { resultsId = _exercise!.Results!.Id })
+                    ?? throw new Exception("Uri was not found")).AbsoluteUri,
+                "DELETE",
+                string.Empty);
+
+            await CookiesProvider.ToRequest(request);
+            var response = await FetchService.Fetch(request);
+            await CookiesProvider.FromResponse(response);
+
+            if (response.IsSuccessStatusCode)
+            {
+                NavigationManager.Refresh(true);
+            }
+            else if (response.StatusCode == 401)
+            {
+                NavigationManager.NavigateTo("/login", true);
+            }
+            else
+            {
+                NavigationManager.NavigateTo($"/error/{response.StatusCode}");
+            }
         }
-        else if(response.StatusCode == 401)
+        catch (Exception e)
         {
-            NavigationManager.NavigateTo("/login", true);
+            NavigationManager.NavigateTo($"/error/600/{e.Message}");
         }
     }    
 }

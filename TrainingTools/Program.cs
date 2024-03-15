@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using Contracts.Client.Services;
 using Contracts.Services;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
@@ -73,14 +74,12 @@ using (var scope = app.Services.CreateScope())
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
-    app.UseExceptionHandler("/Error", createScopeForErrors: true);
-    
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 else
 {
-    app.UseDeveloperExceptionPage();
+    // for dev environment
 }
 app.UseExceptionHandlingMiddleware();
 app.UseHttpsRedirection();

@@ -22,7 +22,7 @@ public class ExceptionHandlingMiddleware
         catch (Exception ex)
         {
             _logger.LogError("Exception message: {message}", ex.Message);
-            throw;
+            throw new Exception($"Server error: {ex.Message}");
         }
     }
 }

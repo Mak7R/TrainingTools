@@ -1,4 +1,5 @@
-﻿
+﻿@inject NavigationManager NavigationManager
+
 <div class="container-fluid">
     <div class="default-search-form">
         <div class="input-group input-group-horizontal">
@@ -43,6 +44,13 @@
 
     private void OnSearchButtonClick()
     {
-        RequestCollectionsHelper.SetFilter(_filter);
+        try
+        {
+            RequestCollectionsHelper.SetFilter(_filter);
+        }
+        catch (Exception e)
+        {
+            NavigationManager.NavigateTo($"/error/600/{e.Message}");
+        }
     }
 }

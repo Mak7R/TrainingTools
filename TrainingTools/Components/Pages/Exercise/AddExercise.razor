@@ -55,56 +55,74 @@
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender)
+        try
         {
-            var request = new HttpRequest(
-                NavigationManager.ToAbsoluteUri(
-                    LinkGenerator.GetPathByAction("Index", "Groups", new {workspaceId = WorkspaceId}) 
-                    ?? throw new Exception("Uri was not found")).AbsoluteUri,
-                "GET",
-                string.Empty);
+            if (firstRender)
+            {
+                var request = new HttpRequest(
+                    NavigationManager.ToAbsoluteUri(
+                        LinkGenerator.GetPathByAction("Index", "Groups", new {workspaceId = WorkspaceId}) 
+                        ?? throw new Exception("Uri was not found")).AbsoluteUri,
+                    "GET",
+                    string.Empty);
             
-            await CookiesProvider.ToRequest(request);
-            var response = await FetchService.Fetch(request);
-            await CookiesProvider.FromResponse(response);
+                await CookiesProvider.ToRequest(request);
+                var response = await FetchService.Fetch(request);
+                await CookiesProvider.FromResponse(response);
                 
-            if (response.IsSuccessStatusCode)
-            {
-                _groups = JsonSerializer.Deserialize<List<GroupViewModel>>(response.Content);
-                StateHasChanged();
+                if (response.IsSuccessStatusCode)
+                {
+                    _groups = JsonSerializer.Deserialize<List<GroupViewModel>>(response.Content);
+                    StateHasChanged();
+                }
+                else if (response.StatusCode == 401)
+                {
+                    NavigationManager.NavigateTo("/login", true);
+                }
+                else
+                {
+                    NavigationManager.NavigateTo($"/error/{response.StatusCode}");
+                } 
             }
-            else if (response.StatusCode == 401)
-            {
-                NavigationManager.NavigateTo("/login", true);
-            }
+        }
+        catch (Exception e)
+        {
+            NavigationManager.NavigateTo($"/error/600/{e.Message}");
         }
     }
 
     private async Task OnAddClick()
     {
-        var request = new HttpRequest(
-            NavigationManager.ToAbsoluteUri(
-                LinkGenerator.GetPathByAction("Add", "Exercises", new {workspaceId = WorkspaceId}) 
-                ?? throw new Exception("Uri was not found")).AbsoluteUri,
-            "POST",
-            JsonSerializer.Serialize(_addExerciseModel));
+        try
+        {
+            var request = new HttpRequest(
+                NavigationManager.ToAbsoluteUri(
+                    LinkGenerator.GetPathByAction("Add", "Exercises", new {workspaceId = WorkspaceId}) 
+                    ?? throw new Exception("Uri was not found")).AbsoluteUri,
+                "POST",
+                JsonSerializer.Serialize(_addExerciseModel));
             
-        await CookiesProvider.ToRequest(request);
-        var response = await FetchService.Fetch(request);
-        await CookiesProvider.FromResponse(response);
+            await CookiesProvider.ToRequest(request);
+            var response = await FetchService.Fetch(request);
+            await CookiesProvider.FromResponse(response);
             
-        if (response.IsSuccessStatusCode)
-        {
-            NavigationManager.NavigateTo($"/workspaces/{WorkspaceId}/exercises", true);
+            if (response.IsSuccessStatusCode)
+            {
+                NavigationManager.NavigateTo($"/workspaces/{WorkspaceId}/exercises", true);
+            }
+            else if (response.StatusCode == StatusCodes.Status400BadRequest)
+            {
+                BindingError = JsonSerializer.Deserialize<ModelStateErrorViewModel>(response.Content);
+                StateHasChanged();
+            }
+            else
+            {
+                NavigationManager.NavigateTo($"/error/{response.StatusCode}");
+            }
         }
-        else if (response.StatusCode == StatusCodes.Status400BadRequest)
+        catch (Exception e)
         {
-            BindingError = JsonSerializer.Deserialize<ModelStateErrorViewModel>(response.Content);
-            StateHasChanged();
-        }
-        else
-        {
-            throw new Exception("Unhandled status");
+            NavigationManager.NavigateTo($"/error/600/{e.Message}");
         }
     }
 }

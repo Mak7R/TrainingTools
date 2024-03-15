@@ -1,4 +1,6 @@
-﻿<a @onclick="OnOrderClick" class="link-dark order-link">@Display @((MarkupString)Options[_index].OptionHtmlView)</a>
+﻿@inject NavigationManager NavigationManager
+
+<a @onclick="OnOrderClick" class="link-dark order-link">@Display @((MarkupString)Options[_index].OptionHtmlView)</a>
 
 @code {
     [Parameter] public string Value { get; set; }
@@ -11,29 +13,44 @@
 
     protected override void OnAfterRender(bool firstRender)
     {
-        if (firstRender)
+        try
         {
-            _order.OrderBy = Value;
-            _order.OrderOption = Options[_index].OptionName;
-            
-            RequestCollectionsHelper.OnSetOrder += order =>
+            if (firstRender)
             {
-                if (order.OrderBy != Value)
+                _order.OrderBy = Value;
+                _order.OrderOption = Options[_index].OptionName;
+
+                RequestCollectionsHelper.OnSetOrder += order =>
                 {
-                    _index = 0;
-                }
-                StateHasChanged();
-            };
+                    if (order.OrderBy != Value)
+                    {
+                        _index = 0;
+                    }
+
+                    StateHasChanged();
+                };
+            }
+        }
+        catch (Exception e)
+        {
+            NavigationManager.NavigateTo($"/error/600/{e.Message}");
         }
     }
 
     private void OnOrderClick()
     {
-        if (_index + 1 == Options.Count) _index = 0;
-        else _index++;
+        try
+        {
+            if (_index + 1 == Options.Count) _index = 0;
+            else _index++;
 
-        _order.OrderOption = Options[_index].OptionName;
-        
-        RequestCollectionsHelper.SetOrder(_order);
+            _order.OrderOption = Options[_index].OptionName;
+
+            RequestCollectionsHelper.SetOrder(_order);
+        }
+        catch (Exception e)
+        {
+            NavigationManager.NavigateTo($"/error/600/{e.Message}");
+        }
     }
 }

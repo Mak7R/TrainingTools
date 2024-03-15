@@ -35,58 +35,76 @@
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender)
+        try
         {
-            var request = new HttpRequest(
-                NavigationManager.ToAbsoluteUri(
-                    LinkGenerator.GetPathByAction("Get", "Groups", new {groupId = GroupId}) 
-                    ?? throw new Exception("Uri was not found")).AbsoluteUri,
-                "GET",
-                string.Empty);
-            
-            await CookiesProvider.ToRequest(request);
-            var response = await FetchService.Fetch(request);
-            await CookiesProvider.FromResponse(response);
-            
-            if (response.IsSuccessStatusCode)
+            if (firstRender)
             {
-                var group = JsonSerializer.Deserialize<GroupViewModel>(response.Content);
-                if (group == null) throw new NullReferenceException("group was null");
-                _editGroupModel.Name = group.Name;
-                StateHasChanged();
+                var request = new HttpRequest(
+                    NavigationManager.ToAbsoluteUri(
+                        LinkGenerator.GetPathByAction("Get", "Groups", new { groupId = GroupId })
+                        ?? throw new Exception("Uri was not found")).AbsoluteUri,
+                    "GET",
+                    string.Empty);
+
+                await CookiesProvider.ToRequest(request);
+                var response = await FetchService.Fetch(request);
+                await CookiesProvider.FromResponse(response);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var group = JsonSerializer.Deserialize<GroupViewModel>(response.Content);
+                    if (group == null) throw new NullReferenceException("group was null");
+                    _editGroupModel.Name = group.Name;
+                    StateHasChanged();
+                }
+                else if (response.StatusCode == 401)
+                {
+                    NavigationManager.NavigateTo("/login", true);
+                }
+                else
+                {
+                    NavigationManager.NavigateTo($"/error/{response.StatusCode}");
+                }
             }
-            else if(response.StatusCode == 401)
-            {
-                NavigationManager.NavigateTo("/login", true);
-            }
+        }
+        catch (Exception e)
+        {
+            NavigationManager.NavigateTo($"/error/600/{e.Message}");
         }
     }
 
     private async Task OnEditClick()
     {
-        var request = new HttpRequest(
-            NavigationManager.ToAbsoluteUri(
-                LinkGenerator.GetPathByAction("Edit", "Groups", new {groupId = GroupId}) 
-                ?? throw new Exception("Uri was not found")).AbsoluteUri,
-            "PATCH",
-            JsonSerializer.Serialize(_editGroupModel));
-            
-        await CookiesProvider.ToRequest(request);
-        var response = await FetchService.Fetch(request);
-        await CookiesProvider.FromResponse(response);
-            
-        if (response.IsSuccessStatusCode)
+        try
         {
-            NavigationManager.NavigateTo($"/workspaces/groups/{GroupId}", true);
+            var request = new HttpRequest(
+                NavigationManager.ToAbsoluteUri(
+                    LinkGenerator.GetPathByAction("Edit", "Groups", new { groupId = GroupId })
+                    ?? throw new Exception("Uri was not found")).AbsoluteUri,
+                "PATCH",
+                JsonSerializer.Serialize(_editGroupModel));
+
+            await CookiesProvider.ToRequest(request);
+            var response = await FetchService.Fetch(request);
+            await CookiesProvider.FromResponse(response);
+
+            if (response.IsSuccessStatusCode)
+            {
+                NavigationManager.NavigateTo($"/workspaces/groups/{GroupId}", true);
+            }
+            else if (response.StatusCode == StatusCodes.Status400BadRequest)
+            {
+                BindingError = JsonSerializer.Deserialize<ModelStateErrorViewModel>(response.Content);
+                StateHasChanged();
+            }
+            else
+            {
+                NavigationManager.NavigateTo($"/error/{response.StatusCode}");
+            }
         }
-        else if (response.StatusCode == StatusCodes.Status400BadRequest)
+        catch (Exception e)
         {
-            BindingError = JsonSerializer.Deserialize<ModelStateErrorViewModel>(response.Content);
-            StateHasChanged();
-        }
-        else
-        {
-            throw new Exception("Unhandled status");
+            NavigationManager.NavigateTo($"/error/600/{e.Message}");
         }
     }
 }

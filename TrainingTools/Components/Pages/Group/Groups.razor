@@ -68,20 +68,56 @@ else
     
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        _requestCollectionsHelper.OnSet += RequestGroups;
-        if (firstRender)
+        try
+        {
+            _requestCollectionsHelper.OnSet += RequestGroups;
+            if (firstRender)
+            {
+                var request = new HttpRequest(
+                    NavigationManager.ToAbsoluteUri(
+                        LinkGenerator.GetPathByAction("Index", "Groups", new { workspaceId = WorkspaceId })
+                        ?? throw new Exception("Uri was not found")).AbsoluteUri,
+                    "GET",
+                    string.Empty);
+
+                await CookiesProvider.ToRequest(request);
+                var response = await FetchService.Fetch(request);
+                await CookiesProvider.FromResponse(response);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    _groups = JsonSerializer.Deserialize<List<GroupViewModel>>(response.Content);
+                    StateHasChanged();
+                }
+                else if (response.StatusCode == 401)
+                {
+                    NavigationManager.NavigateTo("/login", true);
+                }
+                else
+                {
+                    NavigationManager.NavigateTo($"/error/{response.StatusCode}");
+                }
+            }
+        }
+        catch (Exception e)
+        {
+            NavigationManager.NavigateTo($"/error/600/{e.Message}");
+        }
+    }
+    
+    private async void RequestGroups(string query)
+    {
+        try
         {
             var request = new HttpRequest(
-                NavigationManager.ToAbsoluteUri(
-                    LinkGenerator.GetPathByAction("Index", "Groups", new {workspaceId = WorkspaceId}) 
-                    ?? throw new Exception("Uri was not found")).AbsoluteUri,
+                $"{NavigationManager.ToAbsoluteUri(LinkGenerator.GetPathByAction("Index", "Groups", new { workspaceId = WorkspaceId }) ?? throw new Exception("Uri was not found")).AbsoluteUri}?{query}",
                 "GET",
                 string.Empty);
-            
+
             await CookiesProvider.ToRequest(request);
             var response = await FetchService.Fetch(request);
             await CookiesProvider.FromResponse(response);
-                
+
             if (response.IsSuccessStatusCode)
             {
                 _groups = JsonSerializer.Deserialize<List<GroupViewModel>>(response.Content);
@@ -91,28 +127,14 @@ else
             {
                 NavigationManager.NavigateTo("/login", true);
             }
+            else
+            {
+                NavigationManager.NavigateTo($"/error/{response.StatusCode}");
+            }
         }
-    }
-    
-    private async void RequestGroups(string query)
-    {
-        var request = new HttpRequest(
-            $"{NavigationManager.ToAbsoluteUri(LinkGenerator.GetPathByAction("Index", "Groups", new {workspaceId = WorkspaceId}) ?? throw new Exception("Uri was not found")).AbsoluteUri}?{query}",
-            "GET",
-            string.Empty);
-            
-        await CookiesProvider.ToRequest(request);
-        var response = await FetchService.Fetch(request);
-        await CookiesProvider.FromResponse(response);
-                
-        if (response.IsSuccessStatusCode)
+        catch (Exception e)
         {
-            _groups = JsonSerializer.Deserialize<List<GroupViewModel>>(response.Content);
-            StateHasChanged();
-        }
-        else if (response.StatusCode == 401)
-        {
-            NavigationManager.NavigateTo("/login", true);
+            NavigationManager.NavigateTo($"/error/600/{e.Message}");
         }
     }
 }

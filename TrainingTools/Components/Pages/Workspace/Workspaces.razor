@@ -70,21 +70,59 @@
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender)
+        try
         {
-            _requestCollectionsHelper.OnSet += RequestWorkspaces;
-            
+            if (firstRender)
+            {
+                _requestCollectionsHelper.OnSet += RequestWorkspaces;
+
+                var request = new HttpRequest(
+                    NavigationManager.ToAbsoluteUri(
+                        LinkGenerator.GetPathByAction("Index", "Workspaces")
+                        ?? throw new Exception("Uri was not found")).AbsoluteUri,
+                    "GET",
+                    string.Empty);
+
+                await CookiesProvider.ToRequest(request);
+                var response = await FetchService.Fetch(request);
+                await CookiesProvider.FromResponse(response);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    _workspaces = JsonSerializer.Deserialize<List<WorkspaceViewModel>>(response.Content);
+                    StateHasChanged();
+                }
+                else if (response.StatusCode == 401)
+                {
+                    NavigationManager.NavigateTo("/login", true);
+                }
+                else
+                {
+                    NavigationManager.NavigateTo($"/error/{response.StatusCode}");
+                }
+            }
+        }
+        catch (Exception e)
+        {
+            NavigationManager.NavigateTo($"/error/600/{e.Message}");
+        }
+    }
+
+    private readonly RequestCollectionsHelper _requestCollectionsHelper = new();
+
+    private async void RequestWorkspaces(string query)
+    {
+        try
+        {
             var request = new HttpRequest(
-                NavigationManager.ToAbsoluteUri(
-                    LinkGenerator.GetPathByAction("Index", "Workspaces") 
-                    ?? throw new Exception("Uri was not found")).AbsoluteUri,
+                $"{NavigationManager.ToAbsoluteUri(LinkGenerator.GetPathByAction("Index", "Workspaces") ?? throw new Exception("Uri was not found")).AbsoluteUri}?{query}",
                 "GET",
                 string.Empty);
-            
+
             await CookiesProvider.ToRequest(request);
             var response = await FetchService.Fetch(request);
             await CookiesProvider.FromResponse(response);
-                
+
             if (response.IsSuccessStatusCode)
             {
                 _workspaces = JsonSerializer.Deserialize<List<WorkspaceViewModel>>(response.Content);
@@ -96,32 +134,12 @@
             }
             else
             {
-                throw new Exception("Unhandled status");
+                NavigationManager.NavigateTo($"/error/{response.StatusCode}");
             }
         }
-    }
-
-    private readonly RequestCollectionsHelper _requestCollectionsHelper = new();
-
-    private async void RequestWorkspaces(string query)
-    {
-        var request = new HttpRequest(
-             $"{NavigationManager.ToAbsoluteUri(LinkGenerator.GetPathByAction("Index", "Workspaces") ?? throw new Exception("Uri was not found")).AbsoluteUri}?{query}",
-            "GET",
-            string.Empty);
-            
-        await CookiesProvider.ToRequest(request);
-        var response = await FetchService.Fetch(request);
-        await CookiesProvider.FromResponse(response);
-                
-        if (response.IsSuccessStatusCode)
+        catch (Exception e)
         {
-            _workspaces = JsonSerializer.Deserialize<List<WorkspaceViewModel>>(response.Content);
-            StateHasChanged();
-        }
-        else if (response.StatusCode == 401)
-        {
-            NavigationManager.NavigateTo("/login", true);
+            NavigationManager.NavigateTo($"/error/600/{e.Message}");
         }
     }
 }
