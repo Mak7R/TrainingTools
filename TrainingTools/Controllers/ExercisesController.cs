@@ -18,7 +18,7 @@ public class ExercisesController : Controller
     }
     
     [HttpGet("{workspaceId:guid}/[controller]")]
-    public async Task<IActionResult> Index(
+    public async Task<IActionResult> GetAll(
         [FromRoute] Guid workspaceId,
         FilterModel filter, 
         OrderModel order)

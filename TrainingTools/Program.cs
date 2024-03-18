@@ -1,18 +1,11 @@
-using System.ComponentModel.DataAnnotations;
 using Contracts.Client.Services;
 using Contracts.Services;
-using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Controllers;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
-using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.EntityFrameworkCore;
 using Services;
 using Services.Client;
 using Services.DbContexts;
 using SimpleAuthorizer;
 using TrainingTools.Components;
-using TrainingTools.Controllers;
 using TrainingTools.Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -45,11 +38,13 @@ builder.Services.AddDbContext<TrainingToolsDbContext>(options =>
         b => b.MigrationsAssembly("TrainingTools"));
 });
 
-
 // client-side
 builder.Services.AddHttpClient();
-builder.Services.AddScoped<IFetchService, FetchService>();
+builder.Services.AddScoped<IFetchService, DefaultFetchService>();
 builder.Services.AddScoped<ICookiesProvider, BrowserCookiesProvider>();
+builder.Services.AddScoped<RequestBuilder>();
+builder.Services.AddSingleton<ILinkGenerator, ConfigLinkGenerator>();
+builder.Services.AddTransient<Linker>();
 
 // both-side
 builder.Services.AddHttpContextAccessor();

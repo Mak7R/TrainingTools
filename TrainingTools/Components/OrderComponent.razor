@@ -1,4 +1,5 @@
 ﻿@inject NavigationManager NavigationManager
+@inject ILinkGenerator LinkGenerator
 
 <a @onclick="OnOrderClick" class="link-dark order-link">@Display @((MarkupString)Options[_index].OptionHtmlView)</a>
 
@@ -33,7 +34,7 @@
         }
         catch (Exception e)
         {
-            NavigationManager.NavigateTo($"/error/600/{e.Message}");
+            NavigationManager.NavigateTo(LinkGenerator.GetLocalPathByAction("Error", "Blazor", new {StatusCode = 0, e.Message}));
         }
     }
 
@@ -50,7 +51,7 @@
         }
         catch (Exception e)
         {
-            NavigationManager.NavigateTo($"/error/600/{e.Message}");
+            NavigationManager.NavigateTo(LinkGenerator.GetLocalPathByAction("Error", "Blazor", new {StatusCode = 0, e.Message}));
         }
     }
 }

@@ -2,12 +2,15 @@
 
 @rendermode InteractiveServer
 
-@inject IFetchService FetchService
-@inject ICookiesProvider CookiesProvider
-@inject NavigationManager NavigationManager
-@inject LinkGenerator LinkGenerator
+@inject Linker Linker
 
 <PageTitle>Register</PageTitle>
+
+<div class="container-fluid">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item active" aria-current="page">Register</li>
+    </ol>
+</div>
 
 <div class="container">
     <div id="register-form">
@@ -54,34 +57,32 @@
     {
         try
         {
-            var request = new HttpRequest(
-                NavigationManager.ToAbsoluteUri(
-                    LinkGenerator.GetPathByAction("Register", "Users")
-                    ?? throw new Exception("Uri was not found")).AbsoluteUri,
-                "POST",
-                JsonSerializer.Serialize(_registerUserModel));
-
-            await CookiesProvider.ToRequest(request);
-            var response = await FetchService.Fetch(request);
-            await CookiesProvider.FromResponse(response);
-
-            if (response.IsSuccessStatusCode)
-            {
-                NavigationManager.NavigateTo("/", true);
-            }
-            else if (response.StatusCode == StatusCodes.Status400BadRequest)
-            {
-                BindingError = JsonSerializer.Deserialize<ModelStateErrorViewModel>(response.Content);
-                StateHasChanged();
-            }
-            else
-            {
-                NavigationManager.NavigateTo($"/error/{response.StatusCode}");
-            }
+            await (await Linker.RequestBuilder
+                    .RequestToAction("Register", "Users")
+                    .WithMethod(HttpMethod.Post)
+                    .WithContent(_registerUserModel)
+                    .WithCookies()
+                    .Fetch())
+                .LoadCookies()
+                .OnSuccess(_ =>
+                {
+                    Linker.NavigateToAction("Home");
+                    StateHasChanged();
+                })
+                .OnStatusCode(StatusCodes.Status400BadRequest, response =>
+                {
+                    BindingError = JsonSerializer.Deserialize<ModelStateErrorViewModel>(response.Content);
+                    StateHasChanged();
+                })
+                .OnUnhandled(response =>
+                {
+                    Linker.NavigateToAction("Error", routeValues: new { response.StatusCode });
+                })
+                .WaitForHandleFinishedAsync();
         }
         catch (Exception e)
         {
-            NavigationManager.NavigateTo($"/error/600/{e.Message}");
+            Linker.NavigateToAction("Error", routeValues: new {StatusCode = 0, e.Message});
         }
     }
 }

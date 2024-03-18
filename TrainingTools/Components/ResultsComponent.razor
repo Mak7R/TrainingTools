@@ -1,8 +1,5 @@
 ﻿@inject IJSRuntime Js
-@inject IFetchService FetchService
-@inject ICookiesProvider CookiesProvider
-@inject NavigationManager NavigationManager
-@inject LinkGenerator LinkGenerator
+@inject Linker Linker
 
 <style>
     .edit-mode-only{
@@ -131,29 +128,30 @@
     {
         try
         {
-            var request = new HttpRequest(
-                NavigationManager.ToAbsoluteUri(
-                    LinkGenerator.GetPathByAction("Update", "ExerciseResults", new { resultsId = ExerciseResults.Id })
-                    ?? throw new Exception("Uri was not found")).AbsoluteUri,
-                "PUT",
-                (await Js.InvokeAsync<object>("GetChangesModel")).ToString()!);
-
-            await CookiesProvider.ToRequest(request);
-            var response = await FetchService.Fetch(request);
-            await CookiesProvider.FromResponse(response);
-
-            if (response.IsSuccessStatusCode)
-            {
-                await Js.InvokeVoidAsync("ToggleEditMod");
-            }
-            else if (response.StatusCode == 401)
-            {
-                NavigationManager.NavigateTo("/login", true);
-            }
+            await (await Linker.RequestBuilder
+                    .RequestToAction("Update", "ExerciseResults", new { resultsId = ExerciseResults.Id })
+                    .WithMethod(HttpMethod.Put)
+                    .WithContent((await Js.InvokeAsync<object>("GetChangesModel")).ToString()!)
+                    .WithCookies()
+                    .Fetch())
+                .LoadCookies()
+                .OnSuccessAsync(async _ =>
+                {
+                    await Js.InvokeVoidAsync("ToggleEditMod");
+                })
+                .OnStatusCode(StatusCodes.Status401Unauthorized, _ =>
+                {
+                    Linker.NavigateToAction("Users.Login");
+                })
+                .OnUnhandled(response =>
+                {
+                    Linker.NavigateToAction("Error", routeValues: new {response.StatusCode});
+                })
+                .WaitForHandleFinishedAsync();
         }
         catch (Exception e)
         {
-            NavigationManager.NavigateTo($"/error/600/{e.Message}");
+            Linker.NavigateToAction("Error", routeValues: new {StatusCode = 0, e.Message});
         }
     }
 }

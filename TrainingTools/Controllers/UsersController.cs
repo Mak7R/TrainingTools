@@ -17,8 +17,8 @@ public class UsersController : Controller
         _scopeFactory = scopeFactory;
     }
 
-    [HttpGet]
-    public async Task<IActionResult> Index()
+    [HttpGet("[action]")]
+    public async Task<IActionResult> Profile()
     {
         using var scope = _scopeFactory.CreateScope();
         var authorizedUser = scope.ServiceProvider.GetRequiredService<IAuthorizedUser>();
@@ -92,7 +92,7 @@ public class UsersController : Controller
         return Ok();
     }
     
-    [HttpDelete]
+    [HttpDelete("delete")]
     public async Task<IActionResult> Delete([FromBody] DeleteUserModel model)
     {
         if (!ModelState.IsValid) return BadRequest(ModelState.ToModelStateErrorViewModel());
@@ -116,7 +116,7 @@ public class UsersController : Controller
         return BadRequest(ModelState.ToModelStateErrorViewModel());
     }
 
-    [HttpPatch]
+    [HttpPatch("[action]")]
     public async Task<IActionResult> Edit([FromBody] EditUserModel model)
     {
         if (!ModelState.IsValid) return BadRequest(ModelState.ToModelStateErrorViewModel());

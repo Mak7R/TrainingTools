@@ -1,0 +1,204 @@
+﻿@page "/workspaces/exercises/{ExerciseId:guid}"
+
+@rendermode InteractiveServer
+
+@inject Linker Linker
+
+<PageTitle>Exercise @if(_exercise != null) { <text>: @_exercise.Name</text> }</PageTitle>
+
+<div class="container-fluid">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="@Linker.GetLocalPathByAction("Workspaces.Workspaces", "Blazor")">Workspaces</a></li>
+        <li class="breadcrumb-item"><a href="@Linker.GetLocalPathByAction("Workspaces.FullWorkspace", "Blazor", new {WorkspaceId = _exercise?.Workspace.Id ?? Guid.Empty})">@(_exercise?.Workspace.Id ?? Guid.Empty)</a></li>
+        <li class="breadcrumb-item"><a href="@Linker.GetLocalPathByAction("Exercises.Exercises", "Blazor", new {WorkspaceId = _exercise?.Workspace.Id ?? Guid.Empty})">Exercises</a></li>
+        <li class="breadcrumb-item active" aria-current="page">@(_exercise?.Id ?? Guid.Empty)</li>
+    </ol>
+</div>
+
+<div class="container">
+    <div>
+        <h3>Exercise</h3>
+        <h4>ID:
+            @if (_exercise != null)
+            {
+                <text>@_exercise.Id</text>
+            }
+            else
+            {
+                <div class="placeholder col-5 placeholder-glow bg-secondary"></div>
+            }
+        </h4>
+        <h4>Name: 
+            @if (_exercise != null)
+            {
+                <text>@_exercise.Name</text>
+            }
+            else
+            {
+                <div class="placeholder col-4 placeholder-glow bg-secondary"></div>
+            }
+        </h4>
+        <h4>Group:
+            @if (_exercise != null)
+            {
+                @if (_exercise.Group == null)
+                {
+                    <text>No Group</text>
+                }
+                else
+                {
+                    <text>@_exercise.Group.Name</text>
+                }
+            }
+            else
+            {
+                <div class="placeholder col-4 placeholder-glow bg-secondary"></div>
+            }
+
+        </h4>
+        <h4>Owner: 
+            @if (_exercise != null)
+            {
+                @_exercise.Workspace.Owner.Name
+            }
+            else
+            {
+                <div class="placeholder col-4 placeholder-glow bg-secondary"></div>
+            }
+        </h4>
+    </div>
+    
+    <div class="mb-4">
+        <h3>Actions</h3>
+        @if (_exercise == null)
+        {
+            <div class="spinner-border text-info" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        }
+        else
+        {
+            var componentId = Guid.NewGuid();
+            <DeleteButtonComponent ComponentId="componentId"/>
+            <DeleteModalComponent
+                ComponentId="componentId"
+                ModalTitle=@($"Delete exercise ({_exercise.Name})")
+                OnSuccessRedirectUrl=@Linker.GetLocalPathByAction("Exercises.Exercises", "Blazor", new {WorkspaceId = _exercise.Workspace.Id})
+                HandlerUrl="@Linker.GetPathByAction("Delete", "Exercises", new {exerciseId = _exercise.Id})"/>
+            
+            <div class="mt-2">
+                @if(_exercise.Results == null){
+                    <div>
+                        <button class="btn btn-success" @onclick="AddResults">Add Results</button>
+                    </div>
+                }
+                else
+                {
+                    <div>
+                        <button class="btn btn-danger" @onclick="DeleteResults">Delete Results</button>
+                    </div>
+                    <ResultsComponent ExerciseResults="_exercise.Results"/>
+                }
+            </div>
+        }
+    </div>
+</div>
+
+@code{
+    [Parameter] public Guid ExerciseId { get; set; }
+    private FullExerciseViewModel? _exercise;
+    
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        try
+        {
+            if (firstRender)
+            {
+                await (await Linker.RequestBuilder
+                        .RequestToAction("Get", "Exercises", new { exerciseId = ExerciseId })
+                        .WithMethod(HttpMethod.Get)
+                        .WithCookies()
+                        .Fetch())
+                    .LoadCookies()
+                    .OnSuccess(response =>
+                    {
+                        _exercise = JsonSerializer.Deserialize<FullExerciseViewModel>(response.Content);
+                        StateHasChanged();
+                    })
+                    .OnStatusCode(StatusCodes.Status401Unauthorized, _ =>
+                    {
+                        Linker.NavigateToAction("Users.Login");
+                    })
+                    .OnUnhandled(response =>
+                    {
+                        Linker.NavigateToAction("Error", routeValues: new { response.StatusCode });
+                    })
+                    .WaitForHandleFinishedAsync();
+            }
+        }
+        catch (Exception e)
+        {
+            Linker.NavigateToAction("Error", routeValues: new {StatusCode = 0, e.Message});
+        }
+    }
+
+    private async Task AddResults()
+    {
+        try
+        {
+            await (await Linker.RequestBuilder
+                    .RequestToAction("Add", "ExerciseResults", new { exerciseId = ExerciseId })
+                    .WithMethod(HttpMethod.Post)
+                    .WithCookies()
+                    .Fetch())
+                .LoadCookies()
+                .OnSuccess(_ =>
+                {
+                    Linker.NavigationManager.Refresh(true);
+                })
+                .OnStatusCode(StatusCodes.Status401Unauthorized, _ =>
+                {
+                    Linker.NavigateToAction("Users.Login");
+                })
+                .OnUnhandled(response =>
+                {
+                    Linker.NavigateToAction("Error", routeValues: new {response.StatusCode});
+                })
+                .WaitForHandleFinishedAsync();
+        }
+        catch (Exception e)
+        {
+            Linker.NavigateToAction("Error", routeValues: new {StatusCode = 0, e.Message});
+        }
+    }
+        
+    private async Task DeleteResults()
+    {
+        try
+        {
+            await (await Linker.RequestBuilder
+                    .RequestToAction("Delete", "ExerciseResults", new { resultsId = _exercise!.Results!.Id })
+                    .WithMethod(HttpMethod.Delete)
+                    .WithCookies()
+                    .Fetch())
+                .LoadCookies()
+                .OnSuccess(_ =>
+                {
+                    Linker.NavigationManager.Refresh(true);
+                })
+                .OnStatusCode(StatusCodes.Status401Unauthorized, _ =>
+                {
+                    Linker.NavigateToAction("Users.Login");
+                })
+                .OnUnhandled(response =>
+                {
+                    Linker.NavigateToAction("Error", routeValues: new {response.StatusCode});
+                })
+                .WaitForHandleFinishedAsync();
+        }
+        catch (Exception e)
+        {
+            Linker.NavigateToAction("Error", routeValues: new {StatusCode = 0, e.Message});
+        }
+    }    
+}

@@ -4,7 +4,7 @@ namespace Contracts.Client.Models;
 
 public class HttpRequest
 {
-    public string Path { get; set; }
+    public string Url { get; set; }
     public string Method { get; set; } = "GET";
     public string Content { get; set; } = string.Empty;
 
@@ -12,18 +12,18 @@ public class HttpRequest
     public string ContentType { get; set; } = "application/json";
     public Encoding? Encoding { get; set; } = null;
 
-    public HttpRequest(string path)
+    public HttpRequest(string url)
     {
-        Path = path;
+        Url = url;
     }
 
-    public HttpRequest(string path, string method, string content) : this(path)
+    public HttpRequest(string url, string method, string content) : this(url)
     {
         Method = method;
         Content = content;
     }
 
-    public HttpRequest(string path, string method, string content, string contentType, Encoding encoding) : this(path, method, content)
+    public HttpRequest(string url, string method, string content, string contentType, Encoding encoding) : this(url, method, content)
     {
         ContentType = contentType;
         Encoding = encoding;

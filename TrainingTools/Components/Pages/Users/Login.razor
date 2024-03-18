@@ -1,0 +1,75 @@
+﻿@page "/Login"
+
+@rendermode InteractiveServer
+
+@inject Linker Linker
+
+<PageTitle>Login</PageTitle>
+
+<div class="container-fluid">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item active" aria-current="page">Login</li>
+    </ol>
+</div>
+
+<div class="container">
+    <div id="login-form">
+        <div class="form-group mb-3">
+            <label for="login-email" class="control-label">Email: </label>
+            <input id="login-email" type="email" class="form-control" @bind="_loginUserModel.Email" required>
+            <InvalidModelFormMessage BindingError="BindingError" ErrorParameter="@nameof(LoginUserModel.Email)" />
+        </div>
+
+        <div class="form-group mb-3">
+            <label for="login-password" class="control-label">Password: </label>
+            <input id="login-password" type="password" class="form-control" @bind="_loginUserModel.Password" required>
+            <InvalidModelFormMessage BindingError="BindingError" ErrorParameter="@nameof(LoginUserModel.Password)" />
+        </div>
+
+        <div>
+            <button class="btn btn-primary" @onclick="SubmitLogin">Login</button>
+        </div>
+    </div>
+</div>
+
+@code {
+    private readonly LoginUserModel _loginUserModel = new()
+    {
+        Email = string.Empty,
+        Password = string.Empty
+    };
+    private ModelStateErrorViewModel? BindingError { get; set; }
+
+    private async Task SubmitLogin()
+    {
+        try
+        {
+            await (await Linker.RequestBuilder
+                    .RequestToAction("Login", "Users")
+                    .WithMethod(HttpMethod.Post)
+                    .WithContent(_loginUserModel)
+                    .WithCookies()
+                    .Fetch())
+                .LoadCookies()
+                .OnSuccess(_ =>
+                {
+                    Linker.NavigateToAction("Home");
+                    StateHasChanged();
+                })
+                .OnStatusCode(StatusCodes.Status400BadRequest, response =>
+                {
+                    BindingError = JsonSerializer.Deserialize<ModelStateErrorViewModel>(response.Content);
+                    StateHasChanged();
+                })
+                .OnUnhandled(response =>
+                {
+                    Linker.NavigateToAction("Error", routeValues: new { response.StatusCode });
+                })
+                .WaitForHandleFinishedAsync();
+        }
+        catch (Exception e)
+        {
+            Linker.NavigateToAction("Error", routeValues: new {StatusCode = 0, e.Message});
+        }
+    }
+}

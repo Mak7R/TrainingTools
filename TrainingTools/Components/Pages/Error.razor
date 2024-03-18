@@ -1,4 +1,4 @@
-﻿@page "/Error/{StatusCode:int}/{Message?}"
+﻿@page "/Error/{StatusCode:int}"
 
 <PageTitle>Error</PageTitle>
 
@@ -18,5 +18,5 @@
 
 @code{
     [Parameter] public int StatusCode { get; set; }
-    [Parameter] public string? Message { get; set; }
+    [SupplyParameterFromQuery] public string? Message { get; set; }
 }

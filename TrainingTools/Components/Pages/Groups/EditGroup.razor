@@ -1,0 +1,116 @@
+﻿@page "/workspaces/groups/{GroupId:guid}/edit"
+
+@rendermode InteractiveServer
+
+@inject Linker Linker
+
+<PageTitle>Edit Group</PageTitle>
+
+<div class="container-fluid">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="@Linker.GetLocalPathByAction("Workspaces.Workspaces", "Blazor")">Workspaces</a></li>
+        <li class="breadcrumb-item"><a href="@Linker.GetLocalPathByAction("Workspaces.FullWorkspace", "Blazor", new {WorkspaceId = _groupViewModel?.Workspace.Id ?? Guid.Empty})">@(_groupViewModel?.Workspace.Id ?? Guid.Empty)</a></li>
+        <li class="breadcrumb-item"><a href="@Linker.GetLocalPathByAction("Groups.Groups", "Blazor", new {WorkspaceId = _groupViewModel?.Workspace.Id ?? Guid.Empty})">Groups</a></li>
+        <li class="breadcrumb-item"><a href="@Linker.GetLocalPathByAction("Groups.Group", "Blazor", new {GroupId = _groupViewModel?.Id ?? Guid.Empty})">@(_groupViewModel?.Id ?? Guid.Empty)</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Edit Group</li>
+    </ol>
+</div>
+
+<div class="container">
+    <h3>Edit Group</h3>
+    
+    <div class="form-group mb-3">
+        <label for="edit-group-name">Group name: </label>
+        <input id="edit-group-name" @bind="_editGroupModel.Name" class="form-control">
+        <InvalidModelFormMessage BindingError="BindingError" ErrorParameter="@nameof(EditGroupModel.Name)"></InvalidModelFormMessage>
+    </div>
+    
+    <button @onclick="OnEditClick" class="btn btn-success">Save changes</button>
+</div>
+
+
+@code {
+
+    [Parameter] public Guid GroupId { get; set; }
+    
+    private readonly EditGroupModel _editGroupModel = new()
+    {
+        Name = string.Empty
+    };
+
+    private GroupViewModel? _groupViewModel;
+    
+    private ModelStateErrorViewModel? BindingError { get; set; }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        try
+        {
+            if (firstRender)
+            {
+                await (await Linker.RequestBuilder
+                        .RequestToAction("Get", "Groups", new { groupId = GroupId })
+                        .WithMethod(HttpMethod.Get)
+                        .WithCookies()
+                        .Fetch())
+                    .LoadCookies()
+                    .OnSuccess(response =>
+                    {
+                        _groupViewModel = JsonSerializer.Deserialize<GroupViewModel>(response.Content);
+                        if (_groupViewModel == null) throw new NullReferenceException("Group was null after deserialize");
+                        _editGroupModel.Name = _groupViewModel.Name;
+                        StateHasChanged();
+                    })
+                    .OnStatusCode(StatusCodes.Status401Unauthorized, _ =>
+                    {
+                        Linker.NavigateToAction("Users.Login");
+                    })
+                    .OnUnhandled(response =>
+                    {
+                        Linker.NavigateToAction("Error", routeValues: new { response.StatusCode });
+                    })
+                    .WaitForHandleFinishedAsync();
+            }
+        }
+        catch (Exception e)
+        {
+            Linker.NavigateToAction("Error", routeValues: new {StatusCode = 0, e.Message});
+        }
+    }
+
+    private async Task OnEditClick()
+    {
+        try
+        {
+            await (await Linker.RequestBuilder
+                    .RequestToAction("Edit", "Groups", new { groupId = GroupId })
+                    .WithMethod(HttpMethod.Patch)
+                    .WithContent(_editGroupModel)
+                    .WithCookies()
+                    .Fetch())
+                .LoadCookies()
+                .OnSuccess(_ =>
+                {
+                    Linker.NavigateToAction("Groups.Group", routeValues: new {GroupId});
+                })
+                .OnStatusCode(StatusCodes.Status400BadRequest, response =>
+                {
+                    BindingError = JsonSerializer.Deserialize<ModelStateErrorViewModel>(response.Content);
+                    StateHasChanged();
+                })
+                .OnStatusCode(StatusCodes.Status401Unauthorized, _ =>
+                {
+                    Linker.NavigateToAction("Users.Login");
+                })
+                .OnUnhandled(response =>
+                {
+                    Linker.NavigateToAction("Error", routeValues: new { response.StatusCode });
+                })
+                .WaitForHandleFinishedAsync();
+        }
+        catch (Exception e)
+        {
+            Linker.NavigateToAction("Error", routeValues: new {StatusCode = 0, e.Message});
+        }
+    }
+}

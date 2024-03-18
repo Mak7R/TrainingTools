@@ -3,18 +3,18 @@ using Contracts.Client.Services;
 
 namespace Services.Client;
 
-public class FetchService : IFetchService
+public class DefaultFetchService : IFetchService
 {
     private readonly IHttpClientFactory _clientFactory;
 
-    public FetchService(IHttpClientFactory clientFactory)
+    public DefaultFetchService(IHttpClientFactory clientFactory)
     {
         _clientFactory = clientFactory;
     }
     
     public async Task<HttpResponse> Fetch(HttpRequest request)
     {
-        var requestMessage = new HttpRequestMessage(HttpMethod.Parse(request.Method), request.Path);
+        var requestMessage = new HttpRequestMessage(HttpMethod.Parse(request.Method), request.Url);
         requestMessage.Content = new StringContent(request.Content, request.Encoding, request.ContentType);
 
         foreach (var header in request.Headers) 

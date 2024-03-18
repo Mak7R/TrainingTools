@@ -1,9 +1,10 @@
 ﻿@inject NavigationManager NavigationManager
+@inject ILinkGenerator LinkGenerator
 
 <div class="container-fluid">
     <div class="default-search-form">
         <div class="input-group input-group-horizontal">
-            <label for="select-filter-option" class="input-group-text form-label d-none d-sm-block" style="margin-bottom: 0">SearchBy</label>
+            <label for="select-filter-option" class="input-group-text form-label d-none d-sm-block mb-0">SearchBy</label>
             <select id="select-filter-option" class="form-select flex-grow-0 w-25" @bind="_filter.FilterBy" required>
                 @foreach (var filterOption in FilterByOptions)
                 {
@@ -50,7 +51,7 @@
         }
         catch (Exception e)
         {
-            NavigationManager.NavigateTo($"/error/600/{e.Message}");
+            NavigationManager.NavigateTo(LinkGenerator.GetLocalPathByAction("Error", "Blazor", new {StatusCode = 0, e.Message}));
         }
     }
 }

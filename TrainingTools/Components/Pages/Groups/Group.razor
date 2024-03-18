@@ -1,0 +1,113 @@
+﻿@page "/workspaces/groups/{GroupId:guid}"
+
+@rendermode InteractiveServer
+
+@inject Linker Linker
+
+<PageTitle>Group @if(_group != null) { <text>: @_group.Name</text> }</PageTitle>
+
+<div class="container-fluid">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="@Linker.GetLocalPathByAction("Workspaces.Workspaces", "Blazor")">Workspaces</a></li>
+        <li class="breadcrumb-item"><a href="@Linker.GetLocalPathByAction("Workspaces.FullWorkspace", "Blazor", new {WorkspaceId = _group?.Workspace.Id ?? Guid.Empty})">@(_group?.Workspace.Id ?? Guid.Empty)</a></li>
+        <li class="breadcrumb-item"><a href="@Linker.GetLocalPathByAction("Groups.Groups", "Blazor", new {WorkspaceId = _group?.Workspace.Id ?? Guid.Empty})">Groups</a></li>
+        <li class="breadcrumb-item active" aria-current="page">@(_group?.Id ?? Guid.Empty)</li>
+    </ol>
+</div>
+
+<div class="container">
+    <div>
+        <h3>Group</h3>
+        <h4>ID: 
+            @if (_group == null)
+            {
+                <div class="placeholder col-5 placeholder-glow bg-secondary"></div>
+            }
+            else
+            {
+                <text>@_group.Id</text>
+            }
+        </h4>
+        <h4>Name: 
+            @if (_group == null)
+            {
+              <div class="placeholder col-4 placeholder-glow bg-secondary"></div>
+            }
+            else
+            {
+              <text>@_group.Name</text>
+            }
+        </h4>
+        <h4>Owner: 
+            @if (_group == null)
+            {
+                <div class="placeholder col-4 placeholder-glow bg-secondary"></div>
+            }
+            else
+            {
+                <text>@_group.Workspace.Owner.Id</text>
+            }
+        </h4>
+    </div>
+    
+    <div>
+        <h3>Actions</h3>
+        @if (_group == null)
+        {
+            <div class="spinner-border text-info" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        }
+        else
+        {
+            <a class="btn btn-primary" href="@Linker.GetLocalPathByAction("Groups.EditGroup", "Blazor",  new {GroupId})">Edit</a>
+            
+            var componentId = Guid.NewGuid();
+            <DeleteButtonComponent ComponentId="componentId"/>
+            <DeleteModalComponent
+                ComponentId="componentId"
+                ModalTitle=@($"Delete group ({_group.Name})")
+                OnSuccessRedirectUrl=@Linker.GetLocalPathByAction("Groups.Groups", "Blazor", new {WorkspaceId = _group.Workspace.Id})
+                HandlerUrl="@Linker.GetPathByAction("Delete", "Groups", new {groupId = _group.Id})"/>
+        }
+    </div>
+</div>
+
+@code{
+    [Parameter] public Guid GroupId { get; set; }
+    private GroupViewModel? _group;
+    
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        try
+        {
+            if (firstRender)
+            {
+                await (await Linker.RequestBuilder
+                        .RequestToAction("Get", "Groups", new { groupId = GroupId })
+                        .WithMethod(HttpMethod.Get)
+                        .WithCookies()
+                        .Fetch())
+                    .LoadCookies()
+                    .OnSuccess(response =>
+                    {
+                        _group = JsonSerializer.Deserialize<GroupViewModel>(response.Content);
+                        StateHasChanged();
+                    })
+                    .OnStatusCode(StatusCodes.Status401Unauthorized, _ =>
+                    {
+                        Linker.NavigateToAction("Users.Login");
+                    })
+                    .OnUnhandled(response =>
+                    {
+                        Linker.NavigateToAction("Error", routeValues: new { response.StatusCode });
+                    })
+                    .WaitForHandleFinishedAsync();
+            }
+        }
+        catch (Exception e)
+        {
+            Linker.NavigateToAction("Error", routeValues: new {StatusCode = 0, e.Message});
+        }
+    }
+}

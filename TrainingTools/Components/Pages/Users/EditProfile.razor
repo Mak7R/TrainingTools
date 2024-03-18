@@ -1,0 +1,140 @@
+﻿@page "/profile/edit"
+
+@rendermode InteractiveServer
+
+@inject Linker Linker
+
+<PageTitle>Edit Profile</PageTitle>
+
+<div class="container-fluid">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="@Linker.GetLocalPathByAction("Users.Profile", "Blazor")">Profile</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Edit Profile</li>
+    </ol>
+</div>
+
+<div class="container">
+    <h3>Edit Profile</h3>
+    
+    <div class="form-group mb-3">
+        <label for="edit-profile-name" class="control-label">Name: </label>
+        <input id="edit-profile-name" type="text" class="form-control" @bind="_editUserModel.Name" required>
+        <InvalidModelFormMessage BindingError="BindingError" ErrorParameter="@nameof(EditUserModel.Name)"></InvalidModelFormMessage>
+    </div>
+    <div class="form-group mb-3">
+        <label for="edit-profile-email" class="control-label">Email: </label>
+        <input id="edit-profile-email" type="email" class="form-control" @bind="_editUserModel.Email" required>
+        <InvalidModelFormMessage BindingError="BindingError" ErrorParameter="@nameof(EditUserModel.Email)"></InvalidModelFormMessage>
+    </div>
+    
+    <div class="form-group mt-5 mb-3">
+        <hr/>
+        <label class="text-primary" for="edit-profile-password">Write your password for save changes: </label>
+        <input id="edit-profile-password" type="password" class="form-control" @bind="_editUserModel.Password" required>
+        <InvalidModelFormMessage BindingError="BindingError" ErrorParameter="@nameof(EditUserModel.Password)"></InvalidModelFormMessage>
+    </div>
+
+    <div class="form-group">
+        @if (_userViewModel == null)
+        {
+            <button class="btn btn-success" disabled>
+                <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+                <span role="status">Save changes</span>
+            </button>
+        }
+        else
+        {
+            <button @onclick="OnEditUserClick" class="btn btn-success">Save changes</button>
+        }
+    </div>
+</div>
+
+@code {
+
+    [Parameter] public Guid WorkspaceId { get; set; }
+    
+    private readonly EditUserModel _editUserModel = new()
+    {
+        Name = string.Empty,
+        Email = string.Empty,
+        Password = string.Empty
+    };
+
+    private UserViewModel? _userViewModel;
+    
+    private ModelStateErrorViewModel? BindingError { get; set; }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        try
+        {
+            if (firstRender)
+            {
+                await (await Linker.RequestBuilder
+                        .RequestToAction("Profile", "Users")
+                        .WithMethod(HttpMethod.Get)
+                        .WithCookies()
+                        .Fetch())
+                    .LoadCookies()
+                    .OnSuccess(response =>
+                    {
+                        _userViewModel = JsonSerializer.Deserialize<UserViewModel>(response.Content);
+                        if (_userViewModel == null) throw new NullReferenceException("user was null");
+                        _editUserModel.Name = _userViewModel.Name;
+                        _editUserModel.Email = _userViewModel.Email;
+                        StateHasChanged();
+                    })
+                    .OnStatusCode(StatusCodes.Status401Unauthorized, _ =>
+                    {
+                        Linker.NavigateToAction("Users.Login");
+                    })
+                    .OnUnhandled(response =>
+                    {
+                        Linker.NavigateToAction("Error", routeValues: new { response.StatusCode });
+                    })
+                    .WaitForHandleFinishedAsync();
+            }
+        }
+        catch (Exception e)
+        {
+            Linker.NavigateToAction("Error", routeValues: new {StatusCode = 0, e.Message});
+        }
+    }
+
+    private async Task OnEditUserClick()
+    {
+        try
+        {
+            await (await Linker.RequestBuilder
+                    .RequestToAction("Edit", "Users")
+                    .WithMethod(HttpMethod.Patch)
+                    .WithContent(_editUserModel)
+                    .WithCookies()
+                    .Fetch())
+                .LoadCookies()
+                .OnSuccess(_ =>
+                {
+                    Linker.NavigateToAction("Users.Profile");
+                    StateHasChanged();
+                })
+                .OnStatusCode(StatusCodes.Status400BadRequest, response =>
+                {
+                    BindingError = JsonSerializer.Deserialize<ModelStateErrorViewModel>(response.Content);
+                    StateHasChanged();
+                })
+                .OnStatusCode(StatusCodes.Status401Unauthorized, _ =>
+                {
+                    Linker.NavigateToAction("Users.Login");
+                })
+                .OnUnhandled(response =>
+                {
+                    Linker.NavigateToAction("Error", routeValues: new { response.StatusCode });
+                })
+                .WaitForHandleFinishedAsync();
+        }
+        catch (Exception e)
+        {
+            Linker.NavigateToAction("Error", routeValues: new {StatusCode = 0, e.Message});
+        }
+    }
+}

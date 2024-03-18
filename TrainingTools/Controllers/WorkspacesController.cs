@@ -19,7 +19,7 @@ public class WorkspacesController : Controller
     }
     
     [HttpGet]
-    public async Task<IActionResult> Index(
+    public async Task<IActionResult> GetAll(
         FilterModel filter, 
         OrderModel order)
     {
@@ -57,7 +57,7 @@ public class WorkspacesController : Controller
     }
 
     [HttpGet("{workspaceId:guid}")]
-    public async Task<IActionResult> Get([FromRoute] Guid workspaceId,
+    public async Task<IActionResult> GetFull([FromRoute] Guid workspaceId,
         FilterModel filter, 
         OrderModel order)
     {
