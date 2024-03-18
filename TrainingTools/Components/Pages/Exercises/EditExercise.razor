@@ -1,0 +1,173 @@
+﻿@page "/workspaces/exercises/{ExerciseId:guid}/edit"
+
+@rendermode InteractiveServer
+
+@inject Linker Linker
+
+<PageTitle>Edit Exercise</PageTitle>
+
+<div class="container-fluid">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="@Linker.GetLocalPathByAction("Workspaces.Workspaces", "Blazor")">Workspaces</a></li>
+        <li class="breadcrumb-item"><a href="@Linker.GetLocalPathByAction("Workspaces.FullWorkspace", "Blazor", new {WorkspaceId = _exerciseViewModel?.Workspace.Id ?? Guid.Empty})">@(_exerciseViewModel?.Workspace.Id ?? Guid.Empty)</a></li>
+        <li class="breadcrumb-item"><a href="@Linker.GetLocalPathByAction("Exercises.Exercises", "Blazor", new {WorkspaceId = _exerciseViewModel?.Workspace.Id ?? Guid.Empty})">Exercises</a></li>
+        <li class="breadcrumb-item"><a href="@Linker.GetLocalPathByAction("Groups.Group", "Blazor", new {ExerciseId = _exerciseViewModel?.Id ?? Guid.Empty})">@(_exerciseViewModel?.Id ?? Guid.Empty)</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Edit Exercise</li>
+    </ol>
+</div>
+
+<div class="container">
+    <h3>Edit Exercise</h3>
+    
+    <div class="form-group mb-3">
+        <label for="edit-exercise-name">Exercise name: </label>
+        <input id="edit-exercise-name" @bind="_editExerciseModel.Name" class="form-control">
+        <InvalidModelFormMessage BindingError="BindingError" ErrorParameter="@nameof(EditExerciseModel.Name)"></InvalidModelFormMessage>
+    </div>
+    
+    <div class="form-group mb-3">
+        <label for="edit-exercise-group">Group: </label>
+        @if (_groups == null)
+        {
+            <div class="placeholder col-7 placeholder-lg placeholder-glow bg-secondary form-select"></div>
+        }
+        else
+        {
+            <select id="edit-exercise-group" class="form-select" @bind="_editExerciseModel.GroupId">
+                <option value="">No Group</option>
+                @foreach (var group in _groups)
+                {
+                    <option value="@group.Id">@group.Name</option>
+                }
+            </select>
+            <InvalidModelFormMessage BindingError="BindingError" ErrorParameter="@nameof(EditExerciseModel.GroupId)"></InvalidModelFormMessage>
+        
+        }
+    </div>
+    
+    @if (_groups == null)
+    {
+        <button class="btn btn-success" disabled>
+            <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+            <span role="status">Save changes</span>
+        </button>
+    }
+    else
+    {
+        <button @onclick="OnEditClick" class="btn btn-success">Save changes</button>
+    }
+    
+</div>
+
+@code {
+
+    [Parameter] public Guid ExerciseId { get; set; }
+    
+    private readonly EditExerciseModel _editExerciseModel = new()
+    {
+        Name = string.Empty
+    };
+
+    private ExerciseViewModel? _exerciseViewModel;
+    
+    private ModelStateErrorViewModel? BindingError { get; set; }
+    private IEnumerable<GroupViewModel>? _groups;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        try
+        {
+            if (firstRender)
+            {
+                {
+                    await (await Linker.RequestBuilder
+                            .RequestToAction("Get", "Exercises", new { exerciseId = ExerciseId })
+                            .WithMethod(HttpMethod.Get)
+                            .WithCookies()
+                            .Fetch())
+                        .LoadCookies()
+                        .OnSuccess(response =>
+                        {
+                            _exerciseViewModel = JsonSerializer.Deserialize<ExerciseViewModel>(response.Content);
+                            if (_exerciseViewModel == null) throw new NullReferenceException("Exercise was null after deserialize");
+                            _editExerciseModel.Name = _exerciseViewModel.Name;
+                            _editExerciseModel.GroupId = _exerciseViewModel.Group?.Id;
+                            StateHasChanged();
+                        })
+                        .OnStatusCode(StatusCodes.Status401Unauthorized, _ =>
+                        {
+                            Linker.NavigateToAction("Users.Login");
+                        })
+                        .OnUnhandled(response =>
+                        {
+                            Linker.NavigateToAction("Error", routeValues: new { response.StatusCode });
+                        })
+                        .WaitForHandleFinishedAsync();
+                }
+                
+                {
+                    await (await Linker.RequestBuilder
+                            .RequestToAction("GetAll", "Groups", new { workspaceId = _exerciseViewModel!.Workspace.Id })
+                            .WithMethod(HttpMethod.Get)
+                            .WithCookies()
+                            .Fetch())
+                        .LoadCookies()
+                        .OnSuccess(response =>
+                        {
+                            _groups = JsonSerializer.Deserialize<List<GroupViewModel>>(response.Content);
+                            StateHasChanged();
+                        })
+                        .OnStatusCode(StatusCodes.Status401Unauthorized, _ =>
+                        {
+                            Linker.NavigateToAction("Users.Login");
+                        })
+                        .OnUnhandled(response =>
+                        {
+                            Linker.NavigateToAction("Error", routeValues: new { response.StatusCode });
+                        })
+                        .WaitForHandleFinishedAsync();
+                }
+            }
+        }
+        catch (Exception e)
+        {
+            Linker.NavigateToAction("Error", routeValues: new {StatusCode = 0, e.Message});
+        }
+    }
+
+    private async Task OnEditClick()
+    {
+        try
+        {
+            await (await Linker.RequestBuilder
+                    .RequestToAction("Edit", "Exercises", new { exerciseId = ExerciseId })
+                    .WithMethod(HttpMethod.Patch)
+                    .WithCookies()
+                    .WithContent(_editExerciseModel)
+                    .Fetch())
+                .LoadCookies()
+                .OnSuccess(_ =>
+                {
+                    Linker.NavigateToAction("Exercises.Exercise", routeValues:new {ExerciseId});
+                })
+                .OnStatusCode(StatusCodes.Status400BadRequest, response =>
+                {
+                    BindingError = JsonSerializer.Deserialize<ModelStateErrorViewModel>(response.Content);
+                    StateHasChanged();
+                })
+                .OnStatusCode(StatusCodes.Status401Unauthorized, _ =>
+                {
+                    Linker.NavigateToAction("Users.Login");
+                })
+                .OnUnhandled(response =>
+                {
+                    Linker.NavigateToAction("Error", routeValues: new { response.StatusCode });
+                })
+                .WaitForHandleFinishedAsync();
+        }
+        catch (Exception e)
+        {
+            Linker.NavigateToAction("Error", routeValues: new {StatusCode = 0, e.Message});
+        }
+    }
+}

@@ -7,28 +7,42 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Services\Services.csproj" />
+      <_ContentIncludedByDefault Remove="wwwroot\bootstrap\bootstrap.min.css" />
+      <_ContentIncludedByDefault Remove="wwwroot\bootstrap\bootstrap.min.css.map" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\cookie\HISTORY.md" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\cookie\index.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\cookie\LICENSE" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\cookie\package-lock.json" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\cookie\package.json" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\cookie\README.md" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\cookie\SECURITY.md" />
+      <_ContentIncludedByDefault Remove="Views\Groups\Add.cshtml" />
+      <_ContentIncludedByDefault Remove="Views\Groups\Edit.cshtml" />
+      <_ContentIncludedByDefault Remove="Views\Groups\Get.cshtml" />
+      <_ContentIncludedByDefault Remove="Views\Groups\Index.cshtml" />
+      <_ContentIncludedByDefault Remove="Views\Home\Index.cshtml" />
+      <_ContentIncludedByDefault Remove="Views\Shared\Components\Sort\Default.cshtml" />
+      <_ContentIncludedByDefault Remove="Views\Shared\Partials\SmallItems\Down.cshtml" />
+      <_ContentIncludedByDefault Remove="Views\Shared\Partials\SmallItems\None.cshtml" />
+      <_ContentIncludedByDefault Remove="Views\Shared\Partials\SmallItems\Up.cshtml" />
+      <_ContentIncludedByDefault Remove="Views\_ViewImports.cshtml" />
+      <_ContentIncludedByDefault Remove="Views\_ViewStart.cshtml" />
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="8.0.2" />
+      <ProjectReference Include="..\Contracts.Client\Contracts.Client.csproj" />
+      <ProjectReference Include="..\Contracts\Contracts.csproj" />
+      <ProjectReference Include="..\Services.Client\Services.Client.csproj" />
+      <ProjectReference Include="..\Services\Services.csproj" />
+      <ProjectReference Include="..\TrainingTools.ViewModels\TrainingTools.ViewModels.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
       <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.2">
         <PrivateAssets>all</PrivateAssets>
         <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       </PackageReference>
       <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.2" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <_ContentIncludedByDefault Remove="Views\Items\Add.cshtml" />
-      <_ContentIncludedByDefault Remove="Views\Items\Delete.cshtml" />
-      <_ContentIncludedByDefault Remove="Views\Items\Edit.cshtml" />
-      <_ContentIncludedByDefault Remove="Views\Items\GetItem.cshtml" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <Folder Include="wwwroot\lib\bootstrap\dist\" />
-      <Folder Include="wwwroot\styles\" />
     </ItemGroup>
 
 </Project>

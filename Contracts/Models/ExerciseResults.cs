@@ -23,4 +23,8 @@ public class ExerciseResults
 
     [StringLength(MaxResultsJsonStringLength)]
     public string ResultsJson { get; set; }
+    
+    public override bool Equals(object? obj) => obj is ExerciseResults results && Id.Equals(results.Id);
+
+    public override int GetHashCode() => Id.GetHashCode();
 }

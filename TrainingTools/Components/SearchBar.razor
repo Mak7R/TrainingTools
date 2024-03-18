@@ -1,0 +1,57 @@
+﻿@inject NavigationManager NavigationManager
+@inject ILinkGenerator LinkGenerator
+
+<div class="container-fluid">
+    <div class="default-search-form">
+        <div class="input-group input-group-horizontal">
+            <label for="select-filter-option" class="input-group-text form-label d-none d-sm-block mb-0">SearchBy</label>
+            <select id="select-filter-option" class="form-select flex-grow-0 w-25" @bind="_filter.FilterBy" required>
+                @foreach (var filterOption in FilterByOptions)
+                {
+                    <option value="@filterOption.Key">@filterOption.Value</option>
+                }
+            </select>
+
+            <input
+                class="form-control"
+                placeholder="search"
+                @bind="@_filter.FilterValue"/>
+
+            <button @onclick="OnSearchButtonClick" class="btn btn-success">Search</button>
+        </div>
+    </div>
+</div>
+
+@code
+{
+    private Dictionary<string, string> _filterByOptions = new();
+    [Parameter] public Dictionary<string, string> FilterByOptions
+    {
+        get => _filterByOptions;
+        set
+        {
+            _filterByOptions = value;
+            if (value.Count != 0 && string.IsNullOrEmpty(_filter.FilterBy)) _filter.FilterBy = value.First().Key;
+        }
+    }
+
+    [Parameter] public RequestCollectionsHelper RequestCollectionsHelper { get; set; }
+
+    private readonly FilterModel _filter = new()
+    {
+        FilterBy = string.Empty,
+        FilterValue = string.Empty,
+    };
+
+    private void OnSearchButtonClick()
+    {
+        try
+        {
+            RequestCollectionsHelper.SetFilter(_filter);
+        }
+        catch (Exception e)
+        {
+            NavigationManager.NavigateTo(LinkGenerator.GetLocalPathByAction("Error", "Blazor", new {StatusCode = 0, e.Message}));
+        }
+    }
+}

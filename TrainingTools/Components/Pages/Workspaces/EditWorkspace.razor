@@ -1,0 +1,132 @@
+﻿@page "/workspaces/{WorkspaceId:guid}/edit"
+
+@rendermode InteractiveServer
+
+@inject Linker Linker
+
+<PageTitle>Edit Workspace</PageTitle>
+
+<div class="container-fluid">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="@Linker.GetLocalPathByAction("Workspaces.Workspaces", "Blazor")">Workspaces</a></li>
+        <li class="breadcrumb-item"><a href="@Linker.GetLocalPathByAction("Workspaces.FullWorkspace", "Blazor", new {WorkspaceId})">@WorkspaceId</a></li>
+        <li class="breadcrumb-item"><a href="@Linker.GetLocalPathByAction("Workspaces.Workspace", "Blazor", new {WorkspaceId})">Info</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Edit Workspace</li>
+    </ol>
+</div>
+
+<div class="container">
+    <h3>Edit Workspace</h3>
+    
+    <div class="form-group mb-3">
+        <label for="edit-workspace-name">Workspace name: </label>
+        <input id="edit-workspace-name" @bind="_editWorkspaceModel.Name" class="form-control">
+        <InvalidModelFormMessage BindingError="BindingError" ErrorParameter="@nameof(EditWorkspaceModel.Name)"></InvalidModelFormMessage>
+    </div>
+
+    <div class="form-group">
+        @if (_workspaceViewModel == null)
+        {
+            <button class="btn btn-success" disabled>
+                <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+                <span role="status">Save changes</span>
+            </button>
+        }
+        else
+        {
+            <button @onclick="OnEditClick" class="btn btn-success">Save changes</button>
+        }
+    </div>
+</div>
+
+
+@code {
+
+    [Parameter] public Guid WorkspaceId { get; set; }
+    
+    private readonly EditWorkspaceModel _editWorkspaceModel = new()
+    {
+        Name = string.Empty
+    };
+
+    private WorkspaceViewModel? _workspaceViewModel;
+    private ModelStateErrorViewModel? BindingError { get; set; }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        try
+        {
+            if (firstRender)
+            {
+                await (await Linker.RequestBuilder
+                        .RequestToAction("GetInfo", "Workspaces", new { workspaceId = WorkspaceId })
+                        .WithMethod(HttpMethod.Get)
+                        .WithCookies()
+                        .Fetch())
+                    .LoadCookies()
+                    .OnSuccess(response =>
+                    {
+                        _workspaceViewModel = JsonSerializer.Deserialize<WorkspaceViewModel>(response.Content);
+                        if (_workspaceViewModel == null) throw new NullReferenceException("workspace was null");
+                        _editWorkspaceModel.Name = _workspaceViewModel.Name;
+                        StateHasChanged();
+                    })
+                    .OnStatusCode(StatusCodes.Status400BadRequest, response =>
+                    {
+                        BindingError = JsonSerializer.Deserialize<ModelStateErrorViewModel>(response.Content);
+                        StateHasChanged();
+                    })
+                    .OnStatusCode(StatusCodes.Status401Unauthorized, _ =>
+                    {
+                        Linker.NavigateToAction("Users.Login");
+                    })
+                    .OnUnhandled(response =>
+                    {
+                        Linker.NavigateToAction("Error", routeValues: new { response.StatusCode });
+                    })
+                    .WaitForHandleFinishedAsync();
+            }
+        }
+        catch (Exception e)
+        {
+            Linker.NavigateToAction("Error", routeValues: new {StatusCode = 0, e.Message});
+        }
+    }
+
+    private async Task OnEditClick()
+    {
+        try
+        {
+            await (await Linker.RequestBuilder
+                    .RequestToAction("Edit", "Workspaces", new { workspaceId = WorkspaceId })
+                    .WithMethod(HttpMethod.Patch)
+                    .WithContent(_editWorkspaceModel)
+                    .WithCookies()
+                    .Fetch())
+                .LoadCookies()
+                .OnSuccess(_ =>
+                {
+                    Linker.NavigateToAction("Workspaces.Workspace", "Blazor", new {WorkspaceId});
+                    StateHasChanged();
+                })
+                .OnStatusCode(StatusCodes.Status400BadRequest, response =>
+                {
+                    BindingError = JsonSerializer.Deserialize<ModelStateErrorViewModel>(response.Content);
+                    StateHasChanged();
+                })
+                .OnStatusCode(StatusCodes.Status401Unauthorized, _ =>
+                {
+                    Linker.NavigateToAction("Users.Login");
+                })
+                .OnUnhandled(response =>
+                {
+                    Linker.NavigateToAction("Error", routeValues: new { response.StatusCode });
+                })
+                .WaitForHandleFinishedAsync();
+        }
+        catch (Exception e)
+        {
+            Linker.NavigateToAction("Error", routeValues: new {StatusCode = 0, e.Message});
+        }
+    }
+}

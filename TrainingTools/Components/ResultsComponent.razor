@@ -1,0 +1,157 @@
+﻿@inject IJSRuntime Js
+@inject Linker Linker
+
+<style>
+    .edit-mode-only{
+        display: none;
+    }
+</style>
+
+<div class="container-fluid">
+    <div>
+        <h3>Header</h3>
+        <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" id="check-input-for-edit-mode" onchange="toggleEditMode()">
+            <label class="form-check-label" for="check-input-for-edit-mode">Edit Mode</label>
+        </div>
+    </div>
+    <div>
+        <table class="table table-striped table-hover">
+            <thead>
+            <tr>
+                <th class="col-6">
+                    <span class="text-center fs-4 d-block">Weight</span>
+                </th>
+                <th class="col-6">
+                    <span class="text-center fs-4 d-block">Count</span>
+                </th>
+                <th class="col-2 edit-mode-only">
+                    <span class="text-center fs-4 d-block">Actions</span>
+                </th>
+            </tr>
+            </thead>
+            <tbody id="edit-exercise-results-root">
+            @foreach (var row in ExerciseResults.Results)
+            {
+                <tr class="results-entry">
+                    <td>
+                        <input class="input-exercise-results form-control text-center input-exercise-results-weight" disabled type="number" value="@row.Weight"/>
+                    </td>
+                    <td>
+                        <input class="input-exercise-results form-control text-center input-exercise-results-count" disabled type="number" value="@row.Count"/>
+                    </td>
+                    <td class="edit-mode-only">
+                        <button class="btn btn-danger delete-results-entry-button">Delete</button>
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+        
+        <div class="edit-mode-only">
+            <button class="btn btn-success btn-block w-100 mb-1" onclick="Add()">Add</button> 
+            <button class="btn btn-success btn-block w-100" @onclick="SaveChanges">Save changes</button> 
+        </div>
+    </div>
+</div>
+
+<script>    
+    document.querySelectorAll('.delete-results-entry-button').forEach(button => {
+        button.addEventListener('click', function () {this.closest('.results-entry').remove();});
+    });
+    
+    function toggleEditMode() {
+        const isEditMode = document.getElementById("check-input-for-edit-mode").checked;
+        const inputs = document.getElementsByClassName("input-exercise-results");
+        const editModeElements = document.getElementsByClassName("edit-mode-only");
+    
+        for (let i = 0; i < inputs.length; i++) {
+            inputs[i].disabled = !isEditMode;
+        }
+    
+        for (let j = 0; j < editModeElements.length; j++) {
+            editModeElements[j].style.display = isEditMode ? "block" : "none";
+        }
+    }
+    
+    function Add(){
+        const newRow = document.createElement('tr');
+        document.querySelector("#edit-exercise-results-root").appendChild(newRow);
+        newRow.classList.add("results-entry");
+        newRow.innerHTML = `
+                    <td>
+                        <input class="input-exercise-results form-control text-center input-exercise-results-weight" type="number" value="0"/>
+                    </td>
+                    <td>
+                        <input class="input-exercise-results form-control text-center input-exercise-results-count" type="number" value="0"/>
+                    </td>
+                    <td class="edit-mode-only">
+                        <button class="btn btn-danger delete-results-entry-button">Delete</button>
+                    </td>
+                `;
+    
+        newRow.querySelector(".delete-results-entry-button").addEventListener("click", function () {this.closest('.results-entry').remove();})
+        toggleEditMode();
+    }
+    
+    function ToggleEditMod(){
+        document.getElementById("check-input-for-edit-mode").checked = false;
+        toggleEditMode();
+    }
+    
+    function GetChangesModel(){
+        const entries = document.querySelectorAll('.results-entry');
+        const model = [];
+    
+        entries.forEach(entry => {
+            let Weight;
+            let Count;
+            try {
+                Weight = entry.querySelector(".input-exercise-results-weight").value;
+                Count = entry.querySelector(".input-exercise-results-count").value;
+            } catch (error) {
+                console.error('Error while getting weight and count:', error);
+    
+                Weight = 0;
+                Count = 0;
+            }
+            model.push({ Weight, Count });
+        });
+        return { ExerciseResultsModel: model };
+    }
+</script>
+
+@code{
+    [Parameter] public ExerciseResultsViewModel ExerciseResults { get; set; }
+    
+    private async Task SaveChanges()
+    {
+        try
+        {
+            await (await Linker.RequestBuilder
+                    .RequestToAction("Update", "ExerciseResults", new { resultsId = ExerciseResults.Id })
+                    .WithMethod(HttpMethod.Put)
+                    .WithContent((await Js.InvokeAsync<object>("GetChangesModel")).ToString()!)
+                    .WithCookies()
+                    .Fetch())
+                .LoadCookies()
+                .OnSuccessAsync(async _ =>
+                {
+                    await Js.InvokeVoidAsync("ToggleEditMod");
+                })
+                .OnStatusCode(StatusCodes.Status401Unauthorized, _ =>
+                {
+                    Linker.NavigateToAction("Users.Login");
+                })
+                .OnUnhandled(response =>
+                {
+                    Linker.NavigateToAction("Error", routeValues: new {response.StatusCode});
+                })
+                .WaitForHandleFinishedAsync();
+        }
+        catch (Exception e)
+        {
+            Linker.NavigateToAction("Error", routeValues: new {StatusCode = 0, e.Message});
+        }
+    }
+}

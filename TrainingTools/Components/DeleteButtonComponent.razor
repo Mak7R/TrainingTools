@@ -1,0 +1,5 @@
+﻿<button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal-@ComponentId">@ButtonName</button>
+@code {
+    [Parameter] public Guid ComponentId { get; set; }
+    [Parameter] public string ButtonName { get; set; } = "Delete";
+}

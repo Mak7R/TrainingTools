@@ -23,7 +23,9 @@ public class ExerciseResultsService : IExerciseResultsService
         var existResults = await _dbContext.ExerciseResults
             .FirstOrDefaultAsync(er => er.OwnerId == _authorized.User.Id && er.ExerciseId == results.ExerciseId);
         
-        if (existResults != null) throw new Exception("Results Already Exists");
+        if (existResults != null) throw new AlreadyExistsException("User results already exists for this exercise");
+        
+        results.Id = Guid.NewGuid();
         results.OwnerId = _authorized.User.Id;
         
         await _dbContext.ExerciseResults.AddAsync(results);
@@ -34,13 +36,15 @@ public class ExerciseResultsService : IExerciseResultsService
     {
         return await _dbContext.ExerciseResults
             .AsNoTracking()
+            
             .Include(r => r.Owner)
             .Include(r => r.Exercise)
             .ThenInclude(e => e.Workspace)
             .ThenInclude(w => w.Owner)
             .Include(r => r.Exercise)
             .ThenInclude(e => e.Group)
-            .Where(r => r.Owner.Id == _authorized.User.Id)
+            
+            .Where(r => r.Owner.Equals(_authorized.User))
             .FirstOrDefaultAsync(expression);
     }
 
@@ -48,13 +52,15 @@ public class ExerciseResultsService : IExerciseResultsService
     {
         return await _dbContext.ExerciseResults
             .AsNoTracking()
+            
             .Include(r => r.Owner)
             .Include(r => r.Exercise)
             .ThenInclude(e => e.Workspace)
             .ThenInclude(w => w.Owner)
             .Include(r => r.Exercise)
             .ThenInclude(e => e.Group)
-            .Where(r => r.Owner.Id == _authorized.User.Id)
+            
+            .Where(r => r.Owner.Equals(_authorized.User)) // may be owner of exercise also could have rights for getAll (... || r.Exercise.Workspace.Owner.Id == _authorized.User.Id) or like a new method getAllForOwners
             .ToListAsync();
     }
 
@@ -67,13 +73,15 @@ public class ExerciseResultsService : IExerciseResultsService
             .ThenInclude(w => w.Owner)
             .Include(r => r.Exercise)
             .ThenInclude(e => e.Group)
-            .Where(r => r.Owner.Id == _authorized.User.Id)
+            
+            .Where(r => r.Owner.Equals(_authorized.User))
             .FirstOrDefaultAsync(r => r.Id == exerciseResultsId);
         
         if (exerciseResults == null) throw new NotFoundException($"{nameof(ExerciseResults)} with id {exerciseResultsId} was not found");
 
         updater(exerciseResults);
-        
+
+        if (!exerciseResults.Owner.Equals(_authorized.User)) throw new OperationNotAllowedException("Impossible to change owner of exercise result");
         // I can paste here all checks and security. Like check user changed or another errors.
     }
 
@@ -84,7 +92,8 @@ public class ExerciseResultsService : IExerciseResultsService
             .Include(r => r.Exercise)
             .ThenInclude(e => e.Workspace)
             .ThenInclude(w => w.Owner)
-            .Where(r => r.Owner.Id == _authorized.User.Id || r.Exercise.Workspace.Owner.Id == _authorized.User.Id)
+            
+            .Where(r => r.Owner.Equals(_authorized.User) || r.Exercise.Workspace.Owner.Equals(_authorized.User))
             .FirstOrDefaultAsync(r => r.Id == exerciseResultsId);
         
         if (exerciseResults == null) throw new NotFoundException($"{nameof(ExerciseResults)} with id {exerciseResultsId} was not found");

@@ -24,6 +24,7 @@ public class WorkspacesService : IWorkspacesService
 
     public async Task Add(Workspace workspace)
     {
+        workspace.Id = Guid.NewGuid();
         workspace.OwnerId = _authorized.User.Id;
         await _dbContext.Workspaces.AddAsync(workspace);
     }
@@ -32,8 +33,10 @@ public class WorkspacesService : IWorkspacesService
     {
         return await _dbContext.Workspaces
             .AsNoTracking()
+            
             .Include(w => w.Owner)
-            .Where(w => w.Owner.Id == _authorized.User.Id)
+            
+            .Where(w => w.Owner.Equals(_authorized.User))
             .FirstOrDefaultAsync(expression);
     }
 
@@ -41,8 +44,10 @@ public class WorkspacesService : IWorkspacesService
     {
         return await _dbContext.Workspaces
             .AsNoTracking()
+            
             .Include(w => w.Owner)
-            .Where(w => w.Owner.Id == _authorized.User.Id)
+            
+            .Where(w => w.Owner.Equals(_authorized.User))
             .ToListAsync();
     }
 
@@ -50,14 +55,14 @@ public class WorkspacesService : IWorkspacesService
     {
         var workspace = await _dbContext.Workspaces
             .Include(w => w.Owner)
-            .Where(w => w.Owner.Id == _authorized.User.Id)
+            
+            .Where(w => w.Owner.Equals(_authorized.User))
             .FirstOrDefaultAsync(w => w.Id == workspaceId);
         if (workspace == null) throw new NotFoundException($"{nameof(Workspace)} with id {workspaceId} was not found");
 
         updater(workspace);
         
         // I can paste here all checks and security. Like check user changed or another errors.
-        
     }
 
     public async Task Remove(Guid workspaceId)
@@ -66,7 +71,8 @@ public class WorkspacesService : IWorkspacesService
             .Include(w => w.Owner)
             .Include(w => w.Groups)
             .Include(w => w.Exercises)
-            .Where(w => w.Owner.Id == _authorized.User.Id)
+            
+            .Where(w => w.Owner.Equals(_authorized.User))
             .FirstOrDefaultAsync(w => w.Id == workspaceId);
         
         if (workspace == null) throw new NotFoundException($"{nameof(Workspace)} with id {workspaceId} was not found");

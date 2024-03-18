@@ -1,0 +1,58 @@
+﻿@rendermode InteractiveServer
+
+@inject Linker Linker
+
+<div class="modal fade" id="deleteModal-@ComponentId" tabindex="-1" aria-labelledby="deleteLabel-@ComponentId" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-4 text-danger" id="deleteLabel-@ComponentId">@ModalTitle</h1>
+            </div>
+            <div class="modal-body">
+                
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
+                <button @onclick="OnDeleteClick" class="btn btn-danger">Delete</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code
+{
+    [Parameter] public Guid ComponentId { get; set; }
+    [Parameter] public string ModalTitle { get; set; } = "Delete";
+    [Parameter] public string HandlerUrl { get; set; }
+    [Parameter] public string OnSuccessRedirectUrl { get; set; } = "/";
+    
+    private async Task OnDeleteClick()
+    {
+        try
+        {
+            await (await Linker.RequestBuilder
+                    .RequestToUrl(HandlerUrl)
+                    .WithMethod(HttpMethod.Delete)
+                    .WithCookies()
+                    .Fetch())
+                .LoadCookies()
+                .OnSuccess(_ =>
+                {
+                    Linker.NavigationManager.NavigateTo(OnSuccessRedirectUrl, true);
+                })
+                .OnStatusCode(StatusCodes.Status401Unauthorized, _ =>
+                {
+                    Linker.NavigateToAction("Users.Login");
+                })
+                .OnUnhandled(response =>
+                {
+                    Linker.NavigateToAction("Error", routeValues: new {response.StatusCode});
+                })
+                .WaitForHandleFinishedAsync();
+        }
+        catch (Exception e)
+        {
+            Linker.NavigateToAction("Error", routeValues: new {StatusCode = 0, e.Message});
+        }
+    }
+}

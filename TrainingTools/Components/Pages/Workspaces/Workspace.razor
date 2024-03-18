@@ -1,0 +1,121 @@
+﻿@page "/workspaces/{WorkspaceId:guid}/info"
+
+@rendermode InteractiveServer
+
+@inject Linker Linker
+
+<PageTitle>Workspace @if(_workspace != null) { <text>: @_workspace.Name</text> }</PageTitle>
+
+<div class="container-fluid">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="@Linker.GetLocalPathByAction("Workspaces.Workspaces", "Blazor")">Workspaces</a></li>
+        <li class="breadcrumb-item"><a href="@Linker.GetLocalPathByAction("Workspaces.FullWorkspace", "Blazor", new {WorkspaceId})">@WorkspaceId</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Info</li>
+    </ol>
+</div>
+
+<div class="container">
+    
+    <div>
+        <h3>Workspace</h3>
+        <h4>ID: 
+            @if (_workspace == null)
+            {
+                <div class="placeholder col-5 placeholder-glow bg-secondary"></div>
+            }
+            else
+            {
+                <text>@_workspace.Id</text>        
+            }
+        </h4>
+        <h4>Name: 
+            @if (_workspace == null)
+            {
+                <div class="placeholder col-4 placeholder-glow bg-secondary"></div>
+            }
+            else
+            {
+                <text>@_workspace.Name</text>    
+            }
+        </h4>
+        
+        <h4>Owner: 
+            @if (_workspace == null)
+            {
+               <div class="placeholder col-4 placeholder-glow bg-secondary"></div>
+            }
+            else
+            {
+                <text>@_workspace.Owner.Name</text>      
+            }
+        </h4>
+        
+    </div>
+    
+    <div>
+        <h3>Actions</h3>
+        
+        @if (_workspace == null)
+        {
+            <div class="spinner-border text-info" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        }
+        else
+        {
+            <a class="btn btn-success" href="@Linker.GetLocalPathByAction("Workspaces.FullWorkspace", "Blazor", new {WorkspaceId})">Workspace</a>
+            <a class="btn btn-success" href="@Linker.GetLocalPathByAction("Exercises.Exercises", "Blazor", new {WorkspaceId})">Exercises</a>
+            <a class="btn btn-success" href="@Linker.GetLocalPathByAction("Groups.Groups", "Blazor", new {WorkspaceId})">Groups</a>
+            <a class="btn btn-primary" href="@Linker.GetLocalPathByAction("Workspaces.EditWorkspace", "Blazor", new {WorkspaceId})">Edit</a>
+            
+            var componentId = Guid.NewGuid();
+            <DeleteButtonComponent ComponentId="componentId"/>
+            <DeleteWithPasswordComponent
+                ComponentId="componentId"
+                ModalTitle=@($"Delete workspace ({_workspace.Name})")
+                OnSuccessRedirectUrl="@Linker.GetLocalPathByAction("Workspaces.Workspaces", "Blazor")"
+                HandlerUrl="@Linker.GetPathByAction("Delete", "Workspaces", new {workspaceId = WorkspaceId})"/>
+        }
+    </div>
+    
+    
+</div>
+
+@code{
+    [Parameter] public Guid WorkspaceId { get; set; }
+    private WorkspaceViewModel? _workspace;
+    
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        try
+        {
+            if (firstRender)
+            {
+                await (await Linker.RequestBuilder
+                        .RequestToAction("GetInfo", "Workspaces", new { workspaceId = WorkspaceId })
+                        .WithMethod(HttpMethod.Get)
+                        .WithCookies()
+                        .Fetch())
+                    .LoadCookies()
+                    .OnSuccess(response =>
+                    {
+                        _workspace = JsonSerializer.Deserialize<WorkspaceViewModel>(response.Content);
+                        StateHasChanged();
+                    })
+                    .OnStatusCode(StatusCodes.Status401Unauthorized, _ =>
+                    {
+                        Linker.NavigateToAction("Users.Login");
+                    })
+                    .OnUnhandled(response =>
+                    {
+                        Linker.NavigateToAction("Error", routeValues: new { response.StatusCode });
+                    })
+                    .WaitForHandleFinishedAsync();
+            }
+        }
+        catch (Exception e)
+        {
+            Linker.NavigateToAction("Error", routeValues: new {StatusCode = 0, e.Message});
+        }
+    }
+}

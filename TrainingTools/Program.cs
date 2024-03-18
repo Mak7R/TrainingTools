@@ -1,10 +1,18 @@
+using Contracts.Client.Services;
 using Contracts.Services;
 using Microsoft.EntityFrameworkCore;
 using Services;
+using Services.Client;
 using Services.DbContexts;
 using SimpleAuthorizer;
+using TrainingTools.Components;
+using TrainingTools.Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddControllers();
+builder.Services.AddRazorComponents()
+    .AddInteractiveServerComponents();
 
 builder.Services.AddSingleton<ISessionContainer<Guid, Guid>, AutoClearedSessionContainer>((_) =>
 {
@@ -23,13 +31,25 @@ builder.Services.AddSingleton<ISessionContainer<Guid, Guid>, AutoClearedSessionC
     return sessionContainer;
 });
         
-builder.Services.AddControllersWithViews().AddRazorRuntimeCompilation();
+
 builder.Services.AddDbContext<TrainingToolsDbContext>(options =>
 {
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"),
         b => b.MigrationsAssembly("TrainingTools"));
 });
 
+// client-side
+builder.Services.AddHttpClient();
+builder.Services.AddScoped<IFetchService, DefaultFetchService>();
+builder.Services.AddScoped<ICookiesProvider, BrowserCookiesProvider>();
+builder.Services.AddScoped<RequestBuilder>();
+builder.Services.AddSingleton<ILinkGenerator, ConfigLinkGenerator>();
+builder.Services.AddTransient<Linker>();
+
+// both-side
+builder.Services.AddHttpContextAccessor();
+
+// server-side
 builder.Services.AddScoped<ICookiesSession, CookiesSession>();
 builder.Services.AddScoped<IAuthorizedUser, AuthorizedUser>();
 builder.Services.AddScoped<IUsersService, UsersService>();
@@ -46,24 +66,23 @@ using (var scope = app.Services.CreateScope())
     db.Migrate();
 }
 
+// Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
-    app.UseExceptionHandler("/error");
-    // app.UseExceptionHandlingMiddleware();
+    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+    app.UseHsts();
 }
 else
 {
-    app.UseDeveloperExceptionPage();
+    // for dev environment
 }
-
+app.UseExceptionHandlingMiddleware();
 app.UseHttpsRedirection();
-app.UseStaticFiles();
-app.UseRouting();
 
+app.UseStaticFiles();
+app.UseAntiforgery();
+
+app.MapRazorComponents<App>().AddInteractiveServerRenderMode();
 app.MapControllers();
 
 app.Run();
-
-// TODO
-// Create SQL Requests to DB
-// Create Cache for Responses from DB

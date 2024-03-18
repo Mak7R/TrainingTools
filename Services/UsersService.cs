@@ -23,17 +23,28 @@ public class UsersService : IUsersService
 
     public async Task Add(User user)
     {
+        var existUser = await _dbContext.Users.FirstOrDefaultAsync(u => u.Email == user.Email);
+        if (existUser != null) throw new AlreadyExistsException("User with this email already exists");
+        
+        user.Id = Guid.NewGuid();
+        
         await _dbContext.Users.AddAsync(user);
     }
 
     public async Task<User?> Get(Expression<Func<User, bool>> expression)
     {
-        return await _dbContext.Users.AsNoTracking().FirstOrDefaultAsync(expression);
+        return await _dbContext.Users
+            .AsNoTracking()
+            
+            .FirstOrDefaultAsync(expression);
     }
     
     public async Task<IEnumerable<User>> GetAll()
     {
-        return await _dbContext.Users.AsNoTracking().ToListAsync();
+        return await _dbContext.Users
+            .AsNoTracking()
+            
+            .ToListAsync();
     }
 
     public async Task Update(Guid userId, Action<User> updater)
@@ -44,7 +55,6 @@ public class UsersService : IUsersService
         updater(user);
         
         // I can paste here all checks and security. Like check user changed or another errors.
-        
     }
 
     public async Task Remove(Guid userId)
@@ -52,11 +62,12 @@ public class UsersService : IUsersService
         var user = await _dbContext.Users
             .Include(u => u.Workspaces)
             .Include(u => u.UserResults)
+            
             .FirstOrDefaultAsync(u => u.Id == userId);
         
         if (user == null) throw new NotFoundException($"{nameof(User)} with id {userId} was not found");
 
-        if (user.Id == _authorizedUser.User.Id /*or _authorizedUser.User.IsAdmin*/)
+        if (user.Equals(_authorizedUser.User) /*or _authorizedUser.User.IsAdmin*/)
         {
             var workspacesService = _serviceProvider.GetRequiredService<IWorkspacesService>();
             var exerciseResultsService = _serviceProvider.GetRequiredService<IWorkspacesService>();
@@ -68,7 +79,7 @@ public class UsersService : IUsersService
         }
         else
         {
-            throw new OperationNotAllowedException();
+            throw new OperationNotAllowedException("You has not rights to delete this user");
         }
     }
 }
