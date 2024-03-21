@@ -9,6 +9,7 @@
     <ItemGroup>
       <ProjectReference Include="..\Contracts\Contracts.csproj" />
       <ProjectReference Include="..\SimpleAuthenticator\SimpleAuthenticator.csproj" />
+      <ProjectReference Include="..\TrainingTools.ViewModels\TrainingTools.ViewModels.csproj" />
     </ItemGroup>
 
     <ItemGroup>

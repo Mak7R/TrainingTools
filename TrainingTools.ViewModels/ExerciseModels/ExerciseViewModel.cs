@@ -1,6 +1,5 @@
 ﻿using System.Text.Json.Serialization;
 using Contracts.ModelContracts;
-using Contracts.Models;
 
 namespace TrainingTools.ViewModels;
 
@@ -14,12 +13,12 @@ public class ExerciseViewModel
     public WorkspaceViewModel Workspace { get; set; }
     [JsonPropertyName("group")]
     public GroupViewModel? Group { get; set; }
-    public ExerciseViewModel(Exercise exercise)
+    public ExerciseViewModel(Guid id, string name, WorkspaceViewModel workspace, GroupViewModel? group)
     {
-        Id = exercise.Id;
-        Name = exercise.Name;
-        Workspace = new WorkspaceViewModel(exercise.Workspace);
-        Group = exercise.Group == null ? null : new GroupViewModel(exercise.Group);
+        Id = id;
+        Name = name;
+        Workspace = workspace;
+        Group = group;
     }
 
     public ExerciseViewModel()
@@ -31,9 +30,9 @@ public class ExerciseViewModel
 public class ExercisesViewCollectionBuilder : IViewCollectionBuilder<ExerciseViewModel>
 {
     private IEnumerable<ExerciseViewModel> _collection;
-    public ExercisesViewCollectionBuilder(IEnumerable<Exercise> exercises)
+    public ExercisesViewCollectionBuilder(IEnumerable<ExerciseViewModel> exercises)
     {
-        _collection = exercises.Select(e => new ExerciseViewModel(e));
+        _collection = exercises;
     }
     public IViewCollectionBuilder<ExerciseViewModel> Filter(IFilter filter)
     {

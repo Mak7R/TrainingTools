@@ -1,7 +1,9 @@
-﻿using Contracts.Exceptions;
+﻿using Contracts.Enums;
+using Contracts.Exceptions;
 using Contracts.Models;
 using Contracts.Services;
 using Microsoft.AspNetCore.Mvc;
+using Services;
 using TrainingTools.Extensions;
 using TrainingTools.ViewModels;
 
@@ -29,9 +31,9 @@ public class WorkspacesController : Controller
         catch (NotFoundException e) { return NotFound(new ErrorViewModel(e.Message)); }
 
         var workspacesService = scope.ServiceProvider.GetRequiredService<IWorkspacesService>();
-        var workspaces = await workspacesService.GetAll();
+        var workspaces = await workspacesService.GetRange(w => w.OwnerId == authorizedUser.User.Id);
         
-        return Json(new WorkspacesViewCollectionBuilder(workspaces).Filter(filter).Order(order).Build());
+        return Json(new WorkspacesViewCollectionBuilder(workspaces.Select(w => w.ToWorkspaceViewModel(WorkspacePermission.OwnerPermission))).Filter(filter).Order(order).Build());
     }
 
     [HttpPost]
@@ -65,18 +67,19 @@ public class WorkspacesController : Controller
         var authorizedUser = scope.ServiceProvider.GetRequiredService<IAuthorizedUser>();
         try { if (!await authorizedUser.Authorize(HttpContext)) return Unauthorized(new ErrorViewModel("User was not authorized")); }
         catch (NotFoundException e) { return NotFound(new ErrorViewModel(e.Message)); }
-
-        var workspacesService = scope.ServiceProvider.GetRequiredService<IWorkspacesService>();
+        
         var groupsService = scope.ServiceProvider.GetRequiredService<IGroupsService>();
         var exercisesService = scope.ServiceProvider.GetRequiredService<IExercisesService>();
         
-        var workspace = await workspacesService.Get(w => w.Id == workspaceId);
-        if (workspace == null) return NotFound(new ErrorViewModel("Workspace was not found"));
+        var selected = scope.ServiceProvider.GetRequiredService<ISelectedWorkspace>();
+        await selected.Select(workspaceId);
 
-        var groups = (await groupsService.GetAll()).Where(g => g.Workspace.Id == workspace.Id);
-        var exercises = (await exercisesService.GetAll()).Where(e => e.Workspace.Id == workspace.Id);
-        
-        return Json(new FullWorkspaceViewModel(workspace, new GroupsViewCollectionBuilder(groups).Build(), new ExercisesViewCollectionBuilder(exercises).Filter(filter).Order(order).Build()));
+        var groups = await groupsService.GetAll();
+        var exercises = await exercisesService.GetAll();
+
+        var model = selected.Workspace.ToFullWorkspaceViewModel(groups, exercises, selected.Permission);
+        new ExercisesViewCollectionBuilder(model.Exercises).Filter(filter).Order(order);
+        return Json(model);
     }
     
     [HttpGet("{workspaceId:guid}/info")]
@@ -86,12 +89,11 @@ public class WorkspacesController : Controller
         var authorizedUser = scope.ServiceProvider.GetRequiredService<IAuthorizedUser>();
         try { if (!await authorizedUser.Authorize(HttpContext)) return Unauthorized(new ErrorViewModel("User was not authorized")); }
         catch (NotFoundException e) { return NotFound(new ErrorViewModel(e.Message)); }
+        
+        var selected = scope.ServiceProvider.GetRequiredService<ISelectedWorkspace>();
+        await selected.Select(workspaceId);
 
-        var workspacesService = scope.ServiceProvider.GetRequiredService<IWorkspacesService>();
-        var workspace = await workspacesService.Get(w => w.Id == workspaceId);
-        if (workspace == null) return NotFound(new ErrorViewModel("Workspace was not found"));
-
-        return Json(new WorkspaceViewModel(workspace));
+        return Json(selected.Workspace.ToWorkspaceViewModel(selected.Permission));
     }
     
     [HttpDelete("{workspaceId:guid}")]
@@ -111,9 +113,6 @@ public class WorkspacesController : Controller
 
         var workspacesService = scope.ServiceProvider.GetRequiredService<IWorkspacesService>();
 
-        var workspace = await workspacesService.Get(w => w.Id == workspaceId);
-        if (workspace == null) return NotFound(new ErrorViewModel("Workspace was not found"));
-
         await workspacesService.Remove(workspaceId);
         await authorizedUser.SaveChanges();
         
@@ -130,9 +129,18 @@ public class WorkspacesController : Controller
         try { if (!await authorizedUser.Authorize(HttpContext)) return Unauthorized(new ErrorViewModel("User was not authorized")); }
         catch (NotFoundException e) { return NotFound(new ErrorViewModel(e.Message)); }
 
+        await scope.ServiceProvider.GetRequiredService<ISelectedWorkspace>().Select(workspaceId);
+        
         var workspacesService = scope.ServiceProvider.GetRequiredService<IWorkspacesService>();
-
-        await workspacesService.Update(workspaceId, w => w.Name = model.Name);
+        
+        await workspacesService.Update(w =>
+        {
+            w.Name = model.Name;
+            if (authorizedUser.User.Id == w.OwnerId)
+            {
+                w.IsPublic = model.IsPublic;
+            }
+        });
         await authorizedUser.SaveChanges();
 
         return Ok();

@@ -8,13 +8,18 @@ public class ExerciseResultsViewModel
 {
     [JsonPropertyName("id")]
     public Guid Id { get; set; }
+    
+    [JsonPropertyName("owner")]
+    public PublicUserViewModel Owner { get; set; }
+    
     [JsonPropertyName("results")]
     public ExerciseResultsObjectViewModel Results { get; set; }
 
-    public ExerciseResultsViewModel(ExerciseResults exerciseResults)
+    public ExerciseResultsViewModel(Guid id, PublicUserViewModel owner, ExerciseResultsObjectViewModel results)
     {
-        Id = exerciseResults.Id;
-        Results = new ExerciseResultsObjectViewModel(JsonSerializer.Deserialize<ExerciseResultsObject>(exerciseResults.ResultsJson) ?? new ExerciseResultsObject());
+        Id = id;
+        Owner = owner;
+        Results = results;
     }
 
     public ExerciseResultsViewModel()

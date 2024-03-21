@@ -1,4 +1,4 @@
-﻿@page "/workspaces/exercises/{ExerciseId:guid}/edit"
+﻿@page "/workspaces/{WorkspaceId:guid}/exercises/{ExerciseId:guid}/edit"
 
 @rendermode InteractiveServer
 
@@ -9,9 +9,9 @@
 <div class="container-fluid">
     <ol class="breadcrumb">
         <li class="breadcrumb-item"><a href="@Linker.GetLocalPathByAction("Workspaces.Workspaces", "Blazor")">Workspaces</a></li>
-        <li class="breadcrumb-item"><a href="@Linker.GetLocalPathByAction("Workspaces.FullWorkspace", "Blazor", new {WorkspaceId = _exerciseViewModel?.Workspace.Id ?? Guid.Empty})">@(_exerciseViewModel?.Workspace.Id ?? Guid.Empty)</a></li>
-        <li class="breadcrumb-item"><a href="@Linker.GetLocalPathByAction("Exercises.Exercises", "Blazor", new {WorkspaceId = _exerciseViewModel?.Workspace.Id ?? Guid.Empty})">Exercises</a></li>
-        <li class="breadcrumb-item"><a href="@Linker.GetLocalPathByAction("Groups.Group", "Blazor", new {ExerciseId = _exerciseViewModel?.Id ?? Guid.Empty})">@(_exerciseViewModel?.Id ?? Guid.Empty)</a></li>
+        <li class="breadcrumb-item"><a href="@Linker.GetLocalPathByAction("Workspaces.FullWorkspace", "Blazor", new {WorkspaceId})">@WorkspaceId</a></li>
+        <li class="breadcrumb-item"><a href="@Linker.GetLocalPathByAction("Exercises.Exercises", "Blazor", new {WorkspaceId})">Exercises</a></li>
+        <li class="breadcrumb-item"><a href="@Linker.GetLocalPathByAction("Groups.Group", "Blazor", new {ExerciseId})">@ExerciseId</a></li>
         <li class="breadcrumb-item active" aria-current="page">Edit Exercise</li>
     </ol>
 </div>
@@ -60,7 +60,7 @@
 </div>
 
 @code {
-
+    [Parameter] public Guid WorkspaceId { get; set; }
     [Parameter] public Guid ExerciseId { get; set; }
     
     private readonly EditExerciseModel _editExerciseModel = new()
@@ -81,7 +81,7 @@
             {
                 {
                     await (await Linker.RequestBuilder
-                            .RequestToAction("Get", "Exercises", new { exerciseId = ExerciseId })
+                            .RequestToAction("Get", "Exercises", new { WorkspaceId, ExerciseId })
                             .WithMethod(HttpMethod.Get)
                             .WithCookies()
                             .Fetch())
@@ -140,7 +140,7 @@
         try
         {
             await (await Linker.RequestBuilder
-                    .RequestToAction("Edit", "Exercises", new { exerciseId = ExerciseId })
+                    .RequestToAction("Edit", "Exercises", new { WorkspaceId, ExerciseId })
                     .WithMethod(HttpMethod.Patch)
                     .WithCookies()
                     .WithContent(_editExerciseModel)
@@ -148,7 +148,7 @@
                 .LoadCookies()
                 .OnSuccess(_ =>
                 {
-                    Linker.NavigateToAction("Exercises.Exercise", routeValues:new {ExerciseId});
+                    Linker.NavigateToAction("Exercises.Exercise", routeValues:new {WorkspaceId, ExerciseId});
                 })
                 .OnStatusCode(StatusCodes.Status400BadRequest, response =>
                 {

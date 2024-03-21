@@ -46,17 +46,21 @@
                         @exercise.Id
                     </td>
                     <td>
-                        <a href="@Linker.GetLocalPathByAction("Exercises.Exercise", "Blazor", new {ExerciseId = exercise.Id})">@exercise.Name</a>
+                        <a href="@Linker.GetLocalPathByAction("Exercises.Exercise", "Blazor", new {WorkspaceId, ExerciseId = exercise.Id})">@exercise.Name</a>
                     </td>
                     <td>
-                        <a href="@Linker.GetLocalPathByAction("Exercises.EditExercise", "Blazor", new {ExerciseId = exercise.Id})" class="btn btn-primary">Edit</a>
-                        
-                        @{ var componentId = Guid.NewGuid(); }
-                        <DeleteButtonComponent ComponentId="componentId"/>
-                        <DeleteModalComponent
-                            ModalTitle=@($"Delete exercise ({exercise.Name})")
-                            OnSuccessRedirectUrl=@Linker.GetLocalPathByAction("Exercises.Exercises", "Blazor", new {WorkspaceId})
-                            HandlerUrl="@Linker.GetPathByAction("Delete", "Exercises", new {exerciseId = exercise.Id})"/>
+                        @if (exercise.Workspace.Permission.HasEditPermission())
+                        {
+                            <a href="@Linker.GetLocalPathByAction("Exercises.EditExercise", "Blazor", new { WorkspaceId, ExerciseId = exercise.Id })" class="btn btn-primary">Edit</a>
+
+                            var componentId = Guid.NewGuid();
+                            <DeleteButtonComponent ComponentId="componentId"/>
+                            <DeleteModalComponent
+                                ComponentId="componentId"
+                                ModalTitle=@($"Delete exercise ({exercise.Name})")
+                                OnSuccessRedirectUrl=@Linker.GetLocalPathByAction("Exercises.Exercises", "Blazor", new { WorkspaceId })
+                                HandlerUrl="@Linker.GetPathByAction("Delete", "Exercises", new { WorkspaceId, exerciseId = exercise.Id })"/>
+                        }
                     </td>
                 </tr>
             }
@@ -70,7 +74,10 @@
     }
     else
     {
-        <a href="@Linker.GetLocalPathByAction("Exercises.AddExercise", "Blazor", new {WorkspaceId})" class="btn btn-success btn-block w-100">Add Exercise</a>
+        if (!_exercises.Any() || _exercises.First().Workspace.Permission.HasEditPermission())
+        {
+            <a href="@Linker.GetLocalPathByAction("Exercises.AddExercise", "Blazor", new {WorkspaceId})" class="btn btn-success btn-block w-100">Add Exercise</a>
+        }
     }
 </div>
 
@@ -88,7 +95,7 @@
                 _requestCollectionsHelper.OnSet += RequestExercises;
                 
                 await (await Linker.RequestBuilder
-                        .RequestToAction("GetAll", "Exercises", new { workspaceId = WorkspaceId })
+                        .RequestToAction("GetAll", "Exercises", new { WorkspaceId })
                         .WithMethod(HttpMethod.Get)
                         .WithCookies()
                         .Fetch())
@@ -120,7 +127,7 @@
         try
         {
             await (await Linker.RequestBuilder
-                    .RequestToUrl($"{Linker.GetPathByAction("GetAll", "Exercises", new { workspaceId = WorkspaceId })}?{query}") // danger code !!! fix query system
+                    .RequestToUrl($"{Linker.GetPathByAction("GetAll", "Exercises", new { WorkspaceId })}?{query}") // danger code !!! fix query system
                     .WithMethod(HttpMethod.Get)
                     .WithCookies()
                     .Fetch())

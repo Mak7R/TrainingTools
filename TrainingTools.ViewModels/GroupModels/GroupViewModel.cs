@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
+using Contracts.Enums;
 using Contracts.ModelContracts;
-using Contracts.Models;
 
 namespace TrainingTools.ViewModels;
 
@@ -15,11 +15,11 @@ public class GroupViewModel
     [JsonPropertyName("workspace")]
     public WorkspaceViewModel Workspace { get; set; }
     
-    public GroupViewModel(Group group)
+    public GroupViewModel(Guid id, string name, WorkspaceViewModel workspace)
     {
-        Id = group.Id;
-        Name = group.Name;
-        Workspace = new WorkspaceViewModel(group.Workspace);
+        Id = id;
+        Name = name;
+        Workspace = workspace;
     }
 
     public GroupViewModel()
@@ -31,9 +31,9 @@ public class GroupViewModel
 public class GroupsViewCollectionBuilder : IViewCollectionBuilder<GroupViewModel>
 {
     private IEnumerable<GroupViewModel> _collection;
-    public GroupsViewCollectionBuilder(IEnumerable<Group> exercises)
+    public GroupsViewCollectionBuilder(IEnumerable<GroupViewModel> exercises)
     {
-        _collection = exercises.Select(g => new GroupViewModel(g));
+        _collection = exercises;
     }
     public IViewCollectionBuilder<GroupViewModel> Filter(IFilter filter)
     {

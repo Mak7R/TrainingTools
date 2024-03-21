@@ -1,4 +1,4 @@
-﻿@page "/workspaces/groups/{GroupId:guid}"
+﻿@page "/workspaces/{WorkspaceId:guid}/groups/{GroupId:guid}"
 
 @rendermode InteractiveServer
 
@@ -9,8 +9,8 @@
 <div class="container-fluid">
     <ol class="breadcrumb">
         <li class="breadcrumb-item"><a href="@Linker.GetLocalPathByAction("Workspaces.Workspaces", "Blazor")">Workspaces</a></li>
-        <li class="breadcrumb-item"><a href="@Linker.GetLocalPathByAction("Workspaces.FullWorkspace", "Blazor", new {WorkspaceId = _group?.Workspace.Id ?? Guid.Empty})">@(_group?.Workspace.Id ?? Guid.Empty)</a></li>
-        <li class="breadcrumb-item"><a href="@Linker.GetLocalPathByAction("Groups.Groups", "Blazor", new {WorkspaceId = _group?.Workspace.Id ?? Guid.Empty})">Groups</a></li>
+        <li class="breadcrumb-item"><a href="@Linker.GetLocalPathByAction("Workspaces.FullWorkspace", "Blazor", new {WorkspaceId})">@WorkspaceId</a></li>
+        <li class="breadcrumb-item"><a href="@Linker.GetLocalPathByAction("Groups.Groups", "Blazor", new {WorkspaceId})">Groups</a></li>
         <li class="breadcrumb-item active" aria-current="page">@(_group?.Id ?? Guid.Empty)</li>
     </ol>
 </div>
@@ -60,20 +60,24 @@
         }
         else
         {
-            <a class="btn btn-primary" href="@Linker.GetLocalPathByAction("Groups.EditGroup", "Blazor",  new {GroupId})">Edit</a>
+            if (_group.Workspace.Permission.HasEditPermission())
+            {
+                <a class="btn btn-primary" href="@Linker.GetLocalPathByAction("Groups.EditGroup", "Blazor",  new {WorkspaceId, GroupId})">Edit</a>
             
-            var componentId = Guid.NewGuid();
-            <DeleteButtonComponent ComponentId="componentId"/>
-            <DeleteModalComponent
-                ComponentId="componentId"
-                ModalTitle=@($"Delete group ({_group.Name})")
-                OnSuccessRedirectUrl=@Linker.GetLocalPathByAction("Groups.Groups", "Blazor", new {WorkspaceId = _group.Workspace.Id})
-                HandlerUrl="@Linker.GetPathByAction("Delete", "Groups", new {groupId = _group.Id})"/>
+                var componentId = Guid.NewGuid();
+                <DeleteButtonComponent ComponentId="componentId"/>
+                <DeleteModalComponent
+                    ComponentId="componentId"
+                    ModalTitle=@($"Delete group ({_group.Name})")
+                    OnSuccessRedirectUrl=@Linker.GetLocalPathByAction("Groups.Groups", "Blazor", new {WorkspaceId})
+                    HandlerUrl="@Linker.GetPathByAction("Delete", "Groups", new {WorkspaceId, groupId = _group.Id})"/>
+            }
         }
     </div>
 </div>
 
 @code{
+    [Parameter] public Guid WorkspaceId { get; set; }
     [Parameter] public Guid GroupId { get; set; }
     private GroupViewModel? _group;
     
@@ -84,7 +88,7 @@
             if (firstRender)
             {
                 await (await Linker.RequestBuilder
-                        .RequestToAction("Get", "Groups", new { groupId = GroupId })
+                        .RequestToAction("Get", "Groups", new { WorkspaceId, GroupId })
                         .WithMethod(HttpMethod.Get)
                         .WithCookies()
                         .Fetch())

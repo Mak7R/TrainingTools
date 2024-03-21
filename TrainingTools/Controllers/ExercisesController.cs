@@ -2,12 +2,13 @@
 using Contracts.Models;
 using Contracts.Services;
 using Microsoft.AspNetCore.Mvc;
+using Services;
 using TrainingTools.Extensions;
 using TrainingTools.ViewModels;
 
 namespace TrainingTools.Controllers;
 
-[Route("api/v1/workspaces")]
+[Route("api/v1/workspaces/{workspaceId:guid}/[controller]")]
 public class ExercisesController : Controller
 {
     private readonly IServiceScopeFactory _scopeFactory;
@@ -17,7 +18,7 @@ public class ExercisesController : Controller
         _scopeFactory = scopeFactory;
     }
     
-    [HttpGet("{workspaceId:guid}/[controller]")]
+    [HttpGet("")]
     public async Task<IActionResult> GetAll(
         [FromRoute] Guid workspaceId,
         FilterModel filter, 
@@ -28,13 +29,16 @@ public class ExercisesController : Controller
         try { if (!await authorizedUser.Authorize(HttpContext)) return Unauthorized(new ErrorViewModel("User was not authorized")); }
         catch (NotFoundException e) { return NotFound(new ErrorViewModel(e.Message)); }
 
-        var exercisesService = scope.ServiceProvider.GetRequiredService<IExercisesService>();
-        var exercises = (await exercisesService.GetAll()).Where(e => e.Workspace.Id == workspaceId);
+        var selected = scope.ServiceProvider.GetRequiredService<ISelectedWorkspace>();
+        await selected.Select(workspaceId);
         
-        return Json(new ExercisesViewCollectionBuilder(exercises).Filter(filter).Order(order).Build());
+        var exercisesService = scope.ServiceProvider.GetRequiredService<IExercisesService>();
+        var exercises = await exercisesService.GetAll();
+        
+        return Json(new ExercisesViewCollectionBuilder(exercises.Select(e => e.ToExerciseViewModel(selected.Permission))).Filter(filter).Order(order).Build());
     }
 
-    [HttpPost("{workspaceId:guid}/[controller]")]
+    [HttpPost("")]
     public async Task<IActionResult> Add([FromRoute] Guid workspaceId, [FromBody] AddExerciseModel exerciseModel)
     {
         using var scope = _scopeFactory.CreateScope();
@@ -42,13 +46,14 @@ public class ExercisesController : Controller
         try { if (!await authorizedUser.Authorize(HttpContext)) return Unauthorized(new ErrorViewModel("User was not authorized")); }
         catch (NotFoundException e) { return NotFound(new ErrorViewModel(e.Message)); }
 
+        await scope.ServiceProvider.GetRequiredService<ISelectedWorkspace>().Select(workspaceId);
+        
         var exercisesService = scope.ServiceProvider.GetRequiredService<IExercisesService>();
 
         var exercise = new Exercise
         {
             Name = exerciseModel.Name,
             GroupId = exerciseModel.GroupId,
-            WorkspaceId = workspaceId
         };
 
         await exercisesService.Add(exercise);
@@ -57,31 +62,39 @@ public class ExercisesController : Controller
         return Ok();
     }
 
-    [HttpGet("exercises/{exerciseId:guid}")]
-    public async Task<IActionResult> Get([FromRoute] Guid exerciseId)
+    [HttpGet("{exerciseId:guid}")]
+    public async Task<IActionResult> Get([FromRoute] Guid exerciseId,[FromRoute] Guid workspaceId)
     {
         using var scope = _scopeFactory.CreateScope();
         var authorizedUser = scope.ServiceProvider.GetRequiredService<IAuthorizedUser>();
         try { if (!await authorizedUser.Authorize(HttpContext)) return Unauthorized(new ErrorViewModel("User was not authorized")); }
         catch (NotFoundException e) { return NotFound(new ErrorViewModel(e.Message)); }
+        
+        var selected = scope.ServiceProvider.GetRequiredService<ISelectedWorkspace>();
+        await selected.Select(workspaceId);
+        
         
         var exercisesService = scope.ServiceProvider.GetRequiredService<IExercisesService>();
         var exercise = await exercisesService.Get(e => e.Id == exerciseId);
         if (exercise == null) return NotFound(new ErrorViewModel("Exercise was not found"));
 
         var resultsService = scope.ServiceProvider.GetRequiredService<IExerciseResultsService>();
-        var results = await resultsService.Get(r => r.Exercise.Id == exercise.Id);
+        var results = await resultsService.Get(r => r.ExerciseId == exerciseId);
+        var allResults = await resultsService.GetRange(r=> r.ExerciseId == exerciseId);
         
-        return Json(new FullExerciseViewModel(exercise, results));
+        return Json(exercise.ToFullExerciseViewModel(results, allResults, selected.Permission));
     }
     
-    [HttpDelete("exercises/{exerciseId:guid}")]
-    public async Task<IActionResult> Delete([FromRoute] Guid exerciseId)
+    [HttpDelete("{exerciseId:guid}")]
+    public async Task<IActionResult> Delete([FromRoute] Guid exerciseId,[FromRoute] Guid workspaceId)
     {
         using var scope = _scopeFactory.CreateScope();
         var authorizedUser = scope.ServiceProvider.GetRequiredService<IAuthorizedUser>();
         try { if (!await authorizedUser.Authorize(HttpContext)) return Unauthorized(new ErrorViewModel("User was not authorized")); }
         catch (NotFoundException e) { return NotFound(new ErrorViewModel(e.Message)); }
+        
+        await scope.ServiceProvider.GetRequiredService<ISelectedWorkspace>().Select(workspaceId);
+        
 
         var exercisesService = scope.ServiceProvider.GetRequiredService<IExercisesService>();
         
@@ -91,8 +104,8 @@ public class ExercisesController : Controller
         return Ok();
     }
 
-    [HttpPatch("exercises/{exerciseId:guid}")]
-    public async Task<IActionResult> Edit([FromRoute] Guid exerciseId, [FromBody] EditExerciseModel model)
+    [HttpPatch("{exerciseId:guid}")]
+    public async Task<IActionResult> Edit([FromRoute] Guid exerciseId, [FromBody] EditExerciseModel model,[FromRoute] Guid workspaceId)
     {
         if (!ModelState.IsValid) return BadRequest(ModelState.ToModelStateErrorViewModel());
         
@@ -100,6 +113,9 @@ public class ExercisesController : Controller
         var authorizedUser = scope.ServiceProvider.GetRequiredService<IAuthorizedUser>();
         try { if (!await authorizedUser.Authorize(HttpContext)) return Unauthorized(new ErrorViewModel("User was not authorized")); }
         catch (NotFoundException e) { return NotFound(new ErrorViewModel(e.Message)); }
+        
+        await scope.ServiceProvider.GetRequiredService<ISelectedWorkspace>().Select(workspaceId);
+        
 
         var exercisesService = scope.ServiceProvider.GetRequiredService<IExercisesService>();
         

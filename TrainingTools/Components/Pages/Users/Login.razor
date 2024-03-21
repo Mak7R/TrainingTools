@@ -61,6 +61,11 @@
                     BindingError = JsonSerializer.Deserialize<ModelStateErrorViewModel>(response.Content);
                     StateHasChanged();
                 })
+                .OnStatusCode(StatusCodes.Status404NotFound, _ =>
+                {
+                    BindingError = new ModelStateErrorViewModel(new Dictionary<string, IEnumerable<string>?> { { nameof(LoginUserModel.Email), new[] { "User with email was not found" } } });
+                    StateHasChanged();
+                })
                 .OnUnhandled(response =>
                 {
                     Linker.NavigateToAction("Error", routeValues: new { response.StatusCode });

@@ -1,0 +1,78 @@
+﻿@page "/public/profile/{UserId:guid}"
+@rendermode InteractiveServer
+
+@inject IJSRuntime Js
+@inject Linker Linker
+
+<PageTitle>Profile @if (_user != null) { <text>: @_user?.Name</text> }</PageTitle>
+
+<div class="container-fluid">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item">Public</li>
+        <li class="breadcrumb-item">Users</li>
+        <li class="breadcrumb-item active" aria-current="page">@UserId</li>
+    </ol>
+</div>
+
+<div class="container">
+    <h2>Profile</h2>
+    
+    <div class="container">
+        <h4>ID: 
+            @if (_user == null)
+            {
+                <div class="placeholder col-5 placeholder-glow bg-secondary"></div>
+            }
+            else
+            {
+                <text>@_user.Id</text>
+            }
+        </h4>
+        <h4>Name: 
+            @if (_user == null)
+            {
+                <div class="placeholder col-4 placeholder-glow bg-secondary"></div>
+            }
+            else
+            {
+                <text>@_user.Name</text>
+            }
+        </h4>
+    </div>
+</div>
+
+@code {
+    [Parameter] public Guid UserId { get; set; }
+    private PublicUserViewModel? _user;
+    
+    
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        try
+        {
+            if (firstRender)
+            {
+                await (await Linker.RequestBuilder
+                        .RequestToAction("GetPublicUser", "Public", new {userId = UserId})
+                        .WithMethod(HttpMethod.Get)
+                        .WithCookies()
+                        .Fetch())
+                    .LoadCookies()
+                    .OnSuccess(response =>
+                    {
+                        _user = JsonSerializer.Deserialize<PublicUserViewModel>(response.Content);
+                        StateHasChanged();
+                    })
+                    .OnUnhandled(response =>
+                    {
+                        Linker.NavigateToAction("Error", routeValues: new { response.StatusCode });
+                    })
+                    .WaitForHandleFinishedAsync();
+            }
+        }
+        catch (Exception e)
+        {
+            Linker.NavigateToAction("Error", routeValues: new {StatusCode = 0, e.Message});
+        }
+    }
+}

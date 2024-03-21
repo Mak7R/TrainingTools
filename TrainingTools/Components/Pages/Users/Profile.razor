@@ -104,6 +104,19 @@
                 HandlerUrl="@Linker.GetPathByAction("Delete", "Users")"/>
         }
     </div>
+    <div class="container mt-2">
+        <h3>Follows</h3>
+        @if (_user == null)
+        {
+            <div class="spinner-border text-info" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        }
+        else
+        {
+            // TODO unfollowing
+        }
+    </div>
 </div>
 
 @code {

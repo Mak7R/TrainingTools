@@ -47,8 +47,8 @@ public class ConfigLinkGenerator : ILinkGenerator
             {
                 var value = property.GetValue(routeValues)?.ToString();
                 var token = $"{{{property.Name}}}";
-                if (url.Contains(token))
-                    url = url.Replace(token, value);
+                if (url.Contains(token, StringComparison.CurrentCultureIgnoreCase))
+                    url = url.Replace(token, value, StringComparison.CurrentCultureIgnoreCase);
                 else
                     queryString.Append($"{property.Name}={value}&");
             }

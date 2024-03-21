@@ -12,7 +12,7 @@
     </ol>
 </div>
 
-<div class="container-fluid">
+<div class="container">
     <SearchBar FilterByOptions="GroupsViewCollectionBuilder.FilterByOptions" RequestCollectionsHelper="_requestCollectionsHelper"/>
     <table class="table table-striped table-hover">
         <thead>
@@ -44,25 +44,38 @@
                         @group.Id
                     </td>
                     <td>
-                        <a href="@Linker.GetLocalPathByAction("Groups.Group", "Blazor", new {GroupId = group.Id})">@group.Name</a>
+                        <a href="@Linker.GetLocalPathByAction("Groups.Group", "Blazor", new {WorkspaceId,GroupId = group.Id})">@group.Name</a>
                     </td>
                     <td>
-                        <a href="@Linker.GetLocalPathByAction("Groups.EditGroup", "Blazor", new {GroupId = group.Id})" class="btn btn-primary">Edit</a>
-                        
-                        @{ var componentId = Guid.NewGuid(); }
-                        <DeleteButtonComponent ComponentId="componentId"/>
-                        <DeleteModalComponent
-                            ModalTitle=@($"Delete group ({group.Name})")
-                            OnSuccessRedirectUrl="@Linker.GetLocalPathByAction("Groups.Groups", "Blazor", new {WorkspaceId})"
-                            HandlerUrl="@Linker.GetLocalPathByAction("Delete", "Groups", new {groupId = group.Id})"/>
+                        @if (group.Workspace.Permission.HasEditPermission())
+                        {
+                            <a href="@Linker.GetLocalPathByAction("Groups.EditGroup", "Blazor", new { WorkspaceId, GroupId = group.Id })" class="btn btn-primary">Edit</a>
+
+                            var componentId = Guid.NewGuid();
+                            <DeleteButtonComponent ComponentId="componentId"/>
+                            <DeleteModalComponent
+                                ComponentId="componentId"
+                                ModalTitle=@($"Delete group ({group.Name})")
+                                OnSuccessRedirectUrl="@Linker.GetLocalPathByAction("Groups.Groups", "Blazor", new { WorkspaceId })"
+                                HandlerUrl="@Linker.GetPathByAction("Delete", "Groups", new { WorkspaceId, groupId = group.Id })"/>
+                        }
                     </td>
                 </tr>
             }
         }
         </tbody>
     </table>
-
-    <a href="@Linker.GetLocalPathByAction("Groups.AddGroup", "Blazor", new {WorkspaceId})" class="btn btn-success btn-block w-100">Add Group</a>
+    @if (_groups == null)
+    {
+        <a class="btn btn-success" disabled><span class="spinner-border spinner-border-sm" aria-hidden="true"></span>Add Group</a>
+    }
+    else
+    {
+        if (!_groups.Any() || _groups.First().Workspace.Permission.HasEditPermission())
+        {
+            <a href="@Linker.GetLocalPathByAction("Groups.AddGroup", "Blazor", new {WorkspaceId})" class="btn btn-success btn-block w-100">Add Group</a>   
+        }
+    }
 </div>
 
 @code {
@@ -74,11 +87,11 @@
     {
         try
         {
-            _requestCollectionsHelper.OnSet += RequestGroups;
             if (firstRender)
             {
+                _requestCollectionsHelper.OnSet += RequestGroups;
                 await (await Linker.RequestBuilder
-                        .RequestToAction("GetAll", "Groups", new { workspaceId = WorkspaceId })
+                        .RequestToAction("GetAll", "Groups", new { WorkspaceId })
                         .WithMethod(HttpMethod.Get)
                         .WithCookies()
                         .Fetch())
@@ -110,7 +123,7 @@
         try
         {
             await (await Linker.RequestBuilder
-                    .RequestToUrl($"{Linker.GetPathByAction("GetAll", "Groups", new { workspaceId = WorkspaceId })}?{query}") // danger code !!! fix query system
+                    .RequestToUrl($"{Linker.GetPathByAction("GetAll", "Groups", new { WorkspaceId })}?{query}") // danger code !!! fix query system
                     .WithMethod(HttpMethod.Get)
                     .WithCookies()
                     .Fetch())

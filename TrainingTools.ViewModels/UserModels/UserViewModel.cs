@@ -14,11 +14,14 @@ public class UserViewModel
     [JsonPropertyName("email")]
     public string Email { get; set; }
     
-    public UserViewModel(User user)
+    public IEnumerable<FollowViewModel> Follows { get; set; }
+    
+    public UserViewModel(Guid id, string name, string email, IEnumerable<FollowViewModel> follows)
     {
-        Id = user.Id;
-        Name = user.Name;
-        Email = user.Email;
+        Id = id;
+        Name = name;
+        Email = email;
+        Follows = follows;
     }
     
     public UserViewModel()

@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
+using Contracts.Enums;
 using Contracts.ModelContracts;
-using Contracts.Models;
 
 namespace TrainingTools.ViewModels;
 
@@ -11,13 +11,21 @@ public class WorkspaceViewModel
     [JsonPropertyName("name")]
     public string Name { get; set; }
     [JsonPropertyName("owner")]
-    public UserViewModel Owner { get; set; }
+    public PublicUserViewModel Owner { get; set; }
     
-    public WorkspaceViewModel(Workspace workspace)
+    [JsonPropertyName("public")]
+    public bool IsPublic { get; set; }
+    
+    [JsonPropertyName("permission")]
+    public WorkspacePermission Permission { get; set; }
+    
+    public WorkspaceViewModel(Guid id, string name, PublicUserViewModel owner, bool isPublic, WorkspacePermission permission)
     {
-        Id = workspace.Id;
-        Name = workspace.Name;
-        Owner = new UserViewModel(workspace.Owner);
+        Id = id;
+        Name = name;
+        Owner = owner;
+        IsPublic = isPublic;
+        Permission = permission;
     }
 
     public WorkspaceViewModel()
@@ -30,9 +38,9 @@ public class WorkspacesViewCollectionBuilder : IViewCollectionBuilder<WorkspaceV
 {
     private IEnumerable<WorkspaceViewModel> _collection;
 
-    public WorkspacesViewCollectionBuilder(IEnumerable<Workspace> workspaces)
+    public WorkspacesViewCollectionBuilder(IEnumerable<WorkspaceViewModel> workspaces)
     {
-        _collection = workspaces.Select(w => new WorkspaceViewModel(w));
+        _collection = workspaces;
     }
     
     public IViewCollectionBuilder<WorkspaceViewModel> Filter(IFilter filter)

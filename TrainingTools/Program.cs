@@ -52,11 +52,13 @@ builder.Services.AddHttpContextAccessor();
 // server-side
 builder.Services.AddScoped<ICookiesSession, CookiesSession>();
 builder.Services.AddScoped<IAuthorizedUser, AuthorizedUser>();
+builder.Services.AddScoped<ISelectedWorkspace, SelectedWorkspace>();
 builder.Services.AddScoped<IUsersService, UsersService>();
 builder.Services.AddScoped<IWorkspacesService, WorkspacesService>();
 builder.Services.AddScoped<IExercisesService, ExercisesService>();
 builder.Services.AddScoped<IGroupsService, GroupsService>();
 builder.Services.AddScoped<IExerciseResultsService, ExerciseResultsService>();
+builder.Services.AddScoped<IFollowersService, FollowersService>();
 
 var app = builder.Build();
 

@@ -1,0 +1,145 @@
+﻿@page "/public/workspaces/{WorkspaceId:guid}"
+@using Contracts.Enums
+@rendermode InteractiveServer
+
+@inject Linker Linker
+
+<PageTitle>Workspace @if(_workspace != null) { <text>: @_workspace.Name</text> }</PageTitle>
+
+<div class="container-fluid">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item">Public</li>
+        <li class="breadcrumb-item"><a href="@Linker.GetLocalPathByAction("Workspaces.Workspaces", "Blazor")">Workspaces</a></li>
+        <li class="breadcrumb-item active" aria-current="page">@WorkspaceId</li>
+    </ol>
+</div>
+
+<div class="container">
+    <div>
+        <h3>Workspace</h3>
+        <h4>ID: 
+            @if (_workspace == null)
+            {
+                <div class="placeholder col-5 placeholder-glow bg-secondary"></div>
+            }
+            else
+            {
+                <text>@_workspace.Id</text>        
+            }
+        </h4>
+        <h4>Name: 
+            @if (_workspace == null)
+            {
+                <div class="placeholder col-4 placeholder-glow bg-secondary"></div>
+            }
+            else
+            {
+                <text>@_workspace.Name</text>    
+            }
+        </h4>
+        
+        <h4>Owner: 
+            @if (_workspace == null)
+            {
+               <div class="placeholder col-4 placeholder-glow bg-secondary"></div>
+            }
+            else
+            {
+                <text>@_workspace.Owner.Name</text>      
+            }
+        </h4>
+        
+    </div>
+    
+    <div>
+        <h3>Actions</h3>
+        
+        @if (_workspace == null)
+        {
+            <div class="spinner-border text-info" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        }
+        else
+        {
+            if (_workspace.Permission == WorkspacePermission.Unauthorized)
+            {
+                            
+            }
+            else if (_workspace.Permission == WorkspacePermission.PermissionDenied)
+            {
+                <button class="btn btn-primary" @onclick="@(() => Follow(_workspace.Id))">Follow</button>
+            }
+            else
+            {
+                <button class="btn btn-primary" disabled>Followed</button>
+            }
+        }
+    </div>
+</div>
+
+@code{
+    [Parameter] public Guid WorkspaceId { get; set; }
+    private PublicWorkspaceViewModel? _workspace;
+    
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        try
+        {
+            if (firstRender)
+            {
+                await (await Linker.RequestBuilder
+                        .RequestToAction("GetPublicWorkspace", "Public", new { WorkspaceId })
+                        .WithMethod(HttpMethod.Get)
+                        .WithCookies()
+                        .Fetch())
+                    .LoadCookies()
+                    .OnSuccess(response =>
+                    {
+                        _workspace = JsonSerializer.Deserialize<PublicWorkspaceViewModel>(response.Content);
+                        StateHasChanged();
+                    })
+                    .OnStatusCode(StatusCodes.Status302Found, _ =>
+                    {
+                        Linker.NavigateToAction("Workspaces.Workspace", routeValues: new {WorkspaceId});
+                    })
+                    .OnStatusCode(StatusCodes.Status401Unauthorized, _ =>
+                    {
+                        Linker.NavigateToAction("Users.Login");
+                    })
+                    .OnUnhandled(response =>
+                    {
+                        Linker.NavigateToAction("Error", routeValues: new { response.StatusCode });
+                    })
+                    .WaitForHandleFinishedAsync();
+            }
+        }
+        catch (Exception e)
+        {
+            Linker.NavigateToAction("Error", routeValues: new {StatusCode = 0, e.Message});
+        }
+    }
+    
+    private async void Follow(Guid workspaceId)
+    {
+        await (await Linker.RequestBuilder
+                .RequestToAction("Add", "Followers", new {workspaceId})
+                .WithMethod(HttpMethod.Post)
+                .WithCookies()
+                .Fetch())
+            .LoadCookies()
+            .OnSuccess(_ =>
+            {
+                Linker.NavigationManager.Refresh(true);
+            })
+            .OnStatusCode(StatusCodes.Status401Unauthorized, _ =>
+            {
+                Linker.NavigateToAction("Users.Login");
+            })
+            .OnUnhandled(response =>
+            {
+                Linker.NavigateToAction("Error", routeValues: new { response.StatusCode });
+            })
+            .WaitForHandleFinishedAsync();
+    }
+}

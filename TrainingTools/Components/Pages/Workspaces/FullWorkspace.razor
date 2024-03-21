@@ -14,7 +14,7 @@
     </ol>
 </div>
 
-<div class="container-fluid">
+<div class="container">
     <SearchBar FilterByOptions="ExercisesViewCollectionBuilder.FilterByOptions" RequestCollectionsHelper="_requestCollectionsHelper"/>
     <table class="table table-striped table-hover">
         <thead>
@@ -84,17 +84,21 @@
                                             @exercise.Id
                                         </td>
                                         <td class="col-4">
-                                            <a href="@Linker.GetLocalPathByAction("Exercises.Exercise", "Blazor", new {ExerciseId  = exercise.Id})">@exercise.Name</a>
+                                            <a href="@Linker.GetLocalPathByAction("Exercises.Exercise", "Blazor", new {WorkspaceId, ExerciseId  = exercise.Id})">@exercise.Name</a>
                                         </td>
                                         <td class="col-2">
-                                            <a href="@Linker.GetLocalPathByAction("Exercises.EditExercise", "Blazor", new {ExerciseId  = exercise.Id})" class="btn btn-primary">Edit</a>
-                                            @{ var componentId = Guid.NewGuid(); }
-                                            <DeleteButtonComponent ComponentId="componentId"/>
-                                            <DeleteModalComponent
-                                                ComponentId="@componentId"
-                                                ModalTitle=@($"Delete exercise ({exercise.Name})")
-                                                OnSuccessRedirectUrl="@Linker.GetLocalPathByAction("Exercises.Exercises", "Blazor", new {WorkspaceId})"
-                                                HandlerUrl="@Linker.GetPathByAction("Delete", "Exercises", new {exerciseId = exercise.Id})"/>
+                                            @if (_workspace.Permission.HasEditPermission())
+                                            {
+                                                <a href="@Linker.GetLocalPathByAction("Exercises.EditExercise", "Blazor", new { WorkspaceId, ExerciseId = exercise.Id })" class="btn btn-primary">Edit</a>
+                                                
+                                                var componentId = Guid.NewGuid();
+                                                <DeleteButtonComponent ComponentId="@componentId"/>
+                                                <DeleteModalComponent
+                                                    ComponentId="@componentId"
+                                                    ModalTitle=@($"Delete exercise ({exercise.Name})")
+                                                    OnSuccessRedirectUrl="@Linker.GetLocalPathByAction("Exercises.Exercises", "Blazor", new { WorkspaceId })"
+                                                    HandlerUrl="@Linker.GetPathByAction("Delete", "Exercises", new { WorkspaceId, exerciseId = exercise.Id })"/>
+                                            }
                                         </td>
                                     </tr>
                                 }
@@ -106,8 +110,11 @@
             }
         </div>
 
-        <a href="@Linker.GetLocalPathByAction("Exercises.AddExercise", "Blazor", new {WorkspaceId})" class="btn btn-success btn-block w-100 mb-2">Add Exercise</a>
-        <a href="@Linker.GetLocalPathByAction("Groups.AddGroup", "Blazor", new {WorkspaceId})" class="btn btn-success btn-block w-100">Add Group</a> 
+        if (_workspace.Permission.HasEditPermission())
+        {
+            <a href="@Linker.GetLocalPathByAction("Exercises.AddExercise", "Blazor", new {WorkspaceId})" class="btn btn-success btn-block w-100 mb-2">Add Exercise</a>
+            <a href="@Linker.GetLocalPathByAction("Groups.AddGroup", "Blazor", new {WorkspaceId})" class="btn btn-success btn-block w-100">Add Group</a> 
+        }
     }
 </div>
 

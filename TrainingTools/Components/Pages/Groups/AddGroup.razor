@@ -40,7 +40,7 @@
         try
         {
             await (await Linker.RequestBuilder
-                    .RequestToAction("Add", "Groups", new { workspaceId = WorkspaceId })
+                    .RequestToAction("Add", "Groups", new { WorkspaceId })
                     .WithMethod(HttpMethod.Post)
                     .WithContent(_addGroupModel)
                     .WithCookies()

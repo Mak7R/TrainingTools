@@ -97,9 +97,11 @@ public class RequestBuilder
     public async Task<ResponseDestructor> Fetch(Action<Exception>? exceptionHandler = null)
     {
         if (_tasks.Count != 0) 
-            foreach (var task in _tasks) 
+            foreach (var task in _tasks)
                 await task;
 
+        _tasks.Clear();
+        
         var fetchService = _serviceProvider.GetRequiredService<IFetchService>();
         HttpResponse response;
         try
@@ -200,8 +202,10 @@ public class ResponseDestructor
     public async Task WaitForHandleFinishedAsync()
     {
         if (_tasks.Count != 0) 
-            foreach (var task in _tasks) 
+            foreach (var task in _tasks)
                 await task;
+
+        _tasks.Clear();
 
         if (_asyncHandler != null) await _asyncHandler(_response);
     }

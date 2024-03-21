@@ -73,7 +73,7 @@
             if (firstRender)
             {
                 await (await Linker.RequestBuilder
-                    .RequestToAction("GetAll", "Groups", new { workspaceId = WorkspaceId })
+                    .RequestToAction("GetAll", "Groups", new { WorkspaceId })
                     .WithMethod(HttpMethod.Get)
                     .WithCookies()
                     .Fetch())
@@ -105,7 +105,7 @@
         try
         {
             await (await Linker.RequestBuilder
-                    .RequestToAction("Add", "Exercises", new {workspaceId = WorkspaceId})
+                    .RequestToAction("Add", "Exercises", new {WorkspaceId})
                     .WithMethod(HttpMethod.Post)
                     .WithContent(_addExerciseModel)
                     .WithCookies()

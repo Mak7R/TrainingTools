@@ -49,7 +49,23 @@
                 <text>@_workspace.Owner.Name</text>      
             }
         </h4>
-        
+        <h4>Access: 
+            @if (_workspace == null)
+            {
+                <div class="placeholder col-4 placeholder-glow bg-secondary"></div>
+            }
+            else
+            {
+                if (_workspace.IsPublic)
+                {
+                    <text>Public</text>
+                }
+                else
+                {
+                    <text>Private</text>
+                }
+            }
+        </h4>
     </div>
     
     <div>
@@ -66,15 +82,23 @@
             <a class="btn btn-success" href="@Linker.GetLocalPathByAction("Workspaces.FullWorkspace", "Blazor", new {WorkspaceId})">Workspace</a>
             <a class="btn btn-success" href="@Linker.GetLocalPathByAction("Exercises.Exercises", "Blazor", new {WorkspaceId})">Exercises</a>
             <a class="btn btn-success" href="@Linker.GetLocalPathByAction("Groups.Groups", "Blazor", new {WorkspaceId})">Groups</a>
-            <a class="btn btn-primary" href="@Linker.GetLocalPathByAction("Workspaces.EditWorkspace", "Blazor", new {WorkspaceId})">Edit</a>
             
-            var componentId = Guid.NewGuid();
-            <DeleteButtonComponent ComponentId="componentId"/>
-            <DeleteWithPasswordComponent
-                ComponentId="componentId"
-                ModalTitle=@($"Delete workspace ({_workspace.Name})")
-                OnSuccessRedirectUrl="@Linker.GetLocalPathByAction("Workspaces.Workspaces", "Blazor")"
-                HandlerUrl="@Linker.GetPathByAction("Delete", "Workspaces", new {workspaceId = WorkspaceId})"/>
+            if (_workspace.Permission.HasEditPermission())
+            {
+                <a class="btn btn-primary" href="@Linker.GetLocalPathByAction("Workspaces.EditWorkspace", "Blazor", new {WorkspaceId})">Edit</a>
+            }
+            
+            if (_workspace.Permission.HasOwnerPermission())
+            {
+                <a class="btn btn-primary" href="@Linker.GetLocalPathByAction("Workspaces.Followers", "Blazor", new { WorkspaceId })">Followers</a>
+                var componentId = Guid.NewGuid();
+                <DeleteButtonComponent ComponentId="componentId"/>
+                <DeleteWithPasswordComponent
+                    ComponentId="componentId"
+                    ModalTitle=@($"Delete workspace ({_workspace.Name})")
+                    OnSuccessRedirectUrl="@Linker.GetLocalPathByAction("Workspaces.Workspaces", "Blazor")"
+                    HandlerUrl="@Linker.GetPathByAction("Delete", "Workspaces", new {WorkspaceId})"/>
+            }
         }
     </div>
     
@@ -92,7 +116,7 @@
             if (firstRender)
             {
                 await (await Linker.RequestBuilder
-                        .RequestToAction("GetInfo", "Workspaces", new { workspaceId = WorkspaceId })
+                        .RequestToAction("GetInfo", "Workspaces", new { WorkspaceId })
                         .WithMethod(HttpMethod.Get)
                         .WithCookies()
                         .Fetch())

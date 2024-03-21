@@ -1,0 +1,189 @@
+﻿@page "/workspaces/{WorkspaceId:guid}/followers"
+@using Contracts.Models
+@using Contracts.Enums
+
+@rendermode InteractiveServer
+
+@inject Linker Linker
+
+<PageTitle>Followers</PageTitle>
+
+<div class="container-fluid">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="@Linker.GetLocalPathByAction("Workspaces.Workspaces", "Blazor")">Workspaces</a></li>
+        <li class="breadcrumb-item"><a href="@Linker.GetLocalPathByAction("Workspaces.FullWorkspace", "Blazor", new {WorkspaceId})">@WorkspaceId</a></li>
+        <li class="breadcrumb-item"><a href="@Linker.GetLocalPathByAction("Workspaces.Workspace", "Blazor", new {WorkspaceId})">Info</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Followers</li>
+    </ol>
+</div>
+
+<div class="container mb-4">
+    <h3>Followers</h3>
+    
+    <SearchBar FilterByOptions="FollowersViewCollectionBuilder.FilterByOptions" RequestCollectionsHelper="_requestCollectionsHelper"/>
+    <table class="table table-striped table-hover">
+        <thead>
+        <tr>
+            <th class="col-2">
+                <OrderComponent RequestCollectionsHelper="_requestCollectionsHelper" Value="@nameof(FollowerViewModel.Follower)" Display="Follower" Options="@(new List<(string OptionName, string OptionHtmlView)> { ("", StaticHtml.OrderIcons.None), ("A-Z", StaticHtml.OrderIcons.ArrowUp), ("Z-A", StaticHtml.OrderIcons.ArrowDown) })"/>
+            </th>
+            <th class="col-2">
+                <OrderComponent RequestCollectionsHelper="_requestCollectionsHelper" Value="@nameof(FollowerViewModel.Rights)" Display="Rights" Options="@(new List<(string OptionName, string OptionHtmlView)> { ("", StaticHtml.OrderIcons.None), ("ASCENDING", StaticHtml.OrderIcons.ArrowUp), ("DESCENDING", StaticHtml.OrderIcons.ArrowDown) })"/>
+            </th>
+            <th class="col-2">
+                Actions
+            </th>
+        </tr>
+        </thead>
+                
+        @if (_followers == null)
+        {
+            <div class="spinner-border text-info" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        }
+        else
+        {
+            <tbody>
+            @foreach(var follower in _followers)
+            {
+                <tr>
+                    <td>
+                        <a href="@Linker.GetLocalPathByAction("Users.PublicProfile", "Blazor", new {UserId = follower.Follower.Id})">@follower.Follower.Name</a>
+                    </td>
+                    <td>
+                        <select class="form-select" @onchange="@(e => ChangeRights(follower.Follower.Id, new EditFollowerModel { Rights = Enum.Parse<FollowerRights>(e.Value?.ToString() ?? nameof(FollowerRights.PendingAccess))}))">
+                            @foreach (var rights in Enum.GetNames<FollowerRights>())
+                            {
+                                if (follower.Rights.ToString() == rights)
+                                {
+                                    <option value="@rights" selected>@rights</option>
+                                }
+                                else
+                                {
+                                    <option value="@rights">@rights</option>
+                                }
+                                
+                            }
+                        </select>
+                    </td>
+                    <td>
+                        @{ var componentId = Guid.NewGuid(); }
+                        <DeleteButtonComponent ComponentId="@componentId"/>
+                        <DeleteModalComponent
+                            ComponentId="@componentId"
+                            ModalTitle=@($"Delete follower ({follower.Follower.Name})")
+                            OnSuccessRedirectUrl="@Linker.GetLocalPathByAction("Workspaces.Followers", "Blazor", new {WorkspaceId})"
+                            HandlerUrl="@Linker.GetPathByAction("Delete", "Followers", new { workspaceId = WorkspaceId, followerId = follower.Follower.Id })"/>
+                    </td>
+                </tr>
+            }
+            </tbody>
+        }
+    </table>
+</div>
+
+
+@code {
+    [Parameter] public Guid WorkspaceId { get; set; }
+    
+    private IEnumerable<FollowerViewModel>? _followers;
+    
+    private readonly RequestCollectionsHelper _requestCollectionsHelper = new();
+    
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        try
+        {
+            if (firstRender)
+            {
+                _requestCollectionsHelper.OnSet += RequestFollowers;
+                
+                await (await Linker.RequestBuilder
+                        .RequestToAction("GetAll", "Followers", new { workspaceId = WorkspaceId })
+                        .WithMethod(HttpMethod.Get)
+                        .WithCookies()
+                        .Fetch())
+                    .LoadCookies()
+                    .OnSuccess(response =>
+                    {
+                        _followers = JsonSerializer.Deserialize<List<FollowerViewModel>>(response.Content);
+                        StateHasChanged();
+                    })
+                    .OnStatusCode(StatusCodes.Status401Unauthorized, _ =>
+                    {
+                        Linker.NavigateToAction("Users.Login");
+                    })
+                    .OnUnhandled(response =>
+                    {
+                        Linker.NavigateToAction("Error", routeValues: new { response.StatusCode });
+                    })
+                    .WaitForHandleFinishedAsync();
+            }
+        }
+        catch (Exception e)
+        {
+            Linker.NavigateToAction("Error", routeValues: new {StatusCode = 0, e.Message});
+        }
+    }
+    
+    private async void RequestFollowers(string query)
+    {
+        try
+        {
+            await (await Linker.RequestBuilder
+                    .RequestToUrl($"{Linker.GetPathByAction("GetAll", "Followers", new {workspaceId = WorkspaceId})}?{query}")
+                    .WithMethod(HttpMethod.Get)
+                    .WithCookies()
+                    .Fetch())
+                .LoadCookies()
+                .OnSuccess(response =>
+                {
+                    _followers = JsonSerializer.Deserialize<List<FollowerViewModel>>(response.Content);
+                    StateHasChanged();
+                })
+                .OnStatusCode(StatusCodes.Status401Unauthorized, _ =>
+                {
+                    Linker.NavigateToAction("Users.Login");
+                })
+                .OnUnhandled(response =>
+                {
+                    Linker.NavigateToAction("Error", routeValues: new { response.StatusCode });
+                })
+                .WaitForHandleFinishedAsync();
+        }
+        catch (Exception e)
+        {
+            Linker.NavigateToAction("Error", routeValues: new {StatusCode = 0, e.Message});
+        }
+    }
+
+    private async void ChangeRights(Guid followerId, EditFollowerModel model)
+    {
+        await (await Linker.RequestBuilder
+                .RequestToAction("Edit", "Followers", new {workspaceId = WorkspaceId, followerId})
+                .WithMethod(HttpMethod.Patch)
+                .WithContent(model)
+                .WithCookies()
+                .Fetch())
+            .LoadCookies()
+            .OnSuccess(_ =>
+            {
+                // ignored
+                // possible Linker.NavigationManager.Refresh(true);
+            })
+            .OnStatusCode(StatusCodes.Status400BadRequest, _ =>
+            {
+                // ignored
+            })
+            .OnStatusCode(StatusCodes.Status401Unauthorized, _ =>
+            {
+                Linker.NavigateToAction("Users.Login");
+            })
+            .OnUnhandled(response =>
+            {
+                Linker.NavigateToAction("Error", routeValues: new { response.StatusCode });
+            })
+            .WaitForHandleFinishedAsync();
+    }
+}

@@ -2,6 +2,8 @@
 using Contracts.Models;
 using Contracts.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
+using Services;
 using TrainingTools.Extensions;
 using TrainingTools.ViewModels;
 
@@ -24,8 +26,12 @@ public class UsersController : Controller
         var authorizedUser = scope.ServiceProvider.GetRequiredService<IAuthorizedUser>();
         try { if (!await authorizedUser.Authorize(HttpContext)) return Unauthorized(new ErrorViewModel("User was not authorized")); }
         catch (NotFoundException e) { return NotFound(new ErrorViewModel(e.Message)); }
+
+        var usersService = scope.ServiceProvider.GetRequiredService<IUsersService>();
+
+        var user = await usersService.Get(u => u.Id == authorizedUser.User.Id);
         
-        return Json(new UserViewModel(authorizedUser.User)); // what should be authorizedUser.User or service.Get ???
+        return Json(user.ToUserViewModel());
     }
     
     [HttpGet("[action]")]

@@ -7,26 +7,25 @@
     }
 </style>
 
-<div class="container-fluid">
+<div class="container-fluid m-2">
     <div>
-        <h3>Header</h3>
         <div class="form-check form-switch">
             <input class="form-check-input" type="checkbox" id="check-input-for-edit-mode" onchange="toggleEditMode()">
             <label class="form-check-label" for="check-input-for-edit-mode">Edit Mode</label>
         </div>
     </div>
-    <div>
+    <div id="edit-results-form" style="display: none;max-width: 720px;">
         <table class="table table-striped table-hover">
             <thead>
             <tr>
                 <th class="col-6">
-                    <span class="text-center fs-4 d-block">Weight</span>
+                    <span class="text-center fs-5 d-block">Weight</span>
                 </th>
                 <th class="col-6">
-                    <span class="text-center fs-4 d-block">Count</span>
+                    <span class="text-center fs-5 d-block">Count</span>
                 </th>
                 <th class="col-2 edit-mode-only">
-                    <span class="text-center fs-4 d-block">Actions</span>
+                    <span class="text-center fs-5 d-block">Actions</span>
                 </th>
             </tr>
             </thead>
@@ -65,6 +64,15 @@
         const inputs = document.getElementsByClassName("input-exercise-results");
         const editModeElements = document.getElementsByClassName("edit-mode-only");
     
+        const container = document.getElementById('edit-results-form');
+        if (!isEditMode){
+            container.style.display = 'none';
+        }
+        else
+        {
+            container.style.display = 'block';
+        }
+        
         for (let i = 0; i < inputs.length; i++) {
             inputs[i].disabled = !isEditMode;
         }
@@ -122,6 +130,7 @@
 </script>
 
 @code{
+    [Parameter] public Guid WorkspaceId { get; set; }
     [Parameter] public ExerciseResultsViewModel ExerciseResults { get; set; }
     
     private async Task SaveChanges()
@@ -129,15 +138,15 @@
         try
         {
             await (await Linker.RequestBuilder
-                    .RequestToAction("Update", "ExerciseResults", new { resultsId = ExerciseResults.Id })
+                    .RequestToAction("Update", "ExerciseResults", new { WorkspaceId, resultsId = ExerciseResults.Id })
                     .WithMethod(HttpMethod.Put)
                     .WithContent((await Js.InvokeAsync<object>("GetChangesModel")).ToString()!)
                     .WithCookies()
                     .Fetch())
                 .LoadCookies()
-                .OnSuccessAsync(async _ =>
+                .OnSuccess(_ =>
                 {
-                    await Js.InvokeVoidAsync("ToggleEditMod");
+                    Linker.NavigationManager.Refresh(true);
                 })
                 .OnStatusCode(StatusCodes.Status401Unauthorized, _ =>
                 {

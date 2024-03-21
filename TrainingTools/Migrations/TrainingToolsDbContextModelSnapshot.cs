@@ -74,6 +74,24 @@ namespace TrainingTools.Migrations
                     b.ToTable("ExerciseResults");
                 });
 
+            modelBuilder.Entity("Contracts.Models.FollowerRelationship", b =>
+                {
+                    b.Property<Guid>("WorkspaceId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("FollowerId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("FollowerRights")
+                        .HasColumnType("int");
+
+                    b.HasKey("WorkspaceId", "FollowerId");
+
+                    b.HasIndex("FollowerId");
+
+                    b.ToTable("FollowerRelationships");
+                });
+
             modelBuilder.Entity("Contracts.Models.Group", b =>
                 {
                     b.Property<Guid>("Id")
@@ -129,6 +147,9 @@ namespace TrainingTools.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<bool>("IsPublic")
+                        .HasColumnType("bit");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(32)
@@ -180,6 +201,25 @@ namespace TrainingTools.Migrations
                     b.Navigation("Owner");
                 });
 
+            modelBuilder.Entity("Contracts.Models.FollowerRelationship", b =>
+                {
+                    b.HasOne("Contracts.Models.User", "Follower")
+                        .WithMany("Follows")
+                        .HasForeignKey("FollowerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Contracts.Models.Workspace", "Workspace")
+                        .WithMany("Followers")
+                        .HasForeignKey("WorkspaceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Follower");
+
+                    b.Navigation("Workspace");
+                });
+
             modelBuilder.Entity("Contracts.Models.Group", b =>
                 {
                     b.HasOne("Contracts.Models.Workspace", "Workspace")
@@ -214,6 +254,8 @@ namespace TrainingTools.Migrations
 
             modelBuilder.Entity("Contracts.Models.User", b =>
                 {
+                    b.Navigation("Follows");
+
                     b.Navigation("UserResults");
 
                     b.Navigation("Workspaces");
@@ -222,6 +264,8 @@ namespace TrainingTools.Migrations
             modelBuilder.Entity("Contracts.Models.Workspace", b =>
                 {
                     b.Navigation("Exercises");
+
+                    b.Navigation("Followers");
 
                     b.Navigation("Groups");
                 });

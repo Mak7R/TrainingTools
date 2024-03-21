@@ -6,8 +6,8 @@ namespace Contracts.Services;
 public interface IWorkspacesService
 {
     Task Add(Workspace workspace);
-    Task<Workspace?> Get(Expression<Func<Workspace, bool>> expression);
-    Task<IEnumerable<Workspace>> GetAll();
-    Task Update(Guid workspaceId, Action<Workspace> updater);
+    Task<Workspace?> Get(Guid workspaceId);
+    Task<IEnumerable<Workspace>> GetRange(Expression<Func<Workspace, bool>> expression);
+    Task Update(Action<Workspace> updater);
     Task Remove(Guid workspaceId);
 }

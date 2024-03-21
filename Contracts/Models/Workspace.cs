@@ -16,9 +16,13 @@ public class Workspace
     [ForeignKey(nameof(Owner))]
     public Guid OwnerId { get; set; }
     public User Owner { get; set; }
+
+    public bool IsPublic { get; set; } = false;
     
     public List<Group> Groups { get; set; }
     public List<Exercise> Exercises { get; set; }
+    
+    public List<FollowerRelationship> Followers { get; set; }
 
     public override bool Equals(object? obj) => obj is Workspace workspace && Id.Equals(workspace.Id);
 

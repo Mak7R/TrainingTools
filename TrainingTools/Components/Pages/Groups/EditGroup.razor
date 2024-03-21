@@ -1,4 +1,4 @@
-﻿@page "/workspaces/groups/{GroupId:guid}/edit"
+﻿@page "/workspaces/{WorkspaceId:guid}/groups/{GroupId:guid}/edit"
 
 @rendermode InteractiveServer
 
@@ -9,9 +9,9 @@
 <div class="container-fluid">
     <ol class="breadcrumb">
         <li class="breadcrumb-item"><a href="@Linker.GetLocalPathByAction("Workspaces.Workspaces", "Blazor")">Workspaces</a></li>
-        <li class="breadcrumb-item"><a href="@Linker.GetLocalPathByAction("Workspaces.FullWorkspace", "Blazor", new {WorkspaceId = _groupViewModel?.Workspace.Id ?? Guid.Empty})">@(_groupViewModel?.Workspace.Id ?? Guid.Empty)</a></li>
-        <li class="breadcrumb-item"><a href="@Linker.GetLocalPathByAction("Groups.Groups", "Blazor", new {WorkspaceId = _groupViewModel?.Workspace.Id ?? Guid.Empty})">Groups</a></li>
-        <li class="breadcrumb-item"><a href="@Linker.GetLocalPathByAction("Groups.Group", "Blazor", new {GroupId = _groupViewModel?.Id ?? Guid.Empty})">@(_groupViewModel?.Id ?? Guid.Empty)</a></li>
+        <li class="breadcrumb-item"><a href="@Linker.GetLocalPathByAction("Workspaces.FullWorkspace", "Blazor", new {WorkspaceId})">@WorkspaceId</a></li>
+        <li class="breadcrumb-item"><a href="@Linker.GetLocalPathByAction("Groups.Groups", "Blazor", new {WorkspaceId})">Groups</a></li>
+        <li class="breadcrumb-item"><a href="@Linker.GetLocalPathByAction("Groups.Group", "Blazor", new {GroupId})">@GroupId</a></li>
         <li class="breadcrumb-item active" aria-current="page">Edit Group</li>
     </ol>
 </div>
@@ -30,7 +30,7 @@
 
 
 @code {
-
+    [Parameter] public Guid WorkspaceId { get; set; }
     [Parameter] public Guid GroupId { get; set; }
     
     private readonly EditGroupModel _editGroupModel = new()
@@ -49,7 +49,7 @@
             if (firstRender)
             {
                 await (await Linker.RequestBuilder
-                        .RequestToAction("Get", "Groups", new { groupId = GroupId })
+                        .RequestToAction("Get", "Groups", new { WorkspaceId, GroupId })
                         .WithMethod(HttpMethod.Get)
                         .WithCookies()
                         .Fetch())
@@ -83,7 +83,7 @@
         try
         {
             await (await Linker.RequestBuilder
-                    .RequestToAction("Edit", "Groups", new { groupId = GroupId })
+                    .RequestToAction("Edit", "Groups", new { WorkspaceId, GroupId })
                     .WithMethod(HttpMethod.Patch)
                     .WithContent(_editGroupModel)
                     .WithCookies()
@@ -91,7 +91,7 @@
                 .LoadCookies()
                 .OnSuccess(_ =>
                 {
-                    Linker.NavigateToAction("Groups.Group", routeValues: new {GroupId});
+                    Linker.NavigateToAction("Groups.Group", routeValues: new {WorkspaceId, GroupId});
                 })
                 .OnStatusCode(StatusCodes.Status400BadRequest, response =>
                 {

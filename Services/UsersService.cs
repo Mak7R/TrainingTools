@@ -11,13 +11,13 @@ namespace Services;
 public class UsersService : IUsersService
 {
     private readonly IServiceProvider _serviceProvider;
-    private readonly IAuthorizedUser _authorizedUser;
+    private readonly IAuthorizedUser _authorized;
     private readonly TrainingToolsDbContext _dbContext;
     
-    public UsersService(IServiceProvider serviceProvider, IAuthorizedUser authorizedUser, TrainingToolsDbContext dbContext)
+    public UsersService(IServiceProvider serviceProvider, IAuthorizedUser authorized, TrainingToolsDbContext dbContext)
     {
         _serviceProvider = serviceProvider;
-        _authorizedUser = authorizedUser;
+        _authorized = authorized;
         _dbContext = dbContext;
     }
 
@@ -31,24 +31,48 @@ public class UsersService : IUsersService
         await _dbContext.Users.AddAsync(user);
     }
 
-    public async Task<User?> Get(Expression<Func<User, bool>> expression)
+    public async Task<User> Get(Expression<Func<User, bool>> expression)
     {
-        return await _dbContext.Users
+        var user = await _dbContext.Users
             .AsNoTracking()
             
             .FirstOrDefaultAsync(expression);
+
+        if (user == null) throw new NotFoundException("User was not found");
+        
+        if (_authorized.IsAuthorized && user.Equals(_authorized.User))
+        {
+            // loading another private data
+            await _dbContext.Users.Entry(user).Collection(u => u.UserResults).LoadAsync();
+            var follows = _dbContext.Users.Entry(user).Collection(u => u.Follows);
+            await follows.LoadAsync();
+
+            if (follows.CurrentValue != null)
+            {
+                foreach (var follow in follows.CurrentValue)
+                    await _dbContext.FollowerRelationships.Entry(follow).Reference(f => f.Workspace).LoadAsync();
+            }
+        }
+        else
+        {
+            // hiding another private data
+            user.Password = string.Empty;
+        }
+
+        return user;
     }
     
     public async Task<IEnumerable<User>> GetAll()
     {
-        return await _dbContext.Users
-            .AsNoTracking()
-            
-            .ToListAsync();
+        var users = _dbContext.Users.AsNoTracking();
+        await users.ForEachAsync(u => u.Password = string.Empty);
+        return await users.ToListAsync();
     }
 
     public async Task Update(Guid userId, Action<User> updater)
     {
+        if (!(_authorized.User.Id == userId /*or is server admin*/)) throw new HasNotPermissionException();
+        
         var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == userId);
         if (user == null) throw new NotFoundException($"{nameof(User)} with id {userId} was not found");
 
@@ -59,27 +83,24 @@ public class UsersService : IUsersService
 
     public async Task Remove(Guid userId)
     {
+        if (!(_authorized.User.Id == userId /*or is server admin*/)) throw new HasNotPermissionException();
+        
         var user = await _dbContext.Users
             .Include(u => u.Workspaces)
             .Include(u => u.UserResults)
+            .Include(user => user.Follows)
             
             .FirstOrDefaultAsync(u => u.Id == userId);
         
         if (user == null) throw new NotFoundException($"{nameof(User)} with id {userId} was not found");
+        
+        var workspacesService = _serviceProvider.GetRequiredService<IWorkspacesService>();
+        var exerciseResultsService = _serviceProvider.GetRequiredService<IExerciseResultsService>();
 
-        if (user.Equals(_authorizedUser.User) /*or _authorizedUser.User.IsAdmin*/)
-        {
-            var workspacesService = _serviceProvider.GetRequiredService<IWorkspacesService>();
-            var exerciseResultsService = _serviceProvider.GetRequiredService<IWorkspacesService>();
+        foreach (var workspace in user.Workspaces) await workspacesService.Remove(workspace.Id);
+        foreach (var userResult in user.UserResults) await exerciseResultsService.Remove(userResult.Id);
+        foreach (var follow in user.Follows) _dbContext.FollowerRelationships.Remove(follow);
 
-            foreach (var workspace in user.Workspaces) await workspacesService.Remove(workspace.Id);
-            foreach (var userResult in user.UserResults) await exerciseResultsService.Remove(userResult.Id);
-
-            _dbContext.Users.Remove(user);
-        }
-        else
-        {
-            throw new OperationNotAllowedException("You has not rights to delete this user");
-        }
+        _dbContext.Users.Remove(user);
     }
 }

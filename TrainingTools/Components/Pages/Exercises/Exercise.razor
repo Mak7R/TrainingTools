@@ -1,4 +1,4 @@
-﻿@page "/workspaces/exercises/{ExerciseId:guid}"
+﻿@page "/workspaces/{WorkspaceId:guid}/exercises/{ExerciseId:guid}"
 
 @rendermode InteractiveServer
 
@@ -9,8 +9,8 @@
 <div class="container-fluid">
     <ol class="breadcrumb">
         <li class="breadcrumb-item"><a href="@Linker.GetLocalPathByAction("Workspaces.Workspaces", "Blazor")">Workspaces</a></li>
-        <li class="breadcrumb-item"><a href="@Linker.GetLocalPathByAction("Workspaces.FullWorkspace", "Blazor", new {WorkspaceId = _exercise?.Workspace.Id ?? Guid.Empty})">@(_exercise?.Workspace.Id ?? Guid.Empty)</a></li>
-        <li class="breadcrumb-item"><a href="@Linker.GetLocalPathByAction("Exercises.Exercises", "Blazor", new {WorkspaceId = _exercise?.Workspace.Id ?? Guid.Empty})">Exercises</a></li>
+        <li class="breadcrumb-item"><a href="@Linker.GetLocalPathByAction("Workspaces.FullWorkspace", "Blazor", new {WorkspaceId})">@WorkspaceId</a></li>
+        <li class="breadcrumb-item"><a href="@Linker.GetLocalPathByAction("Exercises.Exercises", "Blazor", new {WorkspaceId})">Exercises</a></li>
         <li class="breadcrumb-item active" aria-current="page">@(_exercise?.Id ?? Guid.Empty)</li>
     </ol>
 </div>
@@ -78,26 +78,86 @@
         }
         else
         {
-            var componentId = Guid.NewGuid();
-            <DeleteButtonComponent ComponentId="componentId"/>
-            <DeleteModalComponent
-                ComponentId="componentId"
-                ModalTitle=@($"Delete exercise ({_exercise.Name})")
-                OnSuccessRedirectUrl=@Linker.GetLocalPathByAction("Exercises.Exercises", "Blazor", new {WorkspaceId = _exercise.Workspace.Id})
-                HandlerUrl="@Linker.GetPathByAction("Delete", "Exercises", new {exerciseId = _exercise.Id})"/>
+            if (_exercise.Workspace.Permission.HasEditPermission())
+            {
+                <a href="@Linker.GetLocalPathByAction("Exercises.EditExercise", "Blazor", new {WorkspaceId, ExerciseId})" class="btn btn-primary">Edit</a>
+                
+                var componentId = Guid.NewGuid();
+                <DeleteButtonComponent ComponentId="componentId"/>
+                <DeleteModalComponent
+                    ComponentId="componentId"
+                    ModalTitle=@($"Delete exercise ({_exercise.Name})")
+                    OnSuccessRedirectUrl=@Linker.GetLocalPathByAction("Exercises.Exercises", "Blazor", new {WorkspaceId})
+                    HandlerUrl="@Linker.GetPathByAction("Delete", "Exercises", new {WorkspaceId, exerciseId = _exercise.Id})"/>
+            }
             
-            <div class="mt-2">
-                @if(_exercise.Results == null){
-                    <div>
-                        <button class="btn btn-success" @onclick="AddResults">Add Results</button>
-                    </div>
-                }
-                else
+            if (_exercise.Workspace.Permission.HasUsePermission())
+            {
+                <div class="mt-2">
+                    @if(_exercise.Results == null){
+                        <div>
+                            <button class="btn btn-success" @onclick="AddResults">Add Results</button>
+                        </div>
+                    }
+                    else
+                    {
+                        <div>
+                            <button class="btn btn-danger" @onclick="DeleteResults">Delete Results</button>
+                        </div>
+                        <ResultsComponent WorkspaceId="@WorkspaceId" ExerciseResults="_exercise.Results"/>
+                    }
+                </div>
+            }
+        }
+    </div>
+    
+    <div class="container">
+        <h3>All Results</h3>
+        
+        @if (_exercise == null)
+        {
+            <div class="spinner-border text-info" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        }
+        else
+        {
+            <div class="row row row-cols-1 row-cols-md-2 row-cols-lg-3">
+                @foreach (var result in _exercise.AllResults)
                 {
-                    <div>
-                        <button class="btn btn-danger" @onclick="DeleteResults">Delete Results</button>
+                    <div class="col">
+                        <div class="card m-2">
+                            <div class="card-body">
+                                <h5 class="card-title"><a href="@Linker.GetLocalPathByAction("Users.PublicProfile", "Blazor", new { UserId = result.Owner.Id })">@result.Owner.Name</a></h5>
+
+                                <table class="table table-striped table-hover">
+                                    <thead>
+                                    <tr>
+                                        <th class="col-1">
+                                            <span class="text-center d-block">Weight</span>
+                                        </th>
+                                        <th class="col-1">
+                                            <span class="text-center d-block">Count</span>
+                                        </th>
+                                    </tr>
+                                    </thead>
+                                    <tbody id="edit-exercise-results-root">
+                                    @foreach (var row in result.Results)
+                                    {
+                                        <tr>
+                                            <td>
+                                                @row.Weight
+                                            </td>
+                                            <td>
+                                                @row.Count
+                                            </td>
+                                        </tr>
+                                    }
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>                        
                     </div>
-                    <ResultsComponent ExerciseResults="_exercise.Results"/>
                 }
             </div>
         }
@@ -105,6 +165,7 @@
 </div>
 
 @code{
+    [Parameter] public Guid WorkspaceId { get; set; }
     [Parameter] public Guid ExerciseId { get; set; }
     private FullExerciseViewModel? _exercise;
     
@@ -115,7 +176,7 @@
             if (firstRender)
             {
                 await (await Linker.RequestBuilder
-                        .RequestToAction("Get", "Exercises", new { exerciseId = ExerciseId })
+                        .RequestToAction("Get", "Exercises", new { WorkspaceId , ExerciseId })
                         .WithMethod(HttpMethod.Get)
                         .WithCookies()
                         .Fetch())
@@ -147,7 +208,7 @@
         try
         {
             await (await Linker.RequestBuilder
-                    .RequestToAction("Add", "ExerciseResults", new { exerciseId = ExerciseId })
+                    .RequestToAction("Add", "ExerciseResults", new { WorkspaceId, ExerciseId })
                     .WithMethod(HttpMethod.Post)
                     .WithCookies()
                     .Fetch())
@@ -177,7 +238,7 @@
         try
         {
             await (await Linker.RequestBuilder
-                    .RequestToAction("Delete", "ExerciseResults", new { resultsId = _exercise!.Results!.Id })
+                    .RequestToAction("Delete", "ExerciseResults", new { WorkspaceId, resultsId = _exercise!.Results!.Id })
                     .WithMethod(HttpMethod.Delete)
                     .WithCookies()
                     .Fetch())

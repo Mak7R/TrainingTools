@@ -23,6 +23,8 @@ public class User
     public List<ExerciseResults> UserResults { get; set; }
     public List<Workspace> Workspaces { get; set; }
     
+    public List<FollowerRelationship> Follows { get; set; }
+    
     public override bool Equals(object? obj) => obj is User user && Id.Equals(user.Id);
 
     public override int GetHashCode() => Id.GetHashCode();

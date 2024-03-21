@@ -1,6 +1,14 @@
-﻿namespace Contracts.Models;
+﻿using System.Text.Json.Serialization;
 
-public record Entry(int Count, int Weight);
+namespace Contracts.Models;
+
+public class Entry
+{
+    [JsonPropertyName("count")]
+    public int Count { get; set; }
+    [JsonPropertyName("weight")]
+    public int Weight { get; set; }
+}
 
 public class ExerciseResultsObject : List<Entry>
 {
