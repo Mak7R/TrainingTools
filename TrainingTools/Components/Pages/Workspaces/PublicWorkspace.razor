@@ -72,7 +72,7 @@
             }
             else
             {
-                <button class="btn btn-primary" disabled>Followed</button>
+                <button class="btn btn-outline-primary" @onclick="@(() => Unfollow(_workspace.Id))">Unfollow</button>
             }
         }
     </div>
@@ -123,8 +123,31 @@
     private async void Follow(Guid workspaceId)
     {
         await (await Linker.RequestBuilder
-                .RequestToAction("Add", "Followers", new {workspaceId})
+                .RequestToAction("Follow", "Followers", new {workspaceId})
                 .WithMethod(HttpMethod.Post)
+                .WithCookies()
+                .Fetch())
+            .LoadCookies()
+            .OnSuccess(_ =>
+            {
+                Linker.NavigationManager.Refresh(true);
+            })
+            .OnStatusCode(StatusCodes.Status401Unauthorized, _ =>
+            {
+                Linker.NavigateToAction("Users.Login");
+            })
+            .OnUnhandled(response =>
+            {
+                Linker.NavigateToAction("Error", routeValues: new { response.StatusCode });
+            })
+            .WaitForHandleFinishedAsync();
+    }
+
+    private async void Unfollow(Guid workspaceId)
+    {
+        await (await Linker.RequestBuilder
+                .RequestToAction("Unfollow", "Followers", new {workspaceId})
+                .WithMethod(HttpMethod.Delete)
                 .WithCookies()
                 .Fetch())
             .LoadCookies()

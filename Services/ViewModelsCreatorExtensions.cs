@@ -72,6 +72,6 @@ public static class ViewModelsCreatorExtensions
 
     public static UserViewModel ToUserViewModel(this User user)
     {
-        return new UserViewModel(user.Id, user.Name, user.Email, user.Follows.Select(fr => fr.ToFollowViewModel()));
+        return new UserViewModel(user.Id, user.Name, user.Email, user.Follows.Select(fr => fr.ToFollowViewModel()).ToList());
     }
 }

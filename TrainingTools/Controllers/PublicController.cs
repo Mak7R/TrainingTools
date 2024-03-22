@@ -126,6 +126,8 @@ public class PublicController : Controller
                 {
                     return Json(workspace.ToPublicWorkspaceViewModel(WorkspacePermission.FollowedPermission));
                 }
+
+                return Json(workspace.ToPublicWorkspaceViewModel(WorkspacePermission.PermissionDenied));
             }
         }
         catch (NotFoundException)

@@ -146,38 +146,37 @@
                         }
                         else
                         {
-                            <div id="buttonsCarousel-@workspace.Id" class="carousel carousel-fade btn-group">
-                                <button class="btn btn-outline-primary" type="button" data-bs-target="#buttonsCarousel-@workspace.Id" data-bs-slide="prev">Prev</button>
-                                <div class="carousel-inner">
-                                    @if (workspace.Permission.HasViewPermission())
-                                    {
+                            if (workspace.Permission.HasViewPermission())
+                            {
+                                <div id="buttonsCarousel-@workspace.Id" class="carousel carousel-fade btn-group">
+                                    <button class="btn btn-outline-primary" type="button" data-bs-target="#buttonsCarousel-@workspace.Id" data-bs-slide="prev">Prev</button>
+                                    <div class="carousel-inner">
                                         <div class="carousel-item active btn-carousel-item-container">
                                             <a class="btn btn-primary" href="@Linker.GetLocalPathByAction("Workspaces.Workspace", "Blazor", new { WorkspaceId = workspace.Id })">Info</a>
                                         </div>
                                         <div class="carousel-item btn-carousel-item-container">
-                                            <a class="btn btn-success" href="@Linker.GetLocalPathByAction("Workspaces.FullWorkspace", "Blazor", new {WorkspaceId = workspace.Id})">Workspace</a>
+                                            <a class="btn btn-success" href="@Linker.GetLocalPathByAction("Workspaces.FullWorkspace", "Blazor", new { WorkspaceId = workspace.Id })">Workspace</a>
                                         </div>
                                         <div class="carousel-item btn-carousel-item-container">
-                                            <a class="btn btn-success" href="@Linker.GetLocalPathByAction("Exercises.Exercises", "Blazor", new {WorkspaceId = workspace.Id})">Exercises</a>
+                                            <a class="btn btn-success" href="@Linker.GetLocalPathByAction("Exercises.Exercises", "Blazor", new { WorkspaceId = workspace.Id })">Exercises</a>
                                         </div>
-                                        
                                         <div class="carousel-item btn-carousel-item-container">
-                                            <a class="btn btn-success" href="@Linker.GetLocalPathByAction("Groups.Groups", "Blazor", new {WorkspaceId = workspace.Id})">Groups</a>
+                                            <a class="btn btn-success" href="@Linker.GetLocalPathByAction("Groups.Groups", "Blazor", new { WorkspaceId = workspace.Id })">Groups</a>
                                         </div>
-                                    }
-                            
-                                    @if (workspace.Permission.HasEditPermission())
-                                    {
-                                        <div class="carousel-item btn-carousel-item-container">
-                                            <a class="btn btn-primary" href="@Linker.GetLocalPathByAction("Workspaces.EditWorkspace", "Blazor", new {WorkspaceId = workspace.Id})">Edit</a>
-                                        </div>
-                                    }
+
+                                        @if (workspace.Permission.HasEditPermission())
+                                        {
+                                            <div class="carousel-item btn-carousel-item-container">
+                                                <a class="btn btn-primary" href="@Linker.GetLocalPathByAction("Workspaces.EditWorkspace", "Blazor", new { WorkspaceId = workspace.Id })">Edit</a>
+                                            </div>
+                                        }
+                                    </div>
+
+                                    <button class="btn btn-outline-primary" type="button" data-bs-target="#buttonsCarousel-@workspace.Id" data-bs-slide="next">Next</button>
                                 </div>
-                                
-                                <button class="btn btn-outline-primary" type="button" data-bs-target="#buttonsCarousel-@workspace.Id" data-bs-slide="next">Next</button>
-                            </div>
-                            
-                            <button class="btn btn-primary" disabled>Followed</button>
+                            }
+
+                            <button class="btn btn-outline-primary" @onclick="@(() => Unfollow(workspace.Id))">Unfollow</button>
                         }
                     </td>
                 </tr>
@@ -310,8 +309,31 @@
     private async void Follow(Guid workspaceId)
     {
         await (await Linker.RequestBuilder
-                .RequestToAction("Add", "Followers", new {workspaceId})
+                .RequestToAction("Follow", "Followers", new {workspaceId})
                 .WithMethod(HttpMethod.Post)
+                .WithCookies()
+                .Fetch())
+            .LoadCookies()
+            .OnSuccess(_ =>
+            {
+                Linker.NavigationManager.Refresh(true);
+            })
+            .OnStatusCode(StatusCodes.Status401Unauthorized, _ =>
+            {
+                Linker.NavigateToAction("Users.Login");
+            })
+            .OnUnhandled(response =>
+            {
+                Linker.NavigateToAction("Error", routeValues: new { response.StatusCode });
+            })
+            .WaitForHandleFinishedAsync();
+    }
+    
+    private async void Unfollow(Guid workspaceId)
+    {
+        await (await Linker.RequestBuilder
+                .RequestToAction("Unfollow", "Followers", new {workspaceId})
+                .WithMethod(HttpMethod.Delete)
                 .WithCookies()
                 .Fetch())
             .LoadCookies()

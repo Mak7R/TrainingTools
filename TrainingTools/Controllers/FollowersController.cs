@@ -34,8 +34,8 @@ public class FollowersController : Controller
         return Json(new FollowersViewCollectionBuilder(followers.Select(f => f.ToFollowerViewModel())).Filter(filter).Order(order).Build());
     }
 
-    [HttpPost("add")]
-    public async Task<IActionResult> Add(Guid workspaceId)
+    [HttpPost("follow")]
+    public async Task<IActionResult> Follow(Guid workspaceId)
     {
         using var scope = _scopeFactory.CreateScope();
         var authorizedUser = scope.ServiceProvider.GetRequiredService<IAuthorizedUser>();
@@ -44,6 +44,21 @@ public class FollowersController : Controller
         
         var followersService = scope.ServiceProvider.GetRequiredService<IFollowersService>();
         await followersService.AddFollower(workspaceId);
+        await authorizedUser.SaveChanges();
+        
+        return Ok();
+    }
+    
+    [HttpDelete("unfollow")]
+    public async Task<IActionResult> Unfollow(Guid workspaceId)
+    {
+        using var scope = _scopeFactory.CreateScope();
+        var authorizedUser = scope.ServiceProvider.GetRequiredService<IAuthorizedUser>();
+        try { if (!await authorizedUser.Authorize(HttpContext)) return Unauthorized(new ErrorViewModel("User was not authorized")); }
+        catch (NotFoundException e) { return NotFound(new ErrorViewModel(e.Message)); }
+        
+        var followersService = scope.ServiceProvider.GetRequiredService<IFollowersService>();
+        await followersService.Unfollow(workspaceId);
         await authorizedUser.SaveChanges();
         
         return Ok();
@@ -84,4 +99,6 @@ public class FollowersController : Controller
         
         return Ok();
     }
+    
+    
 }

@@ -104,7 +104,7 @@
                 HandlerUrl="@Linker.GetPathByAction("Delete", "Users")"/>
         }
     </div>
-    <div class="container mt-2">
+    <div class="container mt-4">
         <h3>Follows</h3>
         @if (_user == null)
         {
@@ -114,7 +114,41 @@
         }
         else
         {
-            // TODO unfollowing
+            <table class="table table-striped table-hover" style="max-width: 720px;">
+                <thead>
+                <tr>
+                    <th class="col-2">
+                        Workspace
+                    </th>
+                    <th class="col-2">
+                        Actions
+                    </th>
+                </tr>
+                </thead>
+                @if (_user == null)
+                {
+                    <div class="spinner-border text-info" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                }
+                else
+                {
+                    <tbody>
+                    @foreach(var follow in _user.Follows)
+                    {
+                        <tr>
+                            <td>
+                                <a href="@Linker.GetLocalPathByAction("Workspaces.PublicWorkspace", "Blazor", new {follow.WorkspaceId})">@follow.WorkspaceName</a>
+                            </td>
+                            <td>
+                                <button class="btn btn-outline-primary" @onclick="@(() => Unfollow(follow.WorkspaceId))">Unfollow</button>
+                            </td>
+                        </tr>
+                    }
+                    </tbody>
+                }
+            </table>
+            
         }
     </div>
 </div>
@@ -211,5 +245,28 @@
         {
             Linker.NavigateToAction("Error", routeValues: new {StatusCode = 0, e.Message});
         }
+    }
+    
+    private async void Unfollow(Guid workspaceId)
+    {
+        await (await Linker.RequestBuilder
+                .RequestToAction("Unfollow", "Followers", new {workspaceId})
+                .WithMethod(HttpMethod.Delete)
+                .WithCookies()
+                .Fetch())
+            .LoadCookies()
+            .OnSuccess(_ =>
+            {
+                Linker.NavigationManager.Refresh(true);
+            })
+            .OnStatusCode(StatusCodes.Status401Unauthorized, _ =>
+            {
+                Linker.NavigateToAction("Users.Login");
+            })
+            .OnUnhandled(response =>
+            {
+                Linker.NavigateToAction("Error", routeValues: new { response.StatusCode });
+            })
+            .WaitForHandleFinishedAsync();
     }
 }

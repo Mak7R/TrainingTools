@@ -81,6 +81,28 @@ public class FollowersService : IFollowersService
 
         if (follower == null) throw new NotFoundException("Follower was not found");
 
+        var resultsService = await _dbContext.ExerciseResults
+            .Include(r => r.Exercise)
+            .Where(r => r.OwnerId == followerId && r.Exercise.WorkspaceId == _selected.Workspace.Id).ToListAsync();
+
+        foreach (var result in resultsService) _dbContext.Remove(result);
+        
+        _dbContext.Remove(follower);
+    }
+    
+    public async Task Unfollow(Guid workspaceId)
+    {
+        var follower = await _dbContext.FollowerRelationships.FirstOrDefaultAsync(fr =>
+            fr.WorkspaceId == workspaceId && fr.FollowerId == _selected.Authorized.User.Id);
+
+        if (follower == null) throw new NotFoundException("Follower was not found");
+
+        var resultsService = await _dbContext.ExerciseResults
+            .Include(r => r.Exercise)
+            .Where(r => r.OwnerId == _selected.Authorized.User.Id && r.Exercise.WorkspaceId == workspaceId).ToListAsync();
+
+        foreach (var result in resultsService) _dbContext.Remove(result);
+        
         _dbContext.Remove(follower);
     }
 }

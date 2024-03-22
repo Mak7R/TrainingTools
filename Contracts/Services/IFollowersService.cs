@@ -9,4 +9,5 @@ public interface IFollowersService
     Task AddFollower(Guid workspaceId);
     Task UpdateFollower(Guid followerId, Action<FollowerRelationship> updater);
     Task RemoveFollower(Guid followerId);
+    Task Unfollow(Guid workspaceId);
 }
