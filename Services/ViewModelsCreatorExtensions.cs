@@ -51,8 +51,7 @@ public static class ViewModelsCreatorExtensions
 
     public static ExerciseResultsViewModel ToExerciseResultsViewModel(this ExerciseResults results)
     {
-        return new ExerciseResultsViewModel(results.Id, results.Owner.ToPublicUserViewModel(),
-            JsonSerializer.Deserialize<ExerciseResultsObjectViewModel>(results.ResultsJson) ?? []); // Exception if Json is not valid or empty
+        return new ExerciseResultsViewModel(results.Id, results.Owner.ToPublicUserViewModel(), results.ResultsJson);
     }
     
     public static GroupViewModel ToGroupViewModel(this Group group, WorkspacePermission permission)

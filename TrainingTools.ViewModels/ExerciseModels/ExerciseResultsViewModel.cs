@@ -1,6 +1,4 @@
-﻿using System.Text.Json;
-using System.Text.Json.Serialization;
-using Contracts.Models;
+﻿using System.Text.Json.Serialization;
 
 namespace TrainingTools.ViewModels;
 
@@ -12,14 +10,14 @@ public class ExerciseResultsViewModel
     [JsonPropertyName("owner")]
     public PublicUserViewModel Owner { get; set; }
     
-    [JsonPropertyName("results")]
-    public ExerciseResultsObjectViewModel Results { get; set; }
+    [JsonPropertyName("data")]
+    public string Data { get; set; }
 
-    public ExerciseResultsViewModel(Guid id, PublicUserViewModel owner, ExerciseResultsObjectViewModel results)
+    public ExerciseResultsViewModel(Guid id, PublicUserViewModel owner, string data)
     {
         Id = id;
         Owner = owner;
-        Results = results;
+        Data = data;
     }
 
     public ExerciseResultsViewModel()

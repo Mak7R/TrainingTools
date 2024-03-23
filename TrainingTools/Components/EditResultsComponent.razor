@@ -1,0 +1,129 @@
+﻿@inject IJSRuntime Js
+@inject Linker Linker
+
+<div class="container-fluid m-2">
+    <div>
+        <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" id="check-input-for-edit-mode" onchange="onToggleEditMode()">
+            <label class="form-check-label" for="check-input-for-edit-mode">Edit Mode</label>
+        </div>
+    </div>
+    <div id="edit-results-form" style="display: none;">
+        <div class="table-responsive">
+            <table class="table table-bordered border-primary">
+                <tbody>
+                @for (int row = 0; row < ResultsMatrix.Rows; row++)
+                {
+                    <tr>
+                        @for (int col = 0; col < ResultsMatrix.Columns; col++)
+                        {
+                            var cRow = row;
+                            var cCol = col;
+                            <td style="min-width: 150px; max-width: 200px">
+                                <input class="form-control text-center" value="@ResultsMatrix[row, col]" @onchange="@((e) => { ResultsMatrix[cRow, cCol] = e.Value?.ToString() ?? string.Empty; })"/>
+                            </td>
+                        }
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+        
+
+        <div class="row my-2">
+            <div class="col">
+                <h4>Rows: @ResultsMatrix.Rows</h4>
+            </div>
+            <div class="col">
+                <h4>Columns: @ResultsMatrix.Columns</h4>
+            </div>
+        </div>
+
+        <div class="row my-2">
+            <div class="col">
+                <button class="btn btn-success btn-block w-100" @onclick="@(() => { ResultsMatrix.AddRow(); StateHasChanged(); })">Add Row</button>
+            </div>
+            <div class="col">
+                <button class="btn btn-success btn-block w-100" @onclick="@(() => { ResultsMatrix.AddColumn(); StateHasChanged(); })">Add Column</button>
+            </div>
+        </div>
+
+        <div class="row my-2">
+            @if (ResultsMatrix.Rows != 0)
+            {
+                <div class="col">
+                    <button class="btn btn-danger btn-block w-100" @onclick="@(() => { ResultsMatrix.DeleteRow(ResultsMatrix.Rows - 1); StateHasChanged(); })">Remove Row</button>
+                </div>
+            }
+            @if (ResultsMatrix.Columns != 0)
+            {
+                <div class="col">
+                    <button class="btn btn-danger btn-block w-100" @onclick="@(() => { ResultsMatrix.DeleteColumn(ResultsMatrix.Columns - 1); StateHasChanged(); })">Remove Column</button>
+                </div>
+            }
+        </div>
+
+        <div class="row my-2">
+            <div class="col">
+                <button class="btn btn-success btn-block w-100" @onclick="SaveChanges">Save changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>      
+    function onToggleEditMode() {
+        const isEditMode = document.getElementById("check-input-for-edit-mode").checked;
+        const container = document.getElementById('edit-results-form');
+        
+        if (!isEditMode){
+            container.style.display = 'none';
+        }
+        else
+        {
+            container.style.display = 'block';
+        }
+    }
+    
+    function toggleEditMod(){
+        document.getElementById("check-input-for-edit-mode").checked = false;
+        onToggleEditMode();
+    }
+</script>
+
+@code{
+    [Parameter] public Guid WorkspaceId { get; set; }
+    [Parameter] public Guid ResultsId { get; set; }
+    [Parameter] public Matrix<string> ResultsMatrix { get; set; }
+
+    private async Task SaveChanges()
+    {
+        try
+        {
+            await (await Linker.RequestBuilder
+                    .RequestToAction("Update", "ExerciseResults", new { WorkspaceId, ResultsId })
+                    .WithMethod(HttpMethod.Put)
+                    .WithContent(new UpdateExerciseResultsModel{ResultsData = ResultsMatrix!.ToJson()})
+                    .WithCookies()
+                    .Fetch())
+                .LoadCookies()
+                .OnSuccess( _ =>
+                {
+                    Linker.NavigationManager.Refresh(true);
+                })
+                .OnStatusCode(StatusCodes.Status401Unauthorized, _ =>
+                {
+                    Linker.NavigateToAction("Users.Login");
+                })
+                .OnUnhandled(response =>
+                {
+                    Linker.NavigateToAction("Error", routeValues: new {response.StatusCode});
+                })
+                .WaitForHandleFinishedAsync();
+        }
+        catch (Exception e)
+        {
+            Linker.NavigateToAction("Error", routeValues: new {StatusCode = 0, e.Message});
+        }
+    }
+}

@@ -6,5 +6,5 @@ namespace TrainingTools.ViewModels;
 public class UpdateExerciseResultsModel
 {
     [Required] 
-    public ExerciseResultsObject ExerciseResultsModel { get; set; }
+    public string ResultsData { get; set; }
 }

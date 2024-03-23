@@ -34,7 +34,7 @@ public class ExerciseResultsController : Controller
         var results = new ExerciseResults
         {
             ExerciseId = exerciseId, 
-            ResultsJson = JsonSerializer.Serialize(new ExerciseResultsObject())
+            ResultsJson = string.Empty
         };
         await exerciseResultsService.Add(results);
         await authorizedUser.SaveChanges();
@@ -76,7 +76,7 @@ public class ExerciseResultsController : Controller
         await exerciseResultsService.Update(
             resultsId, er =>
             {
-                er.ResultsJson = JsonSerializer.Serialize(model.ExerciseResultsModel);
+                er.ResultsJson = model.ResultsData;
             });
         await authorizedUser.SaveChanges();
 
