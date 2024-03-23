@@ -17,8 +17,7 @@
 
 <div class="container">
     <div>
-        <h3>Exercise</h3>
-        <h4>ID:
+        <h4 class="d-none">ID:
             @if (_exercise != null)
             {
                 <text>@_exercise.Id</text>
@@ -28,16 +27,16 @@
                 <div class="placeholder col-5 placeholder-glow bg-secondary"></div>
             }
         </h4>
-        <h4>Name: 
+        <h3 class="text-center"> 
             @if (_exercise != null)
             {
-                <text>@_exercise.Name</text>
+                <span class="fs-3">@_exercise.Name</span>
             }
             else
             {
                 <div class="placeholder col-4 placeholder-glow bg-secondary"></div>
             }
-        </h4>
+        </h3>
         <h4>Group:
             @if (_exercise != null)
             {
@@ -54,9 +53,8 @@
             {
                 <div class="placeholder col-4 placeholder-glow bg-secondary"></div>
             }
-
         </h4>
-        <h4>Owner: 
+        <h4 class="d-none">Owner: 
             @if (_exercise != null)
             {
                 @_exercise.Workspace.Owner.Name
@@ -68,7 +66,8 @@
         </h4>
     </div>
     
-    <div class="mb-4">
+    <div class="mb-4 my-2">
+        <hr class="my-1"/>
         <h3>Actions</h3>
         @if (_exercise == null)
         {
@@ -80,21 +79,23 @@
         {
             if (_exercise.Workspace.Permission.HasEditPermission())
             {
-                <a href="@Linker.GetLocalPathByAction("Exercises.EditExercise", "Blazor", new {WorkspaceId, ExerciseId})" class="btn btn-primary">Edit</a>
-                
+                <a href="@Linker.GetLocalPathByAction("Exercises.EditExercise", "Blazor", new { WorkspaceId, ExerciseId })" class="btn btn-primary">Edit</a>
+
                 var componentId = Guid.NewGuid();
                 <DeleteButtonComponent ComponentId="componentId"/>
                 <DeleteModalComponent
                     ComponentId="componentId"
                     ModalTitle=@($"Delete exercise ({_exercise.Name})")
-                    OnSuccessRedirectUrl=@Linker.GetLocalPathByAction("Exercises.Exercises", "Blazor", new {WorkspaceId})
-                    HandlerUrl="@Linker.GetPathByAction("Delete", "Exercises", new {WorkspaceId, exerciseId = _exercise.Id})"/>
+                    OnSuccessRedirectUrl=@Linker.GetLocalPathByAction("Exercises.Exercises", "Blazor", new { WorkspaceId })
+                    HandlerUrl="@Linker.GetPathByAction("Delete", "Exercises", new { WorkspaceId, exerciseId = _exercise.Id })"/>
             }
-            
+
             if (_exercise.Workspace.Permission.HasUsePermission())
             {
-                <div class="mt-2">
-                    @if(_exercise.Results == null){
+                <hr class="my-2"/>
+                <div>
+                    @if (_exercise.Results == null)
+                    {
                         <div>
                             <button class="btn btn-success" @onclick="AddResults">Add Results</button>
                         </div>
@@ -109,6 +110,7 @@
                 </div>
             }
         }
+        <hr class="my-1"/>
     </div>
     
     <div class="container">
