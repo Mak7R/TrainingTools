@@ -1,6 +1,3 @@
-using System.Data;
-using System.Runtime.Serialization;
-using System.Text.Json;
 using Contracts.Client.Services;
 using Contracts.Services;
 using Microsoft.EntityFrameworkCore;
@@ -92,3 +89,11 @@ app.MapRazorComponents<App>().AddInteractiveServerRenderMode();
 app.MapControllers();
 
 app.Run();
+
+// TODO
+// add to user: About
+// add to workspace: CreationDate
+// add to exercise: About
+// add to results: TimeOfLastChange
+ 
+// group name has no max size so group name max size is maxsize!!!!!
