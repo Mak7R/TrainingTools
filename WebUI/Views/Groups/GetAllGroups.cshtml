@@ -1,0 +1,102 @@
+﻿@model IEnumerable<GroupViewModel>
+
+@{
+    ViewBag.Title = "Groups";
+}
+
+<div class="container">
+    <h2 class="text-center">Groups</h2>
+
+    <div class="list-group">
+        @foreach (var group in Model)
+        {
+            <div class="list-group-item list-group-item-action mb-2 d-flex justify-content-between align-items-center">
+                <a type="button" class="link-dark" data-bs-toggle="modal" data-bs-target="#delGroupModal-@group.Id"><span class="fs-5">@group.Name</span></a>
+                <a class="btn btn-danger ms-auto" asp-controller="Groups" asp-action="DeleteGroup" asp-route-groupId="@group.Id">
+                    Remove
+                </a>
+            </div>
+            <div class="modal fade" id="delGroupModal-@group.Id" tabindex="-1" aria-labelledby="delGroupModal-@group.Id-Label" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h1 class="modal-title fs-5" id="delGroupModal-@group.Id-Label">Edit Group: @group.Name</h1>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <form method="post" asp-action="EditGroup" asp-controller="Groups" id="edit-group-form-@group.Id">
+                                <div class="mb-3">
+                                    <input name="id" value="@group.Id" hidden/>
+                                            
+                                    <label for="edit-group-name-@group.Id-input" class="col-form-label"></label>
+                                    <input id="edit-group-name-@group.Id-input" type="text" name="name" value="@group.Name" class="form-control">
+                                    <span id="edit-group-name-@group.Id-errors" class="text-danger"></span>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            <button type="button" class="btn btn-success" onclick="submitEditForm('@group.Id')">Save</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+    <button type="button" class="btn btn-success w-100 d-block" data-bs-toggle="modal" data-bs-target="#addGroupModal">Add new group</button>
+    <div class="modal fade" id="addGroupModal" tabindex="-1" aria-labelledby="addGroupModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="addGroupModalLabel">Add new group</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form method="post" asp-action="AddGroup" asp-controller="Groups" id="add-group-form">
+                        <div class="mb-3">
+                            <label for="add-group-name-input" class="col-form-label"></label>
+                            <input id="add-group-name-input" type="text" name="name" value="@ViewBag.GroupName" class="form-control">
+                            <span id="add-group-name-errors" class="text-danger"></span>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-success" onclick="submitForm()">Add</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts{
+    <script>
+        function submitEditForm(id){
+            const nameInput = document.getElementById(`edit-group-name-${id}-input`);
+            const nameValue = nameInput.value.trim();
+            const minLength = @Domain.Rules.DataSizes.Group.MinNameSize;
+            const maxLength = @Domain.Rules.DataSizes.Group.MaxNameSize;
+
+            if (nameValue.length < minLength || nameValue.length > maxLength) {
+                document.getElementById(`edit-group-name-${id}-errors`).innerText = "Name length must be from @Domain.Rules.DataSizes.Group.MinNameSize to @Domain.Rules.DataSizes.Group.MaxNameSize characters";
+            }
+            else{
+                document.getElementById(`edit-group-form-${id}`).submit();
+            }
+        }
+        function submitForm() {
+            const nameInput = document.getElementById("add-group-name-input");
+            const nameValue = nameInput.value.trim();
+            const minLength = @Domain.Rules.DataSizes.Group.MinNameSize;
+            const maxLength = @Domain.Rules.DataSizes.Group.MaxNameSize;
+
+            if (nameValue.length < minLength || nameValue.length > maxLength) {
+                document.getElementById('add-group-name-errors').innerText = "Name length must be from @Domain.Rules.DataSizes.Group.MinNameSize to @Domain.Rules.DataSizes.Group.MaxNameSize characters";
+            }
+            else{
+                document.getElementById('add-group-form').submit();
+            }
+        }
+    </script>
+}

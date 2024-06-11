@@ -1,0 +1,30 @@
+﻿@model LoginDto
+
+@{
+    ViewBag.Title = "Login";
+}
+
+
+<div class="container mt-3">
+    <form method="post" asp-controller="Account" asp-action="Login" asp-route-returnUrl="@Context.Request.Query["ReturnUrl"]">
+        <div class="mb-3">
+            <label asp-for="EmailOrUsername" class="form-label"></label>
+            <input asp-for="EmailOrUsername" class="form-control"/>
+            <span asp-validation-for="EmailOrUsername" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Password" class="form-label"></label>
+            <input asp-for="Password" class="form-control"/>
+            <span asp-validation-for="Password" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <button type="submit" class="btn btn-success">Login</button>
+        </div>
+        
+        <div class="mb-3">
+            <div asp-validation-summary="All" class="text-danger"></div>
+        </div>
+    </form>
+</div>
