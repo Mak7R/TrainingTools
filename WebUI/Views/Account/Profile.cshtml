@@ -1,4 +1,4 @@
-﻿@model FullProfileViewModel
+﻿@model ProfileViewModel
 
 @{
     ViewBag.Title = "Profile";
@@ -7,17 +7,44 @@
 <div class="container mt-3">
     <h1>Profile</h1>
     
-    <p class="fs-3">Username: @Model.Username</p>
-    <p class="fs-3">About: @Model.About</p>
+    <p class="fs-4">Username: @Model.Username</p>
+    <p class="fs-5">About: @Model.About</p>
     
-    <p class="fs-3">Email: @Model.Email</p>
-    <p class="fs-3">Phone: @Model.Phone</p>
+    <p class="fs-5">Email: @Model.Email</p>
+    <p class="fs-5">Phone: @Model.Phone</p>
+
+    <p class="fs-5">
+        Roles:
+        @if (Model.Roles is not null)
+        {
+            foreach (var role in Model.Roles)
+            {
+                switch (role)
+                {
+                    case nameof(Role.Root):
+                        <span class="badge rounded-pill text-bg-danger">@role</span>
+                        break;
+                    case nameof(Role.Admin):
+                        <span class="badge rounded-pill text-bg-warning">@role</span>
+                        break;
+                    default:
+                        <span class="badge rounded-pill text-bg-primary">@role</span>
+                        break;
+                }
+            }
+        }
+    </p>
+    <p class="fs-5">
+        Status:
+        @if (Model.IsPublic)
+        {
+            <span class="badge rounded-pill text-bg-primary">public</span>
+        }
+        else
+        {
+            <span class="badge rounded-pill text-bg-secondary">private</span>
+        }
+    </p>
     
-    <p class="fs-3">Roles: @if (Model.Roles is not null)
-                           {
-                               foreach (var role in Model.Roles)
-                               {
-                                   @role<text>; </text>
-                               }
-                           }</p>
+    <a class="btn btn-primary" asp-controller="Account" asp-action="UpdateProfile">Update Profile</a>
 </div>

@@ -1,0 +1,71 @@
+﻿@model UpdateProfileDto
+
+@{
+    ViewBag.Title = "Update Profile";
+}
+
+<div class="container">
+    <form method="post" asp-controller="Account" asp-action="UpdateProfile">
+        <div class="col">
+            <div class="mb-3">
+                <label asp-for="Username" class="form-label"></label>
+                <input asp-for="Username" class="form-control"/>
+                <span asp-validation-for="Username" class="text-danger"></span>
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Email" class="form-label"></label>
+            <input asp-for="Email" class="form-control"/>
+            <span asp-validation-for="Email" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Phone" class="form-label"></label>
+            <input asp-for="Phone" class="form-control" placeholder="+380(xx)-xxx-xx-xx"/>
+            <span asp-validation-for="Phone" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="About" class="form-label"></label>
+            <input asp-for="About" class="form-control"/>
+            <span asp-validation-for="About" class="text-danger"></span>
+        </div>
+        
+        <div class="mb-3">
+            <label asp-for="IsPublic" class="form-label">Is Profile Public: </label>
+            <input asp-for="IsPublic" class="form-check-input"/>
+            <span asp-validation-for="IsPublic" class="text-danger"></span>
+        </div>
+        
+        <div class="border border-black mb-3 p-1">
+            <label class="form-label">Leave this fields empty if you don't want to change password</label>
+            
+            <div class="mb-3">
+                <label asp-for="NewPassword" class="form-label"></label>
+                <input asp-for="NewPassword" class="form-control"/>
+                <span asp-validation-for="NewPassword" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="ConfirmPassword" class="form-label"></label>
+                <input asp-for="ConfirmPassword" class="form-control"/>
+                <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="CurrentPassword" class="form-label"></label>
+            <input asp-for="CurrentPassword" class="form-control"/>
+            <span asp-validation-for="CurrentPassword" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <button type="submit" class="btn btn-primary">Save changes</button>
+        </div>
+
+        <div class="mb-3">
+            <div asp-validation-summary="All" class="text-danger"></div>
+        </div>
+    </form>
+</div>

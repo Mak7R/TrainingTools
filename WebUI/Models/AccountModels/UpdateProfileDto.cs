@@ -5,7 +5,7 @@ using static Domain.Rules.DataSizes.ApplicationUser;
 
 namespace WebUI.Models.AccountModels;
 
-public class RegisterDto
+public class UpdateProfileDto
 {
     [Display(Name = "Nickname")]
     [Required(ErrorMessage = "Nickname is required")]
@@ -29,16 +29,20 @@ public class RegisterDto
     [Phone(ErrorMessage = "Phone is invalid")]
     public string? Phone { get; set; } = string.Empty;
     
-    [Display(Name = "Password")]
-    [Required(ErrorMessage = "Password is required")]
+    public bool IsPublic { get; set; } = false;
+    
+    [Display(Name = "New password")]
     [DataType(DataType.Password)]
-    public string? Password { get; set; }
+    public string? NewPassword { get; set; }
     
     [Display(Name = "Confirm password")]
-    [Required(ErrorMessage = "Confirm password is required")]
-    [Compare(nameof(Password), ErrorMessage = "Confirm password must be same with password")]
+    [Compare(nameof(NewPassword), ErrorMessage = "Confirm password must be same with password")]
     [DataType(DataType.Password)]
     public string? ConfirmPassword { get; set; }
     
-    public bool IsPublic { get; set; } = false;
+    
+    [Display(Name = "Current password")]
+    [Required(ErrorMessage = "Current password is required for confirm changes")]
+    [DataType(DataType.Password)]
+    public string? CurrentPassword { get; set; }
 }

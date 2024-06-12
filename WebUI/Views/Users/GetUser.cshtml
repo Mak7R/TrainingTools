@@ -1,0 +1,102 @@
+﻿@model Application.Dtos.UserInfo
+
+@{
+    ViewBag.Title = $"{Model.User.UserName} - Profile";
+
+    var currentUserIsAdmin = User.IsInRole(nameof(Role.Admin));
+    var currentUserIsRoot = User.IsInRole(nameof(Role.Root));
+}
+
+<div class="container">
+    <h2>@Model.User.UserName</h2>
+    <h4>About: @Model.User.About</h4>
+    
+    <h4>
+        Roles:
+        @foreach (var role in Model.Roles)
+        {
+            switch (role)
+            {
+                case nameof(Role.Root):
+                    <span class="badge rounded-pill text-bg-danger">@role</span>
+                    break;
+                case nameof(Role.Admin):
+                    <span class="badge rounded-pill text-bg-warning">@role</span>
+                    break;
+                default:
+                    <span class="badge rounded-pill text-bg-primary">@role</span>
+                    break;
+            }
+        }
+    </h4>
+    @if (Model.User.IsPublic)
+    {
+        <span class="badge rounded-pill text-bg-primary">public</span>
+    }
+    else
+    {
+        <span class="badge rounded-pill text-bg-secondary">private</span>
+    }
+    
+    <div class="mt-2">
+        @switch (Model.RelationshipState)
+        {
+            case RelationshipState.None:
+                <button class="btn btn-primary">Follow</button>
+                break;
+            case RelationshipState.Invited:
+                <button class="btn btn-primary" disabled>Invited</button>
+                break;
+            case RelationshipState.CanBeAccepted:
+                <button class="btn btn-primary">Accept</button>
+                break;
+            case RelationshipState.Friends:
+                <button class="btn btn-primary" disabled>Friend</button>
+                break;
+            default:
+                throw new ArgumentOutOfRangeException();
+        }
+    </div>
+    
+
+
+    @if (currentUserIsAdmin || currentUserIsRoot)
+    {
+        <div class="container mt-2 border border-top-1 border-black p-1">
+            <h4>Admin functions</h4>
+            <div>
+                <h5>Email: @Model.User.Email</h5>
+                <h5>Phone: @Model.User.PhoneNumber</h5>
+            </div>
+            <div>
+                @if (!Model.Roles.Contains(nameof(Role.Root)) &&
+                (currentUserIsRoot || !Model.Roles.Contains(nameof(Role.Admin))))
+                {
+                <a class="btn btn-primary" asp-controller="Users" asp-action="UpdateUser" asp-route-userId="@Model.User.Id">Update</a>
+
+                <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteUserModal">
+                    Delete
+                </button>
+
+                <div class="modal fade" id="deleteUserModal" tabindex="-1" aria-labelledby="deleteUserModalLabel" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h1 class="modal-title fs-5" id="deleteUserModalLabel">Delete user: @Model.User.UserName</h1>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body text-danger">
+                                This action will delete user from database and it cannot be canceled
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Cancel</button>
+                                <button type="button" class="btn btn-danger" asp-controller="Users" asp-action="DeleteUser" asp-route-userId="@Model.User.Id">Delete</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                }
+            </div>
+        </div>
+    }
+</div>

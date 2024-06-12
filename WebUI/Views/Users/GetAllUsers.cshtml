@@ -7,11 +7,54 @@
 <div class="container">
     <h2 class="text-center">Users</h2>
 
-    <div class="list-group">
+    @if (Context.User.IsInRole(nameof(Role.Admin)) || Context.User.IsInRole(nameof(Role.Root)))
+    {
+        <a class="d-block w-100 btn btn-primary" asp-controller="Users" asp-action="CreateUser">Create new User</a>
+    }
+    
+    <div class="list-group mt-3">
         @foreach (var userInfo in Model)
         {
-            <div class="list-group-item list-group-item-action mb-2 d-flex justify-content-between align-items-center">
-                <p>@userInfo.User.UserName; @nameof(userInfo.RelationshipState); @foreach(var role in userInfo.Roles) {@role}</p>
+            <div class="list-group-item list-group-item-action mb-2">
+                <div class="row w-100">
+                    <a class="col fs-5" asp-controller="Users" asp-action="GetUser" asp-route-userName="@userInfo.User.UserName">@userInfo.User.UserName</a>
+                    <div class="col">
+                        @foreach (var role in userInfo.Roles)
+                        {
+                            switch (role)
+                            {
+                                case nameof(Role.Root):
+                                    <span class="badge rounded-pill text-bg-danger">@role</span>
+                                    break;
+                                case nameof(Role.Admin):
+                                    <span class="badge rounded-pill text-bg-warning">@role</span>
+                                    break;
+                                default:
+                                    <span class="badge rounded-pill text-bg-primary">@role</span>
+                                    break;
+                            }
+                        }
+                    </div>
+                    <div class="col-1">
+                        @switch (userInfo.RelationshipState)
+                        {
+                            case RelationshipState.None:
+                                <button class="btn btn-primary">Follow</button>
+                                break;
+                            case RelationshipState.Invited:
+                                <button class="btn btn-primary" disabled>Invited</button>
+                                break;
+                            case RelationshipState.CanBeAccepted:
+                                <button class="btn btn-primary">Accept</button>
+                                break;
+                            case RelationshipState.Friends:
+                                <button class="btn btn-primary" disabled>Friend</button>
+                                break;
+                            default:
+                                throw new ArgumentOutOfRangeException();
+                        }
+                    </div>
+                </div>
             </div>
         }
     </div>

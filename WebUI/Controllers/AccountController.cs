@@ -3,6 +3,7 @@ using Domain.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using WebUI.Extensions;
 using WebUI.Models.AccountModels;
 
 namespace WebUI.Controllers;
@@ -119,7 +120,7 @@ public class AccountController(
         
         var userRoles = await userManager.GetRolesAsync(user);
 
-        var profile = new FullProfileViewModel
+        var profile = new ProfileViewModel
         {
             Username = user.UserName,
             About = user.About,
@@ -130,31 +131,60 @@ public class AccountController(
         return View(profile);
     }
     
-    [AllowAnonymous]
-    [HttpGet("/user/{userName}")]
-    public async Task<IActionResult> PublicProfile(string userName) // TODO MUST BE REMOVED
+    [Authorize]
+    [HttpGet("/profile/update")]
+    public async Task<IActionResult> UpdateProfile()
     {
-        if (User.Identity?.Name == userName)
-            return RedirectToAction("Profile");
-        
-        var user = await userManager.FindByNameAsync(userName);
+        var user = await userManager.GetUserAsync(HttpContext.User);
+        if (user == null) return this.NotFoundView("User was not found");
 
-        if (user == null)
-        {
-            HttpContext.Response.StatusCode = StatusCodes.Status404NotFound;
-            return View("NotFound", "User was not found");
-        }
-        
-        var userRoles = await userManager.GetRolesAsync(user);
-        
-        var userProfile = new ProfileViewModel
+        var updateProfileDto = new UpdateProfileDto
         {
             Username = user.UserName,
+            Email = user.Email,
+            Phone = user.PhoneNumber,
             About = user.About,
-            Roles = userRoles
+            IsPublic = user.IsPublic
         };
         
-        return View(userProfile);
+        return View(updateProfileDto);
+    }
+    
+    [Authorize]
+    [HttpPost("/profile/update")]
+    public async Task<IActionResult> UpdateProfile([FromForm]UpdateProfileDto? updateProfileDto)
+    {
+        ArgumentNullException.ThrowIfNull(updateProfileDto);
+        ArgumentException.ThrowIfNullOrWhiteSpace(updateProfileDto.CurrentPassword);
+        
+        if (!ModelState.IsValid)
+        {
+            return this.BadRequestView(ModelState.Values.SelectMany(v => v.Errors).Select(err=> err.ErrorMessage));
+        }
+        var user = await userManager.GetUserAsync(HttpContext.User);
+        if (user == null) return this.NotFoundView("User was not found");
+
+        user.UserName = updateProfileDto.Username;
+        user.Email = updateProfileDto.Email;
+        user.PhoneNumber = updateProfileDto.Phone;
+        user.IsPublic = updateProfileDto.IsPublic;
+        user.About = updateProfileDto.About;
+
+        if (await userManager.CheckPasswordAsync(user, updateProfileDto.CurrentPassword))
+        {
+            var result = await userManager.UpdateAsync(user);
+            if (!result.Succeeded) return this.BadRequestView(result.Errors.Select(err=>err.Description));
+
+            if (!string.IsNullOrWhiteSpace(updateProfileDto.NewPassword))
+            {
+                var updatePasswordResult = await userManager.ChangePasswordAsync(user, updateProfileDto.CurrentPassword, updateProfileDto.NewPassword);
+                if (!updatePasswordResult.Succeeded) return this.BadRequestView(updatePasswordResult.Errors.Select(err=>err.Description));
+            }
+
+            return RedirectToAction("Profile");
+        }
+
+        return this.BadRequestView(new []{"Current password is not valid"});
     }
     
     [AllowAnonymous]

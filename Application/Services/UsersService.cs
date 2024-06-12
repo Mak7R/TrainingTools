@@ -19,6 +19,7 @@ public class UsersService : IUsersService
     private readonly IFriendsRepository _friendsRepository;
     private readonly ILogger<UsersService> _logger;
 
+    // ReSharper disable once ConvertToPrimaryConstructor
     public UsersService(UserManager<ApplicationUser> userManager, IFriendsRepository friendsRepository, ILogger<UsersService> logger)
     {
         _userManager = userManager;
@@ -111,6 +112,7 @@ public class UsersService : IUsersService
     {
         ArgumentNullException.ThrowIfNull(currentUserClaimsPrincipal);
         ArgumentNullException.ThrowIfNull(createUserDto);
+        ArgumentException.ThrowIfNullOrWhiteSpace(createUserDto.Password);
         
         var user = await _userManager.GetUserAsync(currentUserClaimsPrincipal);
         if (user == null) throw new ArgumentException("User was not found", nameof(currentUserClaimsPrincipal));
@@ -156,9 +158,61 @@ public class UsersService : IUsersService
             new[] { "User is not admin or root" });
     }
 
-    public Task<OperationResult> UpdateUser(ClaimsPrincipal? currentUserClaimsPrincipal, UpdateUserDto updateUserDto)
+    public async Task<OperationResult> UpdateUser(ClaimsPrincipal? currentUserClaimsPrincipal, UpdateUserDto updateUserDto)
     {
-        throw new NotImplementedException();
+        ArgumentNullException.ThrowIfNull(currentUserClaimsPrincipal);
+        ArgumentNullException.ThrowIfNull(updateUserDto);
+        
+        var user = await _userManager.GetUserAsync(currentUserClaimsPrincipal);
+        if (user == null) throw new ArgumentException("User was not found", nameof(currentUserClaimsPrincipal)); // todo
+        
+        var roles = await _userManager.GetRolesAsync(user);
+
+        if (roles.Contains(nameof(Role.Admin)) || roles.Contains(nameof(Role.Root)))
+        {
+            var applicationUser = await _userManager.FindByIdAsync(updateUserDto.UserId.ToString());
+            if (applicationUser == null) return new DefaultOperationResult(false, new NotFoundException("User was not found"), new []{"User was not found"}) ; // todo 
+
+            if (await _userManager.IsInRoleAsync(applicationUser, nameof(Role.Root)))
+            {
+                throw new OperationNotAllowedException("Root cannot be edited by another user");
+            }
+
+            var isAdmin = await _userManager.IsInRoleAsync(applicationUser, nameof(Role.Admin));
+            if (!isAdmin || (isAdmin && roles.Contains(nameof(Role.Root))))
+            {
+                applicationUser.UserName = updateUserDto.Username;
+                applicationUser.IsPublic = applicationUser.IsPublic && !updateUserDto.SetPrivate;
+                if (updateUserDto.ClearAbout) applicationUser.About = string.Empty;
+                
+                var result = await _userManager.UpdateAsync(applicationUser);
+
+                if (result.Succeeded)
+                {
+                    if (roles.Contains(nameof(Role.Root)))
+                    {
+                        if (!isAdmin && updateUserDto.IsAdmin)
+                        {
+                            await _userManager.AddToRoleAsync(applicationUser, nameof(Role.Admin));
+                        }
+                        else if (isAdmin && !updateUserDto.IsAdmin)
+                        {
+                            await _userManager.RemoveFromRoleAsync(applicationUser, nameof(Role.Admin));
+                        }
+                    }
+                    return new DefaultOperationResult(true);
+                }
+                else
+                {
+                    return new DefaultOperationResult(false, errors: result.Errors.Select(err => err.Description));
+                }
+            }
+
+            return new DefaultOperationResult(false, new OperationNotAllowedException("Only root can edit admins"));
+        }
+        
+        return new DefaultOperationResult(false, new OperationNotAllowedException("User is not admin or root"),
+            new[] { "User is not admin or root" });
     }
 
     public async Task<OperationResult> DeleteUser(ClaimsPrincipal? currentUserClaimsPrincipal, Guid userId)

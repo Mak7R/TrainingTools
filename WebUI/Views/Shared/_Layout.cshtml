@@ -32,7 +32,7 @@
                     if (Context.User.IsInRole(nameof(Role.Admin)) || Context.User.IsInRole(nameof(Role.Root)))
                     {
                         <li class="nav-item">
-                            <a class="nav-link" asp-area="Admin" asp-controller="Groups" asp-action="GetAllGroups">Groups</a>
+                            <a class="nav-link" asp-controller="Groups" asp-action="GetAllGroups">Groups</a>
                         </li>
                     }
                 }
