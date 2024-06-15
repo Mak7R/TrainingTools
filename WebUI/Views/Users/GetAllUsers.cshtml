@@ -36,22 +36,8 @@
                         }
                     </div>
                     <div class="col-1">
-                        @switch (userInfo.RelationshipState)
-                        {
-                            case RelationshipState.None:
-                                <button class="btn btn-primary">Follow</button>
-                                break;
-                            case RelationshipState.Invited:
-                                <button class="btn btn-primary" disabled>Invited</button>
-                                break;
-                            case RelationshipState.CanBeAccepted:
-                                <button class="btn btn-primary">Accept</button>
-                                break;
-                            case RelationshipState.Friends:
-                                <button class="btn btn-primary" disabled>Friend</button>
-                                break;
-                            default:
-                                throw new ArgumentOutOfRangeException();
+                        @{
+                            await Html.RenderPartialAsync("Partials/UsersRelationshipActions", (userInfo.RelationshipState, userInfo.User.UserName, Context.Request.Path.ToString()));
                         }
                     </div>
                 </div>

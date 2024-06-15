@@ -136,7 +136,10 @@ public class AccountController(
     public async Task<IActionResult> UpdateProfile()
     {
         var user = await userManager.GetUserAsync(HttpContext.User);
-        if (user == null) return this.NotFoundView("User was not found");
+        if (user == null)
+        {
+            return RedirectToAction("Login","Account", new {ReturnUrl = "/profile"});
+        }
 
         var updateProfileDto = new UpdateProfileDto
         {
@@ -148,6 +151,29 @@ public class AccountController(
         };
         
         return View(updateProfileDto);
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> DeleteAccount([FromForm] string? password)
+    {
+        var user = await userManager.GetUserAsync(HttpContext.User);
+        if (user == null)
+            return RedirectToAction("Login","Account");
+
+        if (string.IsNullOrWhiteSpace(password)) return this.BadRequestView(new[] { "Invalid password" });
+
+        if (!await userManager.CheckPasswordAsync(user, password))
+        {
+            return this.BadRequestView(new[] { "Invalid password" });
+        }
+        
+        var result = await userManager.DeleteAsync(user);
+        if (result.Succeeded)
+        {
+            await signInManager.SignOutAsync();
+            return RedirectToAction("Index", "Home");
+        }
+        return this.BadRequestView(new []{"Server error"}); // todo server error
     }
     
     [Authorize]

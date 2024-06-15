@@ -72,7 +72,7 @@ public class FriendsRepository : IFriendsRepository
             return new DefaultOperationResult(false, exception,new []{exception.Message});
         }
 
-        var invitation = new FriendInvitationEntity { Invitor = friendInvitation.Invitor, Target = friendInvitation.Invitor, InvitationTime = friendInvitation.InvitationTime };
+        var invitation = new FriendInvitationEntity { Invitor = friendInvitation.Invitor, Target = friendInvitation.Target, InvitationTime = friendInvitation.InvitationTime };
 
         try
         {

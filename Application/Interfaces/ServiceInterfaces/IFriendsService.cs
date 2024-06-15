@@ -7,8 +7,8 @@ namespace Application.Interfaces.ServiceInterfaces;
 public interface IFriendsService
 {
     public Task<OperationResult> CreateInvitation(ApplicationUser invitor, ApplicationUser target);
-    public Task<OperationResult> AcceptInvitation(ApplicationUser user, Guid invitationId);
-    public Task<OperationResult> RefuseInvitation(ApplicationUser user, Guid invitationId);
+    public Task<OperationResult> AcceptInvitation(ApplicationUser invitor, ApplicationUser target);
+    public Task<OperationResult> RemoveInvitation(ApplicationUser invitor, ApplicationUser target);
 
     public Task<IEnumerable<FriendInvitation>> GetInvitationsFor(ApplicationUser user);
     public Task<IEnumerable<FriendInvitation>> GetInvitationsOf(ApplicationUser user);

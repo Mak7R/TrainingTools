@@ -41,7 +41,7 @@
                 @if (Context.User.Identity?.IsAuthenticated is true)
                 {
                     <li class="nav-item">
-                        <a class="nav-link">Friends</a>
+                        <a class="nav-link" asp-controller="Friends" asp-action="Index">Friends</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link">My Results</a>

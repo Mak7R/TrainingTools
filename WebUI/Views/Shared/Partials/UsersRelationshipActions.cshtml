@@ -1,0 +1,25 @@
+﻿@model (RelationshipState State, string UserName, string? ReturnUrl)
+
+<div>
+    @switch (Model.State)
+    {
+        case RelationshipState.None:
+            <a class="btn btn-primary" asp-controller="Friends" asp-action="Invite" asp-route-userName="@Model.UserName" asp-route-returnUrl="@Model.ReturnUrl">Invite</a>
+            break;
+        case RelationshipState.Invited:
+            <a class="btn btn-secondary" asp-controller="Friends" asp-action="Cancel" asp-route-userName="@Model.UserName" asp-route-returnUrl="@Model.ReturnUrl">Cancel</a>
+            break;
+        case RelationshipState.CanBeAccepted:
+            <span>
+                <a class="btn btn-primary" asp-controller="Friends" asp-action="Accept" asp-route-userName="@Model.UserName" asp-route-returnUrl="@Model.ReturnUrl">Accept</a>
+                <a class="btn btn-danger" asp-controller="Friends" asp-action="Refuse" asp-route-userName="@Model.UserName" asp-route-returnUrl="@Model.ReturnUrl">Refuse</a>
+            </span>
+            break;
+        case RelationshipState.Friends:
+            <a class="btn btn-danger" asp-controller="Friends" asp-action="RemoveFriendship" asp-route-userName="@Model.UserName" asp-route-returnUrl="@Model.ReturnUrl">Remove</a>
+            break;
+        default:
+            throw new ArgumentOutOfRangeException();
+    }
+</div>
+
