@@ -1,8 +1,9 @@
 ﻿using Domain.Models;
+using Domain.Rules;
 
-namespace Application.Interfaces.RepositoryInterfaces;
+namespace Application.Interfaces.ServiceInterfaces;
 
-public interface IExercisesRepository
+public interface IExercisesService
 {
     Task<OperationResult> CreateExercise(Exercise? exercise);
     
@@ -10,6 +11,6 @@ public interface IExercisesRepository
     Task<Exercise?> GetByName(string? name);
     Task<Exercise?> GetById(Guid id);
     
-    Task<OperationResult> UpdateExercise(Exercise? exercise);
+    Task<OperationResult> UpdateExercise(Exercise? group);
     Task<OperationResult> DeleteExercise(Guid id);
 }

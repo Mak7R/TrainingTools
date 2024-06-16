@@ -62,6 +62,8 @@ builder.Services.AddScoped<IGroupsService, GroupsService>();
 builder.Services.AddScoped<IFriendsRepository, FriendsRepository>();
 builder.Services.AddScoped<IUsersService, UsersService>();
 builder.Services.AddScoped<IFriendsService, FriendsService>();
+builder.Services.AddScoped<IExercisesRepository, ExercisesRepository>();
+builder.Services.AddScoped<IExercisesService, ExercisesService>();
 
 builder.Services.AddHttpLogging(options =>
 {

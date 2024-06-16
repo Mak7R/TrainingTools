@@ -131,7 +131,7 @@ public class GroupsRepository : IGroupsRepository
         catch (Exception e)
         {
             _logger.LogError(e, "Exception was thrown while updating group with id '{groupId}'", group.Id);
-            var ex = new DataBaseException("Error while deleting group from database", e);
+            var ex = new DataBaseException("Error while updating group in database", e);
             return new DefaultOperationResult(false, ex, new[] { ex.Message });
         }
 

@@ -22,7 +22,7 @@
                     <a class="nav-link" asp-controller="Home" asp-action="Index">Home</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link">Exercises</a>
+                    <a class="nav-link" asp-controller="Exercises" asp-action="GetAllExercises">Exercises</a>
                 </li>
                 @if (Context.User.Identity?.IsAuthenticated is true)
                 {

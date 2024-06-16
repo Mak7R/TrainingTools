@@ -28,6 +28,9 @@ public class FriendsRepository : IFriendsRepository
         ArgumentNullException.ThrowIfNull(friendInvitation);
         ArgumentNullException.ThrowIfNull(friendInvitation.Invitor);
         ArgumentNullException.ThrowIfNull(friendInvitation.Target);
+
+        if (friendInvitation.Invitor.Id == friendInvitation.Target.Id)
+            throw new ArgumentException("Invitor cannot invite self");
         
         FriendRelationshipEntity? existFriendship;
         try

@@ -28,7 +28,7 @@
                                 <div class="mb-3">
                                     <input name="id" value="@group.Id" hidden/>
                                             
-                                    <label for="edit-group-name-@group.Id-input" class="col-form-label"></label>
+                                    <label for="edit-group-name-@group.Id-input" class="col-form-label">Name</label>
                                     <input id="edit-group-name-@group.Id-input" type="text" name="name" value="@group.Name" class="form-control">
                                     <span id="edit-group-name-@group.Id-errors" class="text-danger"></span>
                                 </div>
@@ -55,7 +55,7 @@
                 <div class="modal-body">
                     <form method="post" asp-action="AddGroup" asp-controller="Groups" id="add-group-form">
                         <div class="mb-3">
-                            <label for="add-group-name-input" class="col-form-label"></label>
+                            <label for="add-group-name-input" class="col-form-label">Name</label>
                             <input id="add-group-name-input" type="text" name="name" value="@ViewBag.GroupName" class="form-control">
                             <span id="add-group-name-errors" class="text-danger"></span>
                         </div>

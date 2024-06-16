@@ -1,0 +1,151 @@
+﻿@model IEnumerable<ExerciseViewModel>
+
+@{
+    ViewBag.Title = "Exercises";
+
+    var isUserAdmin = User.IsInRole("Admin");
+    var isUserRoot = User.IsInRole("Root");
+}
+
+<div class="container">
+    <h2 class="text-center">Exercises</h2>
+
+    <div class="list-group">
+        @foreach (var exercise in Model)
+        {
+            <div class="list-group-item list-group-item-action mb-2">
+                <div class="row">
+                    @if (isUserAdmin || isUserRoot)
+                    {
+                        <a type="button" class="link-dark col fs-5" data-bs-toggle="modal" data-bs-target="#delExerciseModal-@exercise.Id"><span class="fs-5">@exercise.Name</span></a>
+                    }
+                    else
+                    {
+                        <span class="col fs-5">@exercise.Name</span>
+                    }
+
+                    <span class="col fs-5">@exercise.Group.Name</span>
+
+                    @if (isUserAdmin || isUserRoot)
+                    {
+                        <a class="col-1 btn btn-danger ms-auto" asp-controller="Exercises" asp-action="DeleteExercise" asp-route-exerciseId="@exercise.Id">
+                            Remove
+                        </a>
+                    }
+                </div>
+                
+            </div>
+            
+            @if (isUserAdmin || isUserRoot)
+            {
+                <div class="modal fade" id="delExerciseModal-@exercise.Id" tabindex="-1" aria-labelledby="delExerciseModal-@exercise.Id-Label" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h1 class="modal-title fs-5" id="delExerciseModal-@exercise.Id-Label">Edit Exercise: @exercise.Name</h1>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <form method="post" asp-action="EditExercise" asp-controller="Exercises" id="edit-exercise-form-@exercise.Id">
+                                    <div class="mb-3">
+                                        <input name="id" value="@exercise.Id" hidden/>
+
+                                        <label for="edit-exercise-name-@exercise.Id-input" class="col-form-label">Name</label>
+                                        <input id="edit-exercise-name-@exercise.Id-input" type="text" name="name" value="@exercise.Name" class="form-control">
+                                        <span id="edit-exercise-name-@exercise.Id-errors" class="text-danger"></span>
+
+                                        <label for="edit-exercise-group-select">Group</label>
+                                        <select id="edit-exercise-group-select" name="GroupId" class="form-select">
+                                            @foreach (GroupViewModel group in ViewBag.AvailableGroups)
+                                            {
+                                                if (group.Id == exercise.Group.Id)
+                                                {
+                                                    <option value="@group.Id" selected>@group.Name</option>
+                                                }
+                                                else
+                                                {
+                                                    <option value="@group.Id">@group.Name</option>
+                                                }
+                                            }
+                                        </select>
+                                    </div>
+                                </form>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                <button type="button" class="btn btn-success" onclick="submitEditForm('@exercise.Id')">Save</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+    </div>
+
+    @if (isUserAdmin || isUserRoot)
+    {
+        <button type="button" class="btn btn-success w-100 d-block" data-bs-toggle="modal" data-bs-target="#addExerciseModal">Add new exercise</button>
+        <div class="modal fade" id="addExerciseModal" tabindex="-1" aria-labelledby="addExerciseModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h1 class="modal-title fs-5" id="addExerciseModalLabel">Add new exercise</h1>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form method="post" asp-action="AddExercise" asp-controller="Exercises" id="add-exercise-form">
+                            <div class="mb-3">
+                                <label for="add-exercise-name-input" class="col-form-label">Name</label>
+                                <input id="add-exercise-name-input" type="text" name="name" value="@ViewBag.GroupName" class="form-control">
+                                <span id="add-exercise-name-errors" class="text-danger"></span>
+
+                                <label for="add-exercise-group-select">Group</label>
+                                <select id="add-exercise-group-select" name="GroupId" class="form-select">
+                                    @foreach (GroupViewModel group in ViewBag.AvailableGroups)
+                                    {
+                                        <option value="@group.Id">@group.Name</option>
+                                    }
+                                </select>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-success" onclick="submitForm()">Add</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@section Scripts{
+    <script>
+    function submitEditForm(id){
+        const nameInput = document.getElementById(`edit-exercise-name-${id}-input`);
+        const nameValue = nameInput.value.trim();
+        const minLength = @Domain.Rules.DataSizes.Exercise.MinNameSize;
+        const maxLength = @Domain.Rules.DataSizes.Exercise.MaxNameSize;
+
+        if (nameValue.length < minLength || nameValue.length > maxLength) {
+            document.getElementById(`edit-exercise-name-${id}-errors`).innerText = "Name length must be from @Domain.Rules.DataSizes.Exercise.MinNameSize to @Domain.Rules.DataSizes.Exercise.MaxNameSize characters";
+        }
+        else{
+            document.getElementById(`edit-exercise-form-${id}`).submit();
+        }
+    }
+    function submitForm() {
+        const nameInput = document.getElementById("add-exercise-name-input");
+        const nameValue = nameInput.value.trim();
+        const minLength = @Domain.Rules.DataSizes.Exercise.MinNameSize;
+        const maxLength = @Domain.Rules.DataSizes.Exercise.MaxNameSize;
+
+        if (nameValue.length < minLength || nameValue.length > maxLength) {
+            document.getElementById('add-exercise-name-errors').innerText = "Name length must be from @Domain.Rules.DataSizes.Exercise.MinNameSize to @Domain.Rules.DataSizes.Exercise.MaxNameSize characters";
+        }
+        else{
+            document.getElementById('add-exercise-form').submit();
+        }
+    }
+    </script>
+}

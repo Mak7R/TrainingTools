@@ -1,7 +1,5 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TrainingTools", "TrainingTools\TrainingTools.csproj", "{EAD3D988-9170-4C78-8524-594610B23B63}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{90403DB0-2FF5-42F2-B891-49FC294A0874}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{37FDFAE9-AD6D-44DA-9176-33D14FAFCC1B}"
@@ -20,10 +18,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{EAD3D988-9170-4C78-8524-594610B23B63}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{EAD3D988-9170-4C78-8524-594610B23B63}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{EAD3D988-9170-4C78-8524-594610B23B63}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{EAD3D988-9170-4C78-8524-594610B23B63}.Release|Any CPU.Build.0 = Release|Any CPU
 		{801772B4-C55D-4139-9DE3-BEC5D34E9650}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{801772B4-C55D-4139-9DE3-BEC5D34E9650}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{801772B4-C55D-4139-9DE3-BEC5D34E9650}.Release|Any CPU.ActiveCfg = Release|Any CPU
