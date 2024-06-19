@@ -32,7 +32,7 @@ public class UsersController : Controller
     public async Task<IActionResult> GetUser(string userName)
     {
         var userInfo = await _usersService.GetByName(HttpContext.User, userName);
-
+        // TODO check if current user is searchable user redirect to profile page
         if (userInfo is null) return this.NotFoundView("User with this name was not found");
 
         return View(userInfo);
@@ -50,7 +50,7 @@ public class UsersController : Controller
     public async Task<IActionResult> CreateUser(CreateUserDto createUserDto)
     {
         if (!ModelState.IsValid)
-            return this.BadRequestView(ModelState.Values.SelectMany(v => v.Errors).Select(err => err.ErrorMessage));
+            return View(createUserDto);
 
         var appCreateUserDto = new Application.Dtos.CreateUserDto
         {
@@ -94,6 +94,9 @@ public class UsersController : Controller
     [HttpPost("{userId:guid}/update")]
     public async Task<IActionResult> UpdateUser(Guid userId, UpdateUserDto updateUserDto)
     {
+        if (!ModelState.IsValid)
+            return View(updateUserDto);
+        
         var appUpdateUserDto = new Application.Dtos.UpdateUserDto
         {
             UserId = userId,
@@ -114,7 +117,7 @@ public class UsersController : Controller
     }
 
     [Authorize(Roles = "Admin,Root")]
-    [HttpPost("{userId:guid}/delete")]
+    [HttpGet("{userId:guid}/delete")]
     public async Task<IActionResult> DeleteUser([FromRoute] Guid userId)
     {
         var result = await _usersService.DeleteUser(HttpContext.User, userId);

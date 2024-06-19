@@ -1,5 +1,5 @@
-﻿using Application.Identity;
-using Application.Models;
+﻿using Application.Models;
+using Domain.Identity;
 using Domain.Models;
 
 namespace Application.Interfaces.RepositoryInterfaces;

@@ -1,7 +1,7 @@
-﻿using Application.Identity;
-using Application.Interfaces.RepositoryInterfaces;
+﻿using Application.Interfaces.RepositoryInterfaces;
 using Application.Interfaces.ServiceInterfaces;
 using Application.Models;
+using Domain.Identity;
 using Domain.Models;
 
 namespace Application.Services;

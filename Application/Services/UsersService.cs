@@ -2,12 +2,12 @@
 using System.Security.Claims;
 using Application.Dtos;
 using Application.Enums;
-using Application.Identity;
 using Application.Interfaces.RepositoryInterfaces;
 using Application.Interfaces.ServiceInterfaces;
 using Domain.Defaults;
 using Domain.Enums;
 using Domain.Exceptions;
+using Domain.Identity;
 using Domain.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;

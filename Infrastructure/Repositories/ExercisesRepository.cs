@@ -5,6 +5,7 @@ using Domain.Exceptions;
 using Domain.Models;
 using Infrastructure.Data;
 using Infrastructure.Entities;
+using Infrastructure.Mappers;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
@@ -62,7 +63,7 @@ public class ExercisesRepository : IExercisesRepository
                 .AsNoTracking()
                 .Include(exerciseEntity => exerciseEntity.Group)
                 .ToListAsync();
-            return exerciseEntities.Select(e => new Exercise { Id = e.Id, Name = e.Name, Group = new Group{Id = e.Group.Id, Name = e.Group.Name}});
+            return exerciseEntities.Select(e => e.ToExercise());
         }
         catch (Exception e)
         {
@@ -79,17 +80,7 @@ public class ExercisesRepository : IExercisesRepository
                 .AsNoTracking()
                 .Include(e => e.Group)
                 .FirstOrDefaultAsync(predicate);
-            return exerciseEntity == null ? 
-                null : new Exercise
-                {
-                    Id = exerciseEntity.Id, 
-                    Name = exerciseEntity.Name, 
-                    Group = new Group
-                    {
-                        Id = exerciseEntity.Group.Id, 
-                        Name = exerciseEntity.Group.Name
-                    }
-                };
+            return exerciseEntity?.ToExercise();
         }
         catch (Exception e)
         {

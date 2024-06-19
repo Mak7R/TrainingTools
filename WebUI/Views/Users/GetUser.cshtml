@@ -42,6 +42,7 @@
         @{
             await Html.RenderPartialAsync("Partials/UsersRelationshipActions", (Model.RelationshipState, Model.User.UserName, Context.Request.Path.ToString()));
         }
+        <a class="btn btn-primary m-2" asp-controller="ExerciseResults" asp-action="GetResultsForUser" asp-route-userName="@Model.User.UserName">Exercise Results</a>
     </div>
     
 
@@ -76,7 +77,7 @@
                             </div>
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Cancel</button>
-                                <button type="button" class="btn btn-danger" asp-controller="Users" asp-action="DeleteUser" asp-route-userId="@Model.User.Id">Delete</button>
+                                <a type="button" class="btn btn-danger" asp-controller="Users" asp-action="DeleteUser" asp-route-userId="@Model.User.Id">Delete</a>
                             </div>
                         </div>
                     </div>

@@ -1,5 +1,4 @@
 ﻿using Domain.Models;
-using Domain.Rules;
 
 namespace Application.Interfaces.ServiceInterfaces;
 

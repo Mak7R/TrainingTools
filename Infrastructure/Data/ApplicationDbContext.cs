@@ -1,4 +1,4 @@
-﻿using Application.Identity;
+﻿using Domain.Identity;
 using Infrastructure.Entities;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -35,7 +35,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, Applicati
 
         builder.Entity<ExerciseResultEntity>()
             .ToTable("ExerciseResult")
-            .HasKey(er => new { er.UserId, er.ExerciseId });
+            .HasKey(er => new { UserId = er.OwnerId, er.ExerciseId });
 
         builder.Entity<FriendInvitationEntity>()
             .ToTable("FriendInvitation")

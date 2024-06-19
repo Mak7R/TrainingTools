@@ -1,9 +1,11 @@
-﻿using Application.Interfaces.RepositoryInterfaces;
+﻿using System.Linq.Expressions;
+using Application.Interfaces.RepositoryInterfaces;
 using Domain.Defaults;
 using Domain.Exceptions;
 using Domain.Models;
 using Infrastructure.Data;
 using Infrastructure.Entities;
+using Infrastructure.Mappers;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
@@ -57,7 +59,7 @@ public class GroupsRepository : IGroupsRepository
         try
         {
             var groupEntities = await _dbContext.Groups.AsNoTracking().ToListAsync();
-            return groupEntities.Select(e => new Group { Id = e.Id, Name = e.Name });
+            return groupEntities.Select(g => g.ToGroup());
         }
         catch (Exception e)
         {
@@ -66,33 +68,30 @@ public class GroupsRepository : IGroupsRepository
         }
     }
 
-    public async Task<Group?> GetByName(string? name)
+    public async Task<Group?> GetBy(Expression<Func<GroupEntity, bool>> predicate)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(name);
+        ArgumentNullException.ThrowIfNull(predicate);
         try
         {
-            var groupEntity = await _dbContext.Groups.AsNoTracking().FirstOrDefaultAsync(g => g.Name == name);
-            return groupEntity == null ? null : new Group { Id = groupEntity.Id, Name = groupEntity.Name };
+            var groupEntity = await _dbContext.Groups.AsNoTracking().FirstOrDefaultAsync(predicate);
+            return groupEntity?.ToGroup();
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Exception was thrown while receiving group with name '{groupName}'", name);
-            throw new DataBaseException($"Error while receiving group with name '{name}' from database", e);
+            _logger.LogError(e, "Exception was thrown while receiving group with expression '{expression}'", predicate);
+            throw new DataBaseException("Error while receiving group from database", e);
         }
+    }
+    
+    public async Task<Group?> GetByName(string? name)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(name);
+        return await GetBy(g => g.Name == name);
     }
 
     public async Task<Group?> GetById(Guid id)
     {
-        try
-        {
-            var groupEntity = await _dbContext.Groups.AsNoTracking().FirstOrDefaultAsync(g => g.Id == id);
-            return groupEntity == null ? null : new Group { Id = groupEntity.Id, Name = groupEntity.Name };
-        }
-        catch (Exception e)
-        {
-            _logger.LogError(e, "Exception was thrown while receiving group with id '{groupId}'", id);
-            throw new DataBaseException($"Error while receiving group with id '{id}' from database", e);
-        }
+        return await GetBy(g => g.Id == id);
     }
 
     public async Task<OperationResult> UpdateGroup(Group? group)

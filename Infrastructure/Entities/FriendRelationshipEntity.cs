@@ -1,5 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
-using Application.Identity;
+using Domain.Identity;
 
 namespace Infrastructure.Entities;
 

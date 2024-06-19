@@ -1,4 +1,4 @@
-﻿using Application.Identity;
+﻿using Domain.Identity;
 
 namespace Application.Models;
 

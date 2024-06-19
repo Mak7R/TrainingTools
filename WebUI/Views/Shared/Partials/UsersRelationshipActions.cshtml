@@ -16,7 +16,7 @@
             </span>
             break;
         case RelationshipState.Friends:
-            <a class="btn btn-danger" asp-controller="Friends" asp-action="RemoveFriendship" asp-route-userName="@Model.UserName" asp-route-returnUrl="@Model.ReturnUrl">Remove</a>
+            <a class="btn btn-danger" asp-controller="Friends" asp-action="RemoveFriendship" asp-route-userName="@Model.UserName" asp-route-returnUrl="@Model.ReturnUrl">Remove from Friends</a>
             break;
         default:
             throw new ArgumentOutOfRangeException();

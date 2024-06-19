@@ -1,5 +1,5 @@
-﻿using Application.Identity;
-using Application.Models;
+﻿using Application.Models;
+using Domain.Identity;
 
 namespace WebUI.Models.FriendModels;
 

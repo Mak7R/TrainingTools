@@ -35,7 +35,7 @@
                             }
                         }
                     </div>
-                    <div class="col-1">
+                    <div class="col-2">
                         @{
                             await Html.RenderPartialAsync("Partials/UsersRelationshipActions", (userInfo.RelationshipState, userInfo.User.UserName, Context.Request.Path.ToString()));
                         }

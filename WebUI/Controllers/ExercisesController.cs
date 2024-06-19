@@ -1,7 +1,9 @@
 ﻿using Application.Interfaces.ServiceInterfaces;
 using Domain.Exceptions;
+using Domain.Identity;
 using Domain.Models;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using WebUI.Extensions;
 using WebUI.Models.ExerciseModels;
@@ -15,21 +17,31 @@ namespace WebUI.Controllers;
 public class ExercisesController : Controller
 {
     private readonly IExercisesService _exercisesService;
-    private readonly IGroupsService _groupsService;
 
-    public ExercisesController(IExercisesService exercisesService, IGroupsService groupsService)
+    public ExercisesController(IExercisesService exercisesService)
     {
         _exercisesService = exercisesService;
-        _groupsService = groupsService;
     }
     
     [HttpGet("")]
-    public async Task<IActionResult> GetAllExercises()
+    public async Task<IActionResult> GetAllExercises(
+        [FromServices] IGroupsService groupsService, 
+        [FromServices] IExerciseResultsService resultsService, 
+        [FromServices] UserManager<ApplicationUser> userManager)
     {
         ViewBag.AvailableGroups =
-            (await _groupsService.GetAll()).Select(g => new GroupViewModel { Id = g.Id, Name = g.Name });
+            (await groupsService.GetAll()).Select(g => new GroupViewModel { Id = g.Id, Name = g.Name });
+        
         var exercises = await _exercisesService.GetAll();
         var exerciseViewModels = exercises.Select(e => new ExerciseViewModel { Id = e.Id, Name = e.Name, Group = new GroupViewModel {Id = e.Group.Id, Name = e.Group.Name}});
+
+        var user = await userManager.GetUserAsync(User);
+
+        if (user is not null)
+        {
+            ViewBag.UserResults = await resultsService.GetForUser(user.Id);
+        }
+        
         return View(exerciseViewModels);
     }
 

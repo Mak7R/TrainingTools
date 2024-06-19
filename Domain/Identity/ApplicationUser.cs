@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Identity;
 using static Domain.Rules.DataSizes.ApplicationUser;
 
-namespace Application.Identity;
+namespace Domain.Identity;
 
 public class ApplicationUser : IdentityUser<Guid>
 {

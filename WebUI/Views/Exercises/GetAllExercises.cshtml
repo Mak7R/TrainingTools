@@ -1,4 +1,5 @@
-﻿@model IEnumerable<ExerciseViewModel>
+﻿@using Domain.Models
+@model IEnumerable<ExerciseViewModel>
 
 @{
     ViewBag.Title = "Exercises";
@@ -17,7 +18,7 @@
                 <div class="row">
                     @if (isUserAdmin || isUserRoot)
                     {
-                        <a type="button" class="link-dark col fs-5" data-bs-toggle="modal" data-bs-target="#delExerciseModal-@exercise.Id"><span class="fs-5">@exercise.Name</span></a>
+                        <a type="button" class="link-dark col fs-5" data-bs-toggle="modal" data-bs-target="#edtExerciseModal-@exercise.Id"><span class="fs-5">@exercise.Name</span></a>
                     }
                     else
                     {
@@ -25,24 +26,56 @@
                     }
 
                     <span class="col fs-5">@exercise.Group.Name</span>
+                    
+                    <span class="col fs-5">
+                        @if (ViewBag.UserResults is IEnumerable<ExerciseResult> exerciseResults)
+                        {
+                            var result = exerciseResults.FirstOrDefault(r => r.Exercise.Id == exercise.Id);
 
+                            if (result is null)
+                            {
+                                <a class="btn btn-success" asp-controller="ExerciseResults" asp-action="CreateResult" asp-route-exerciseId="@exercise.Id" asp-route-returnUrl="/exercises">Create Results</a>
+                            }
+                            else
+                            {
+                                <a class="btn btn-primary" asp-controller="ExerciseResults" asp-action="GetUserResults">To Results</a> @* TODO DECIDE TO WHICH URL MAKE REDIRECT*@
+                            }
+                        }
+                    </span>
+                    
                     @if (isUserAdmin || isUserRoot)
                     {
-                        <a class="col-1 btn btn-danger ms-auto" asp-controller="Exercises" asp-action="DeleteExercise" asp-route-exerciseId="@exercise.Id">
+                        <button class="col-1 btn btn-danger ms-auto" type="button" data-bs-toggle="modal" data-bs-target="#deleteExercise-@exercise.Id-Modal" asp-controller="Exercises" asp-action="DeleteExercise" asp-route-exerciseId="@exercise.Id">
                             Remove
-                        </a>
+                        </button>
                     }
                 </div>
-                
+            </div>
+            <div class="modal fade" id="deleteExercise-@exercise.Id-Modal" tabindex="-1" aria-labelledby="deleteExercise-@exercise.Id-ModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h1 class="modal-title fs-5" id="deleteExercise-@exercise.Id-ModalLabel">Delete group @exercise.Name</h1>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body text-danger">
+                            This action will delete group from database and it cannot be canceled
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Cancel</button>
+                            <a type="button" class="btn btn-danger" asp-controller="Groups" asp-action="DeleteGroup" asp-route-groupId="@exercise.Id">Delete</a>
+                        </div>
+                    </div>
+                </div>
             </div>
             
             @if (isUserAdmin || isUserRoot)
             {
-                <div class="modal fade" id="delExerciseModal-@exercise.Id" tabindex="-1" aria-labelledby="delExerciseModal-@exercise.Id-Label" aria-hidden="true">
+                <div class="modal fade" id="edtExerciseModal-@exercise.Id" tabindex="-1" aria-labelledby="edtExerciseModal-@exercise.Id-Label" aria-hidden="true">
                     <div class="modal-dialog">
                         <div class="modal-content">
                             <div class="modal-header">
-                                <h1 class="modal-title fs-5" id="delExerciseModal-@exercise.Id-Label">Edit Exercise: @exercise.Name</h1>
+                                <h1 class="modal-title fs-5" id="edtExerciseModal-@exercise.Id-Label">Edit Exercise: @exercise.Name</h1>
                                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
                             <div class="modal-body">

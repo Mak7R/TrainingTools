@@ -46,7 +46,7 @@
         }
     </p>
     
-    <a class="btn btn-primary" asp-controller="Account" asp-action="UpdateProfile">Update Profile</a>
+    <a class="btn btn-primary" asp-controller="Accounts" asp-action="UpdateProfile">Update Profile</a>
     
     <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteAccountModal">Delete Account</button>
     <div class="modal fade" id="deleteAccountModal" tabindex="-1" aria-labelledby="deleteAccountModalLabel" aria-hidden="true">
@@ -57,7 +57,7 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <form method="post" asp-action="DeleteAccount" asp-controller="Account" id="delete-account-form">
+                    <form method="post" asp-action="DeleteAccount" asp-controller="Accounts" id="delete-account-form">
                         <div class="mb-3">
                             <label for="password-for-delete-account-input" class="col-form-label">Password: </label>
                             <input id="password-for-delete-account-input" type="password" name="password" class="form-control">

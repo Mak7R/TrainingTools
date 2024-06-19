@@ -1,5 +1,5 @@
-﻿using Application.Identity;
-using Domain.Enums;
+﻿using Domain.Enums;
+using Domain.Identity;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -10,7 +10,7 @@ namespace WebUI.Controllers;
 
 [Controller]
 [Route("[controller]/[action]")]
-public class AccountController(
+public class AccountsController(
     UserManager<ApplicationUser> userManager,
     SignInManager<ApplicationUser> signInManager)
     : Controller
@@ -115,7 +115,7 @@ public class AccountController(
         
         if (user == null)
         {
-            return RedirectToAction("Login","Account", new {ReturnUrl = "/profile"});
+            return RedirectToAction("Login","Accounts", new {ReturnUrl = "/profile"});
         }
         
         var userRoles = await userManager.GetRolesAsync(user);
@@ -126,7 +126,8 @@ public class AccountController(
             About = user.About,
             Email = user.Email,
             Phone = user.PhoneNumber,
-            Roles = userRoles
+            Roles = userRoles,
+            IsPublic = user.IsPublic
         };
         return View(profile);
     }
@@ -138,7 +139,7 @@ public class AccountController(
         var user = await userManager.GetUserAsync(HttpContext.User);
         if (user == null)
         {
-            return RedirectToAction("Login","Account", new {ReturnUrl = "/profile"});
+            return RedirectToAction("Login","Accounts", new {ReturnUrl = "/profile"});
         }
 
         var updateProfileDto = new UpdateProfileDto
@@ -153,12 +154,50 @@ public class AccountController(
         return View(updateProfileDto);
     }
 
+    [Authorize]
+    [HttpPost("/profile/update")]
+    public async Task<IActionResult> UpdateProfile([FromForm] UpdateProfileDto? updateProfileDto)
+    {
+        ArgumentNullException.ThrowIfNull(updateProfileDto);
+
+        if (!ModelState.IsValid)
+        {
+            return View(updateProfileDto);
+        }
+        
+        var user = await userManager.GetUserAsync(HttpContext.User);
+        if (user == null) return this.NotFoundView("User was not found");
+
+        user.UserName = updateProfileDto.Username;
+        user.Email = updateProfileDto.Email;
+        user.PhoneNumber = updateProfileDto.Phone;
+        user.IsPublic = updateProfileDto.IsPublic;
+        user.About = updateProfileDto.About;
+
+        if (await userManager.CheckPasswordAsync(user, updateProfileDto.CurrentPassword!))
+        {
+            var result = await userManager.UpdateAsync(user);
+            if (!result.Succeeded) return this.BadRequestView(result.Errors.Select(err=>err.Description));
+
+            if (!string.IsNullOrWhiteSpace(updateProfileDto.NewPassword))
+            {
+                var updatePasswordResult = await userManager.ChangePasswordAsync(user, updateProfileDto.CurrentPassword!, updateProfileDto.NewPassword);
+                if (!updatePasswordResult.Succeeded) return this.BadRequestView(updatePasswordResult.Errors.Select(err=>err.Description));
+            }
+
+            return RedirectToAction("Profile");
+        }
+
+        ModelState.AddModelError(nameof(updateProfileDto.CurrentPassword), "Password is not valid");
+        return View(updateProfileDto);
+    }
+    
     [HttpPost]
     public async Task<IActionResult> DeleteAccount([FromForm] string? password)
     {
         var user = await userManager.GetUserAsync(HttpContext.User);
         if (user == null)
-            return RedirectToAction("Login","Account");
+            return RedirectToAction("Login","Accounts");
 
         if (string.IsNullOrWhiteSpace(password)) return this.BadRequestView(new[] { "Invalid password" });
 
@@ -174,43 +213,6 @@ public class AccountController(
             return RedirectToAction("Index", "Home");
         }
         return this.BadRequestView(new []{"Server error"}); // todo server error
-    }
-    
-    [Authorize]
-    [HttpPost("/profile/update")]
-    public async Task<IActionResult> UpdateProfile([FromForm]UpdateProfileDto? updateProfileDto)
-    {
-        ArgumentNullException.ThrowIfNull(updateProfileDto);
-        ArgumentException.ThrowIfNullOrWhiteSpace(updateProfileDto.CurrentPassword);
-        
-        if (!ModelState.IsValid)
-        {
-            return this.BadRequestView(ModelState.Values.SelectMany(v => v.Errors).Select(err=> err.ErrorMessage));
-        }
-        var user = await userManager.GetUserAsync(HttpContext.User);
-        if (user == null) return this.NotFoundView("User was not found");
-
-        user.UserName = updateProfileDto.Username;
-        user.Email = updateProfileDto.Email;
-        user.PhoneNumber = updateProfileDto.Phone;
-        user.IsPublic = updateProfileDto.IsPublic;
-        user.About = updateProfileDto.About;
-
-        if (await userManager.CheckPasswordAsync(user, updateProfileDto.CurrentPassword))
-        {
-            var result = await userManager.UpdateAsync(user);
-            if (!result.Succeeded) return this.BadRequestView(result.Errors.Select(err=>err.Description));
-
-            if (!string.IsNullOrWhiteSpace(updateProfileDto.NewPassword))
-            {
-                var updatePasswordResult = await userManager.ChangePasswordAsync(user, updateProfileDto.CurrentPassword, updateProfileDto.NewPassword);
-                if (!updatePasswordResult.Succeeded) return this.BadRequestView(updatePasswordResult.Errors.Select(err=>err.Description));
-            }
-
-            return RedirectToAction("Profile");
-        }
-
-        return this.BadRequestView(new []{"Current password is not valid"});
     }
     
     [AllowAnonymous]
@@ -236,9 +238,10 @@ public class AccountController(
     }
 
     [AllowAnonymous]
-    [Route("")]
+    [Route("/access-denied")]
     public IActionResult AccessDenied(string? returnUrl)
     {
+        Response.StatusCode = StatusCodes.Status403Forbidden;
         return View("AccessDenied", returnUrl);
     }
 }

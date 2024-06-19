@@ -1,13 +1,16 @@
-using Application.Identity;
+using System.Globalization;
 using Application.Interfaces.RepositoryInterfaces;
 using Application.Interfaces.ServiceInterfaces;
 using Application.Services;
 using Domain.Enums;
+using Domain.Identity;
 using Infrastructure.Data;
 using Infrastructure.Repositories;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.AspNetCore.Localization;
+using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 using WebUI.Extensions;
@@ -31,6 +34,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     );
 
 builder.Services.AddControllersWithViews();
+
 builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddIdentity<ApplicationUser, ApplicationRole>(options =>
@@ -55,6 +59,8 @@ builder.Services.AddAuthorizationBuilder()
 builder.Services.ConfigureApplicationCookie(options =>
 {
     options.LoginPath = "/login";
+    options.LogoutPath = "/logout";
+    options.AccessDeniedPath = "/access-denied";
 });
 
 builder.Services.AddScoped<IGroupsRepository, GroupsRepository>();
@@ -64,6 +70,8 @@ builder.Services.AddScoped<IUsersService, UsersService>();
 builder.Services.AddScoped<IFriendsService, FriendsService>();
 builder.Services.AddScoped<IExercisesRepository, ExercisesRepository>();
 builder.Services.AddScoped<IExercisesService, ExercisesService>();
+builder.Services.AddScoped<IExerciseResultsRepository, ExerciseResultsRepository>();
+builder.Services.AddScoped<IExerciseResultsService, ExerciseResultsService>();
 
 builder.Services.AddHttpLogging(options =>
 {

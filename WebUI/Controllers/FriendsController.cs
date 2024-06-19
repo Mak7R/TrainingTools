@@ -1,5 +1,5 @@
-﻿using Application.Identity;
-using Application.Interfaces.ServiceInterfaces;
+﻿using Application.Interfaces.ServiceInterfaces;
+using Domain.Identity;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -32,7 +32,7 @@ public class FriendsController : Controller
             return this.BadRequestView(new[] { "User name was invalid" });
 
         var user = await _userManager.GetUserAsync(HttpContext.User);
-        if (user is null) return RedirectToAction("Login", "Account");
+        if (user is null) return RedirectToAction("Login", "Accounts");
 
         var targetUser = await _userManager.FindByNameAsync(userName);
         if (targetUser is null) return this.NotFoundView("User was not found");
@@ -57,7 +57,7 @@ public class FriendsController : Controller
             return this.BadRequestView(new[] { "User name was invalid" });
 
         var user = await _userManager.GetUserAsync(HttpContext.User);
-        if (user is null) return RedirectToAction("Login", "Account");
+        if (user is null) return RedirectToAction("Login", "Accounts");
 
         var invitor = await _userManager.FindByNameAsync(userName);
         if (invitor is null) return this.NotFoundView("User was not found");
@@ -82,7 +82,7 @@ public class FriendsController : Controller
             return this.BadRequestView(new[] { "User name was invalid" });
 
         var user = await _userManager.GetUserAsync(HttpContext.User);
-        if (user is null) return RedirectToAction("Login", "Account");
+        if (user is null) return RedirectToAction("Login", "Accounts");
 
         var invitor = await _userManager.FindByNameAsync(userName);
         if (invitor is null) return this.NotFoundView("User was not found");
@@ -107,7 +107,7 @@ public class FriendsController : Controller
             return this.BadRequestView(new[] { "User name was invalid" });
 
         var user = await _userManager.GetUserAsync(HttpContext.User);
-        if (user is null) return RedirectToAction("Login", "Account");
+        if (user is null) return RedirectToAction("Login", "Accounts");
 
         var target = await _userManager.FindByNameAsync(userName);
         if (target is null) return this.NotFoundView("User was not found");
@@ -132,7 +132,7 @@ public class FriendsController : Controller
             return this.BadRequestView(new[] { "User name was invalid" });
 
         var user = await _userManager.GetUserAsync(HttpContext.User);
-        if (user is null) return RedirectToAction("Login", "Account");
+        if (user is null) return RedirectToAction("Login", "Accounts");
 
         var friend = await _userManager.FindByNameAsync(userName);
         if (friend is null) return this.NotFoundView("User was not found");
@@ -155,7 +155,7 @@ public class FriendsController : Controller
     public async Task<IActionResult> Index()
     {
         var user = await _userManager.GetUserAsync(HttpContext.User);
-        if (user is null) return RedirectToAction("Login", "Account");
+        if (user is null) return RedirectToAction("Login", "Accounts");
 
         var invitationsFor = await _friendsService.GetInvitationsFor(user);
         var friends = await _friendsService.GetFriendsFor(user);

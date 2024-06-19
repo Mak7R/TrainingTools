@@ -1,0 +1,86 @@
+﻿@model IEnumerable<Domain.Models.ExerciseResult>
+
+@{
+    ViewBag.Title = "Results";
+}
+
+<div class="container-fluid text-center justify-content-center">
+    @if (ViewBag.UserName is not null)
+    {
+        <h2>Results for <a asp-controller="Users" asp-action="GetUser" asp-route-userName="@(ViewBag.UserName)">@(ViewBag.UserName)</a></h2>
+    }
+    else
+    {
+        <h2>Results</h2>
+    }
+    
+    
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3">
+        @foreach (var result in Model)
+        {
+            <div class="col">
+                <div class="row">
+                    <a class="col-1 d-block w-75" asp-controller="ExerciseResults" asp-action="GetFriendsResultsForExercise" asp-route-exerciseId="@result.Exercise.Id">
+                        <h4>@result.Exercise.Group.Name/@result.Exercise.Name</h4>
+                    </a>
+                    @if (User.Identity?.Name == result.Owner.UserName)
+                    {
+                        <a class="col-1 m-1" asp-controller="ExerciseResults" asp-action="UpdateResults" asp-route-exerciseId="@result.Exercise.Id">
+                            <img src="/img/icons/editing.png" alt="Edit" style="width: 2em; height: 2em;"/>
+                        </a>
+                        <div type="button" class="col-1 m-1" data-bs-toggle="modal" data-bs-target="#deleteResult-@result.Owner.Id-@result.Exercise.Id-Modal">
+                            <img src="/img/icons/bin.png" alt="Remove" style="width: 2em; height: 2em;"/>
+                        </div>
+
+                        <div class="modal fade" id="deleteResult-@result.Owner.Id-@result.Exercise.Id-Modal" tabindex="-1" aria-labelledby="deleteResult-@result.Owner.Id-@result.Exercise.Id-ModalLabel" aria-hidden="true">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h1 class="modal-title fs-5" id="deleteResult-@result.Owner.Id-@result.Exercise.Id-ModalLabel">Delete results from exercise @result.Exercise.Name</h1>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body text-danger">
+                                        This action will delete results from database and it cannot be canceled
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Cancel</button>
+                                        <a type="button" class="btn btn-danger" asp-controller="ExerciseResults" asp-action="DeleteResults" asp-route-exerciseId="@result.Exercise.Id">Delete</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+                
+
+                <table class="table table-striped table-hover table-bordered border-black">
+                    <thead>
+                    <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">Weight</th>
+                        <th scope="col">Count</th>
+                        <th scope="col">Comment</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+
+                    @{
+                        var index = 0;
+                    }
+
+                    @foreach (var approach in result.ApproachInfos)
+                    {
+                        index += 1;
+                        <tr>
+                            <td>@index</td>
+                            <td>@approach.Weight</td>
+                            <td>@approach.Count</td>
+                            <td>@approach.Comment</td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+</div>

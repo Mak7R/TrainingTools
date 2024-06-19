@@ -31,6 +31,8 @@ public static class DataSizes
     
     public static class ExerciseResults
     {
-        public const int MaxResultsSize = 512;
+        public const int MaxWeightsSize = 144;
+        public const int MaxCountsSize = 64;
+        public const int MaxCommentsSize = 512;
     }
 }

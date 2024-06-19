@@ -1,8 +1,8 @@
 ﻿using Domain.Models;
 
-namespace Application.Interfaces.RepositoryInterfaces;
+namespace Application.Interfaces.ServiceInterfaces;
 
-public interface IExerciseResultsRepository
+public interface IExerciseResultsService
 {
     Task<OperationResult> CreateResult(ExerciseResult result);
     Task<OperationResult> UpdateResult(ExerciseResult result);

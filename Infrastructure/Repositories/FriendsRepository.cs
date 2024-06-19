@@ -1,8 +1,8 @@
-﻿using Application.Identity;
-using Application.Interfaces.RepositoryInterfaces;
+﻿using Application.Interfaces.RepositoryInterfaces;
 using Application.Models;
 using Domain.Defaults;
 using Domain.Exceptions;
+using Domain.Identity;
 using Domain.Models;
 using Infrastructure.Data;
 using Infrastructure.Entities;

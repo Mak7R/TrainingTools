@@ -22,7 +22,7 @@ namespace Infrastructure.Data.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("Application.Identity.ApplicationRole", b =>
+            modelBuilder.Entity("Domain.Identity.ApplicationRole", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -50,7 +50,7 @@ namespace Infrastructure.Data.Migrations
                     b.ToTable("AspNetRoles", (string)null);
                 });
 
-            modelBuilder.Entity("Application.Identity.ApplicationUser", b =>
+            modelBuilder.Entity("Domain.Identity.ApplicationUser", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -149,17 +149,25 @@ namespace Infrastructure.Data.Migrations
 
             modelBuilder.Entity("Infrastructure.Entities.ExerciseResultEntity", b =>
                 {
-                    b.Property<Guid>("UserId")
+                    b.Property<Guid>("OwnerId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("ExerciseId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("Results")
+                    b.Property<string>("Comments")
                         .HasMaxLength(512)
                         .HasColumnType("nvarchar(512)");
 
-                    b.HasKey("UserId", "ExerciseId");
+                    b.Property<string>("Counts")
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<string>("Weights")
+                        .HasMaxLength(144)
+                        .HasColumnType("nvarchar(144)");
+
+                    b.HasKey("OwnerId", "ExerciseId");
 
                     b.HasIndex("ExerciseId");
 
@@ -343,26 +351,26 @@ namespace Infrastructure.Data.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Application.Identity.ApplicationUser", "User")
+                    b.HasOne("Domain.Identity.ApplicationUser", "Owner")
                         .WithMany()
-                        .HasForeignKey("UserId")
+                        .HasForeignKey("OwnerId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Exercise");
 
-                    b.Navigation("User");
+                    b.Navigation("Owner");
                 });
 
             modelBuilder.Entity("Infrastructure.Entities.FriendInvitationEntity", b =>
                 {
-                    b.HasOne("Application.Identity.ApplicationUser", "Invitor")
+                    b.HasOne("Domain.Identity.ApplicationUser", "Invitor")
                         .WithMany()
                         .HasForeignKey("InvitorId")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
-                    b.HasOne("Application.Identity.ApplicationUser", "Target")
+                    b.HasOne("Domain.Identity.ApplicationUser", "Target")
                         .WithMany()
                         .HasForeignKey("TargetId")
                         .OnDelete(DeleteBehavior.NoAction)
@@ -375,13 +383,13 @@ namespace Infrastructure.Data.Migrations
 
             modelBuilder.Entity("Infrastructure.Entities.FriendRelationshipEntity", b =>
                 {
-                    b.HasOne("Application.Identity.ApplicationUser", "FirstFriend")
+                    b.HasOne("Domain.Identity.ApplicationUser", "FirstFriend")
                         .WithMany()
                         .HasForeignKey("FirstFriendId")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
-                    b.HasOne("Application.Identity.ApplicationUser", "SecondFriend")
+                    b.HasOne("Domain.Identity.ApplicationUser", "SecondFriend")
                         .WithMany()
                         .HasForeignKey("SecondFriendId")
                         .OnDelete(DeleteBehavior.NoAction)
@@ -394,7 +402,7 @@ namespace Infrastructure.Data.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>
                 {
-                    b.HasOne("Application.Identity.ApplicationRole", null)
+                    b.HasOne("Domain.Identity.ApplicationRole", null)
                         .WithMany()
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -403,7 +411,7 @@ namespace Infrastructure.Data.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<System.Guid>", b =>
                 {
-                    b.HasOne("Application.Identity.ApplicationUser", null)
+                    b.HasOne("Domain.Identity.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -412,7 +420,7 @@ namespace Infrastructure.Data.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<System.Guid>", b =>
                 {
-                    b.HasOne("Application.Identity.ApplicationUser", null)
+                    b.HasOne("Domain.Identity.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -421,13 +429,13 @@ namespace Infrastructure.Data.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<System.Guid>", b =>
                 {
-                    b.HasOne("Application.Identity.ApplicationRole", null)
+                    b.HasOne("Domain.Identity.ApplicationRole", null)
                         .WithMany()
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Application.Identity.ApplicationUser", null)
+                    b.HasOne("Domain.Identity.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -436,7 +444,7 @@ namespace Infrastructure.Data.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<System.Guid>", b =>
                 {
-                    b.HasOne("Application.Identity.ApplicationUser", null)
+                    b.HasOne("Domain.Identity.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
