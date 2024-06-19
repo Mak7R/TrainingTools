@@ -15,18 +15,7 @@
         Roles:
         @foreach (var role in Model.Roles)
         {
-            switch (role)
-            {
-                case nameof(Role.Root):
-                    <span class="badge rounded-pill text-bg-danger">@role</span>
-                    break;
-                case nameof(Role.Admin):
-                    <span class="badge rounded-pill text-bg-warning">@role</span>
-                    break;
-                default:
-                    <span class="badge rounded-pill text-bg-primary">@role</span>
-                    break;
-            }
+            await Html.RenderPartialAsync("Partials/UserRole", role);
         }
     </h4>
     @if (Model.User.IsPublic)

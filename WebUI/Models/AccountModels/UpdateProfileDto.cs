@@ -30,6 +30,7 @@ public class UpdateProfileDto
     public string? Phone { get; set; } = string.Empty;
     
     public bool IsPublic { get; set; } = false;
+    public bool IsTrainer { get; set; } = false;
     
     [Display(Name = "New password")]
     [DataType(DataType.Password)]

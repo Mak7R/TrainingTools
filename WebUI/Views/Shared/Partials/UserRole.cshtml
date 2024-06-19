@@ -1,0 +1,17 @@
+@model string
+
+@switch (Model)
+{
+    case nameof(Role.Root):
+        <span class="badge rounded-pill text-bg-danger">@Model</span>
+        break;
+    case nameof(Role.Admin):
+        <span class="badge rounded-pill text-bg-warning">@Model</span>
+        break;
+    case nameof(Role.Trainer):
+        <span class="badge rounded-pill text-bg-primary">@Model</span>                                    
+        break;
+    default:
+        @*<span class="badge rounded-pill text-bg-secondary">@Model</span>*@
+        break;
+}

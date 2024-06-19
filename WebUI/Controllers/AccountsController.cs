@@ -161,9 +161,7 @@ public class AccountsController(
         ArgumentNullException.ThrowIfNull(updateProfileDto);
 
         if (!ModelState.IsValid)
-        {
             return View(updateProfileDto);
-        }
         
         var user = await userManager.GetUserAsync(HttpContext.User);
         if (user == null) return this.NotFoundView("User was not found");
@@ -178,11 +176,25 @@ public class AccountsController(
         {
             var result = await userManager.UpdateAsync(user);
             if (!result.Succeeded) return this.BadRequestView(result.Errors.Select(err=>err.Description));
-
+            
             if (!string.IsNullOrWhiteSpace(updateProfileDto.NewPassword))
             {
                 var updatePasswordResult = await userManager.ChangePasswordAsync(user, updateProfileDto.CurrentPassword!, updateProfileDto.NewPassword);
                 if (!updatePasswordResult.Succeeded) return this.BadRequestView(updatePasswordResult.Errors.Select(err=>err.Description));
+            }
+            
+            var roles = await userManager.GetRolesAsync(user);
+            if (roles.Contains(nameof(Role.Admin)) || roles.Contains(nameof(Role.Root)))
+            {
+                var isTrainer = roles.Contains(nameof(Role.Trainer));
+                if (!isTrainer && updateProfileDto.IsTrainer)
+                {
+                    await userManager.AddToRoleAsync(user, nameof(Role.Trainer));
+                }
+                else if (isTrainer && !updateProfileDto.IsTrainer)
+                {
+                    await userManager.RemoveFromRoleAsync(user, nameof(Role.Trainer));
+                }
             }
 
             return RedirectToAction("Profile");

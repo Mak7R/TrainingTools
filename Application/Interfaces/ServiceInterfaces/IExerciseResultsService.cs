@@ -12,4 +12,6 @@ public interface IExerciseResultsService
     Task<IEnumerable<ExerciseResult>> GetForUser(Guid ownerId);
     Task<IEnumerable<ExerciseResult>> GetForExercise(Guid exerciseId);
     Task<IEnumerable<ExerciseResult>> GetOnlyUserAndFriendsResultForExercise(Guid userId, Guid exerciseId);
+    
+    
 }

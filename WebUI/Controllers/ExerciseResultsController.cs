@@ -1,4 +1,5 @@
 ﻿using System.Globalization;
+using System.Net.Mime;
 using Application.Interfaces.ServiceInterfaces;
 using Domain.Enums;
 using Domain.Identity;
@@ -38,6 +39,18 @@ public class ExerciseResultsController : Controller
         
         var results = await _exerciseResultsService.GetForUser(user.Id);
         return View(results);
+    }
+    
+    [HttpGet("as-exel")]
+    public async Task<IActionResult> GetUserResultsAsExcel([FromServices] IExerciseResultsToExelExporter exelExporter)
+    {
+        var user = await _userManager.GetUserAsync(HttpContext.User);
+        if (user is null) return RedirectToAction("Login", "Accounts", new {returnUrl = "/exercises/results"});
+        
+        var results = await _exerciseResultsService.GetForUser(user.Id);
+        var stream = await exelExporter.ToExel(results);
+        
+        return File(stream, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "results.xlsx");
     }
     
     [HttpGet("for-exercise/{exerciseId:guid}")]

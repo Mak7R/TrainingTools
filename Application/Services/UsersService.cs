@@ -1,5 +1,5 @@
-﻿using System.Linq.Expressions;
-using System.Security.Claims;
+﻿using System.Globalization;
+using System.Linq.Expressions;
 using Application.Dtos;
 using Application.Enums;
 using Application.Interfaces.RepositoryInterfaces;
@@ -11,6 +11,7 @@ using Domain.Identity;
 using Domain.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
+using CsvHelper;
 
 namespace Application.Services;
 
@@ -28,23 +29,20 @@ public class UsersService : IUsersService
         _logger = logger;
     }
 
-    public async Task<IEnumerable<UserInfo>> GetAllUsers(ClaimsPrincipal? currentUserClaimsPrincipal)
+    public async Task<IEnumerable<UserInfo>> GetAllUsers(ApplicationUser? currentUser)
     {
-        ArgumentNullException.ThrowIfNull(currentUserClaimsPrincipal);
-
-        var user = await _userManager.GetUserAsync(currentUserClaimsPrincipal);
-        if (user == null) throw new ArgumentException("User was not found", nameof(currentUserClaimsPrincipal));
+        ArgumentNullException.ThrowIfNull(currentUser);
         
-        var roles = await _userManager.GetRolesAsync(user);
+        var roles = await _userManager.GetRolesAsync(currentUser);
         
         var users = 
             roles.Contains(nameof(Role.Root)) || roles.Contains(nameof(Role.Admin))
-                ? _userManager.Users.Where(u => u.Id != user.Id).ToList()
-                : _userManager.Users.Where(u => u.Id != user.Id && u.IsPublic).ToList();
+                ? _userManager.Users.Where(u => u.Id != currentUser.Id).ToList()
+                : _userManager.Users.Where(u => u.Id != currentUser.Id && u.IsPublic).ToList();
         
-        var friends = (await _friendsRepository.GetFriendsFor(user.Id)).ToDictionary(f => f.Id);
-        var inviters = (await _friendsRepository.GetInviters(user.Id)).ToDictionary(f => f.Id);
-        var invited = (await _friendsRepository.GetInvitedUsersBy(user.Id)).ToDictionary(f => f.Id);
+        var friends = (await _friendsRepository.GetFriendsFor(currentUser.Id)).ToDictionary(f => f.Id);
+        var inviters = (await _friendsRepository.GetInviters(currentUser.Id)).ToDictionary(f => f.Id);
+        var invited = (await _friendsRepository.GetInvitedUsersBy(currentUser.Id)).ToDictionary(f => f.Id);
         
         var userInfos = new List<UserInfo>();
 
@@ -54,19 +52,46 @@ public class UsersService : IUsersService
         return userInfos;
     }
 
-    private async Task<UserInfo?> GetBy(ClaimsPrincipal? currentUserClaimsPrincipal,
-        Expression<Func<ApplicationUser, bool>> predicate)
+    public async Task<Stream> GetAllUsersAsCsv()
     {
-        ArgumentNullException.ThrowIfNull(currentUserClaimsPrincipal);
+        var users = _userManager.Users.ToList();
+
+        var stream = new MemoryStream();
+        var csvWriter = new CsvWriter(new StreamWriter(stream), CultureInfo.InvariantCulture, true);
         
-        var user = await _userManager.GetUserAsync(currentUserClaimsPrincipal);
-        if (user == null) throw new ArgumentException("User was not found", nameof(currentUserClaimsPrincipal));
+        csvWriter.WriteField("Username");
+        csvWriter.WriteField("Email");
+        csvWriter.WriteField("Phone");
+        csvWriter.WriteField("IsPublic");
+        csvWriter.WriteField("Roles");
         
-        var roles = await _userManager.GetRolesAsync(user);
+        await csvWriter.NextRecordAsync();
+
+        foreach (var user in users)
+        {
+            var userRoles = await _userManager.GetRolesAsync(user);
+            csvWriter.WriteField(user.UserName);
+            csvWriter.WriteField(user.Email);
+            csvWriter.WriteField(user.PhoneNumber);
+            csvWriter.WriteField(user.IsPublic);
+            csvWriter.WriteField(string.Join(';', userRoles));
+            await csvWriter.NextRecordAsync();
+            await csvWriter.FlushAsync();
+        }
+
+        stream.Position = 0;
+        return stream;
+    }
+
+    private async Task<UserInfo?> GetBy(ApplicationUser? currentUser, Expression<Func<ApplicationUser, bool>> predicate)
+    {
+        ArgumentNullException.ThrowIfNull(currentUser);
         
-        var friends = (await _friendsRepository.GetFriendsFor(user.Id)).ToDictionary(f => f.Id);
-        var inviters = (await _friendsRepository.GetInviters(user.Id)).ToDictionary(f => f.Id);
-        var invited = (await _friendsRepository.GetInvitedUsersBy(user.Id)).ToDictionary(f => f.Id);
+        var roles = await _userManager.GetRolesAsync(currentUser);
+        
+        var friends = (await _friendsRepository.GetFriendsFor(currentUser.Id)).ToDictionary(f => f.Id);
+        var inviters = (await _friendsRepository.GetInviters(currentUser.Id)).ToDictionary(f => f.Id);
+        var invited = (await _friendsRepository.GetInvitedUsersBy(currentUser.Id)).ToDictionary(f => f.Id);
 
         ApplicationUser? foundUser;
         {
@@ -92,39 +117,36 @@ public class UsersService : IUsersService
         return new UserInfo(foundUser, relationshipState, userRoles);
     }
     
-    public async Task<UserInfo?> GetById(ClaimsPrincipal? currentUserClaimsPrincipal, Guid id)
+    public async Task<UserInfo?> GetById(ApplicationUser? currentUser, Guid id)
     {
-        ArgumentNullException.ThrowIfNull(currentUserClaimsPrincipal);
+        ArgumentNullException.ThrowIfNull(currentUser);
 
-        return await GetBy(currentUserClaimsPrincipal, u => u.Id == id);
+        return await GetBy(currentUser, u => u.Id == id);
     }
 
-    public async Task<UserInfo?> GetByName(ClaimsPrincipal? currentUserClaimsPrincipal, string? userName)
+    public async Task<UserInfo?> GetByName(ApplicationUser? currentUser, string? userName)
     {
-        ArgumentNullException.ThrowIfNull(currentUserClaimsPrincipal);
+        ArgumentNullException.ThrowIfNull(currentUser);
         ArgumentException.ThrowIfNullOrWhiteSpace(userName);
 
-        return await GetBy(currentUserClaimsPrincipal, u => u.UserName == userName);
+        return await GetBy(currentUser, u => u.UserName == userName);
     }
 
-    public async Task<UserInfo?> GetByEmail(ClaimsPrincipal? currentUserClaimsPrincipal, string? email)
+    public async Task<UserInfo?> GetByEmail(ApplicationUser? currentUser, string? email)
     {
-        ArgumentNullException.ThrowIfNull(currentUserClaimsPrincipal);
+        ArgumentNullException.ThrowIfNull(currentUser);
         ArgumentException.ThrowIfNullOrWhiteSpace(email);
 
-        return await GetBy(currentUserClaimsPrincipal, u => u.Email == email);
+        return await GetBy(currentUser, u => u.Email == email);
     }
 
-    public async Task<OperationResult> CreateUser(ClaimsPrincipal? currentUserClaimsPrincipal, CreateUserDto createUserDto)
+    public async Task<OperationResult> CreateUser(ApplicationUser? currentUser, CreateUserDto createUserDto)
     {
-        ArgumentNullException.ThrowIfNull(currentUserClaimsPrincipal);
+        ArgumentNullException.ThrowIfNull(currentUser);
         ArgumentNullException.ThrowIfNull(createUserDto);
         ArgumentException.ThrowIfNullOrWhiteSpace(createUserDto.Password);
         
-        var user = await _userManager.GetUserAsync(currentUserClaimsPrincipal);
-        if (user == null) throw new ArgumentException("User was not found", nameof(currentUserClaimsPrincipal));
-        
-        var roles = await _userManager.GetRolesAsync(user);
+        var roles = await _userManager.GetRolesAsync(currentUser);
 
         if (roles.Contains(nameof(Role.Admin)) || roles.Contains(nameof(Role.Root)))
         {
@@ -165,48 +187,56 @@ public class UsersService : IUsersService
             new[] { "User is not admin or root" });
     }
 
-    public async Task<OperationResult> UpdateUser(ClaimsPrincipal? currentUserClaimsPrincipal, UpdateUserDto updateUserDto)
+    public async Task<OperationResult> UpdateUser(ApplicationUser? currentUser, UpdateUserDto updateUserDto)
     {
-        ArgumentNullException.ThrowIfNull(currentUserClaimsPrincipal);
+        ArgumentNullException.ThrowIfNull(currentUser);
         ArgumentNullException.ThrowIfNull(updateUserDto);
         
-        var user = await _userManager.GetUserAsync(currentUserClaimsPrincipal);
-        if (user == null) throw new NotFoundException("User was not found");
-        
-        var roles = await _userManager.GetRolesAsync(user);
+        var currentUserRoles = await _userManager.GetRolesAsync(currentUser);
 
-        if (roles.Contains(nameof(Role.Admin)) || roles.Contains(nameof(Role.Root)))
+        if (currentUserRoles.Contains(nameof(Role.Admin)) || currentUserRoles.Contains(nameof(Role.Root)))
         {
-            var applicationUser = await _userManager.FindByIdAsync(updateUserDto.UserId.ToString());
-            if (applicationUser == null) return new DefaultOperationResult(false, new NotFoundException("User was not found"), new []{"User was not found"}) ;
+            var updatingUser = await _userManager.FindByIdAsync(updateUserDto.UserId.ToString());
+            if (updatingUser == null) return new DefaultOperationResult(false, new NotFoundException("User was not found"), new []{"User was not found"}) ;
 
-            if (await _userManager.IsInRoleAsync(applicationUser, nameof(Role.Root)))
+            if (await _userManager.IsInRoleAsync(updatingUser, nameof(Role.Root)))
             {
                 throw new OperationNotAllowedException("Root cannot be edited by another user");
             }
 
-            var isAdmin = await _userManager.IsInRoleAsync(applicationUser, nameof(Role.Admin));
-            if (!isAdmin || (isAdmin && roles.Contains(nameof(Role.Root))))
+            var updatingUserIsAdmin = await _userManager.IsInRoleAsync(updatingUser, nameof(Role.Admin));
+            if (!updatingUserIsAdmin || (updatingUserIsAdmin && currentUserRoles.Contains(nameof(Role.Root))))
             {
-                applicationUser.UserName = updateUserDto.Username;
-                applicationUser.IsPublic = applicationUser.IsPublic && !updateUserDto.SetPrivate;
-                if (updateUserDto.ClearAbout) applicationUser.About = string.Empty;
+                updatingUser.UserName = updateUserDto.Username;
+                updatingUser.IsPublic = updatingUser.IsPublic && !updateUserDto.SetPrivate;
+                if (updateUserDto.ClearAbout) updatingUser.About = string.Empty;
                 
-                var result = await _userManager.UpdateAsync(applicationUser);
+                var result = await _userManager.UpdateAsync(updatingUser);
 
                 if (result.Succeeded)
                 {
-                    if (roles.Contains(nameof(Role.Root)))
+                    if (currentUserRoles.Contains(nameof(Role.Root)))
                     {
-                        if (!isAdmin && updateUserDto.IsAdmin)
+                        if (!updatingUserIsAdmin && updateUserDto.IsAdmin)
                         {
-                            await _userManager.AddToRoleAsync(applicationUser, nameof(Role.Admin));
+                            await _userManager.AddToRoleAsync(updatingUser, nameof(Role.Admin));
                         }
-                        else if (isAdmin && !updateUserDto.IsAdmin)
+                        else if (updatingUserIsAdmin && !updateUserDto.IsAdmin)
                         {
-                            await _userManager.RemoveFromRoleAsync(applicationUser, nameof(Role.Admin));
+                            await _userManager.RemoveFromRoleAsync(updatingUser, nameof(Role.Admin));
                         }
                     }
+
+                    var updatingUserIsTrainer = await _userManager.IsInRoleAsync(updatingUser, nameof(Role.Trainer));
+                    if (!updatingUserIsTrainer && updateUserDto.IsTrainer)
+                    {
+                        await _userManager.AddToRoleAsync(updatingUser, nameof(Role.Trainer));
+                    }
+                    else if (updatingUserIsTrainer && !updateUserDto.IsTrainer)
+                    {
+                        await _userManager.RemoveFromRoleAsync(updatingUser, nameof(Role.Trainer));
+                    }
+                    
                     return new DefaultOperationResult(true);
                 }
                 else
@@ -222,15 +252,13 @@ public class UsersService : IUsersService
             new[] { "User is not admin or root" });
     }
 
-    public async Task<OperationResult> DeleteUser(ClaimsPrincipal? currentUserClaimsPrincipal, Guid userId)
+    public async Task<OperationResult> DeleteUser(ApplicationUser? currentUser, Guid userId)
     {
-        ArgumentNullException.ThrowIfNull(currentUserClaimsPrincipal);
+        ArgumentNullException.ThrowIfNull(currentUser);
+
+        var currentUserRoles = await _userManager.GetRolesAsync(currentUser);
         
-        var currentUser = await _userManager.GetUserAsync(currentUserClaimsPrincipal);
-        if (currentUser == null) throw new ArgumentException("User was not found", nameof(currentUserClaimsPrincipal));
-        
-        if (currentUserClaimsPrincipal.IsInRole(nameof(Role.Admin)) ||
-            currentUserClaimsPrincipal.IsInRole(nameof(Role.Root)))
+        if (currentUserRoles.Contains(nameof(Role.Admin)) || currentUserRoles.Contains(nameof(Role.Root)))
         {
             var user = await _userManager.FindByIdAsync(userId.ToString());
             if (user == null)

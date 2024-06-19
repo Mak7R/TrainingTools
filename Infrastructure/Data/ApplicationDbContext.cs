@@ -30,7 +30,10 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, Applicati
 
         builder.Entity<ExerciseEntity>()
             .ToTable("Exercise")
-            .HasIndex(e => e.Name)
+            .HasIndex(e => e.Name);
+
+        builder.Entity<ExerciseEntity>()
+            .HasIndex(e => new {e.Name, e.GroupId})
             .IsUnique();
 
         builder.Entity<ExerciseResultEntity>()

@@ -34,6 +34,12 @@
                 <span asp-validation-for="IsAdmin" class="text-danger"></span>
             </div>
         }
+        
+        <div class="mb-3">
+            <label asp-for="IsTrainer" class="form-label">Is User Trainer: </label>
+            <input asp-for="IsTrainer" class="form-check-input"/>
+            <span asp-validation-for="IsTrainer" class="text-danger"></span>
+        </div>
 
         <div class="mb-3">
             <button type="submit" class="btn btn-primary">Update</button>

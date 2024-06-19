@@ -1,19 +1,21 @@
 ﻿using System.Security.Claims;
 using Application.Dtos;
+using Domain.Identity;
 using Domain.Models;
 
 namespace Application.Interfaces.ServiceInterfaces;
 
 public interface IUsersService
 {
-    public Task<IEnumerable<UserInfo>> GetAllUsers(ClaimsPrincipal? currentUserClaimsPrincipal);
+    Task<IEnumerable<UserInfo>> GetAllUsers(ApplicationUser? currentUser);
+    Task<Stream> GetAllUsersAsCsv();
 
-    public Task<UserInfo?> GetById(ClaimsPrincipal? currentUserClaimsPrincipal, Guid id);
-    public Task<UserInfo?> GetByName(ClaimsPrincipal? currentUserClaimsPrincipal, string? userName);
-    public Task<UserInfo?> GetByEmail(ClaimsPrincipal? currentUserClaimsPrincipal, string? email);
+    Task<UserInfo?> GetById(ApplicationUser? currentUser, Guid id);
+    Task<UserInfo?> GetByName(ApplicationUser? currentUser, string? userName);
+    Task<UserInfo?> GetByEmail(ApplicationUser? currentUser, string? email);
 
 
-    public Task<OperationResult> CreateUser(ClaimsPrincipal? currentUserClaimsPrincipal, CreateUserDto createUserDto);
-    public Task<OperationResult> UpdateUser(ClaimsPrincipal? currentUserClaimsPrincipal, UpdateUserDto updateUserDto);
-    public Task<OperationResult> DeleteUser(ClaimsPrincipal? currentUserClaimsPrincipal, Guid userId);
+    Task<OperationResult> CreateUser(ApplicationUser? currentUser, CreateUserDto createUserDto);
+    Task<OperationResult> UpdateUser(ApplicationUser? currentUser, UpdateUserDto updateUserDto);
+    Task<OperationResult> DeleteUser(ApplicationUser? currentUser, Guid userId);
 }

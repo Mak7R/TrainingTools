@@ -1,4 +1,5 @@
-﻿@model IEnumerable<Application.Dtos.UserInfo>
+﻿@using Domain.Rules
+@model IEnumerable<Application.Dtos.UserInfo>
 
 @{
     ViewBag.Title = "Users";
@@ -9,7 +10,12 @@
 
     @if (Context.User.IsInRole(nameof(Role.Admin)) || Context.User.IsInRole(nameof(Role.Root)))
     {
-        <a class="d-block w-100 btn btn-primary" asp-controller="Users" asp-action="CreateUser">Create new User</a>
+        <div class="row">
+            <a class="col d-block w-75 btn btn-outline-success me-2" asp-controller="Users" asp-action="CreateUser">Create new User</a>
+            
+            <a class="col-3 btn btn-primary" asp-controller="Users" asp-action="GetAllUsersAsCsv">Download as CSV</a>
+        </div>
+        
     }
     
     <div class="list-group mt-3">
@@ -21,18 +27,7 @@
                     <div class="col">
                         @foreach (var role in userInfo.Roles)
                         {
-                            switch (role)
-                            {
-                                case nameof(Role.Root):
-                                    <span class="badge rounded-pill text-bg-danger">@role</span>
-                                    break;
-                                case nameof(Role.Admin):
-                                    <span class="badge rounded-pill text-bg-warning">@role</span>
-                                    break;
-                                default:
-                                    <span class="badge rounded-pill text-bg-primary">@role</span>
-                                    break;
-                            }
+                            await Html.RenderPartialAsync("Partials/UserRole", role);
                         }
                     </div>
                     <div class="col-2">
