@@ -25,7 +25,7 @@
             <div class="col">
                 <div class="row">
                     <a class="col-1 d-block w-75" asp-controller="ExerciseResults" asp-action="GetFriendsResultsForExercise" asp-route-exerciseId="@result.Exercise.Id">
-                        <h4>@result.Exercise.Group.Name/@result.Exercise.Name</h4>
+                        <h4 class="text-truncate">@result.Exercise.Group.Name/@result.Exercise.Name</h4>
                     </a>
                     @if (User.Identity?.Name == result.Owner.UserName)
                     {

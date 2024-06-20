@@ -1,5 +1,7 @@
-﻿using Application.Interfaces.RepositoryInterfaces;
+﻿using Application.Constants;
+using Application.Interfaces.RepositoryInterfaces;
 using Application.Interfaces.ServiceInterfaces;
+using Application.Models.Shared;
 using Domain.Models;
 
 namespace Application.Services;
@@ -21,9 +23,38 @@ public class ExercisesService : IExercisesService
         return await _exercisesRepository.CreateExercise(exercise);
     }
 
-    public async Task<IEnumerable<Exercise>> GetAll()
+    public async Task<IEnumerable<Exercise>> GetAll(OrderModel? orderModel = null, FilterModel? filterModel = null)
     {
-        return await _exercisesRepository.GetAll();
+        var exercises = await _exercisesRepository.GetAll(filterModel);
+        
+        if (orderModel is null || string.IsNullOrWhiteSpace(orderModel.OrderBy)) return exercises;
+        
+        if (orderModel.OrderBy.Equals(OrderOptionNames.Exercise.Name, StringComparison.CurrentCultureIgnoreCase))
+        {
+            if (orderModel.Order?.Equals(OrderOptionNames.Shared.Descending, StringComparison.CurrentCultureIgnoreCase) ?? false)
+            {
+                exercises = exercises.OrderByDescending(e => e.Name);
+            }
+            else
+            {
+                exercises = exercises.OrderBy(e => e.Name);
+            }
+        }
+        else if (orderModel.OrderBy.Equals(OrderOptionNames.Exercise.GroupName, StringComparison.CurrentCultureIgnoreCase))
+        {
+            if (orderModel.Order?.Equals(OrderOptionNames.Shared.Descending, StringComparison.CurrentCultureIgnoreCase) ?? false)
+            {
+                exercises = exercises.OrderByDescending(e => e.Group.Name)
+                    .ThenByDescending(e => e.Name);
+            }
+            else
+            {
+                exercises = exercises.OrderBy(e => e.Group.Name)
+                    .ThenBy(e => e.Name);
+            }
+        }
+
+        return exercises.ToList();
     }
 
     public async Task<Exercise?> GetByName(string? name)

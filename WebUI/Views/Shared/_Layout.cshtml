@@ -6,11 +6,10 @@
     <title>@ViewData["Title"]</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css"/>
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true"/>
-    <link rel="stylesheet" href="~/WebUI.styles.css" asp-append-version="true"/>
     @await RenderSectionAsync("Styles", required: false)
 </head>
-<body>
-<main style="min-height: 100vh; width: 100%">
+<body class="mb-0">
+<main style="min-height: 94vh; width: 100%">
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark p-2">
         <a class="navbar-brand" href="">Training Tools</a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="true" aria-label="Toggle navigation">
@@ -71,7 +70,7 @@
 </main>
 <footer class="border-top footer text-muted">
     <div class="container">
-        &copy; 2024 - WebUI - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+        <p class="text-center m-3">&copy; 2024 - WebUI - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a></p>
     </div>
 </footer>
 <script src="~/lib/jquery/dist/jquery.min.js"></script>

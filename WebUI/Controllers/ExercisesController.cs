@@ -1,4 +1,5 @@
 ﻿using Application.Interfaces.ServiceInterfaces;
+using Application.Models.Shared;
 using Domain.Exceptions;
 using Domain.Identity;
 using Domain.Models;
@@ -6,8 +7,11 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using WebUI.Extensions;
+using WebUI.Filters;
+using WebUI.ModelBinding.CustomModelBinders;
 using WebUI.Models.ExerciseModels;
 using WebUI.Models.GroupModels;
+using WebUI.Models.SharedModels;
 
 namespace WebUI.Controllers;
 
@@ -24,23 +28,25 @@ public class ExercisesController : Controller
     }
     
     [HttpGet("")]
+    [TypeFilter(typeof(QueryValuesProvidingActionFilter), Arguments = new object[] { typeof(DefaultOrderOptions) })]
     public async Task<IActionResult> GetAllExercises(
+        [FromQuery] OrderModel? orderModel,
+        [ModelBinder(typeof(FilterModelBinder))]FilterModel? filterModel,
+        
         [FromServices] IGroupsService groupsService, 
         [FromServices] IExerciseResultsService resultsService, 
         [FromServices] UserManager<ApplicationUser> userManager)
     {
-        ViewBag.AvailableGroups =
-            (await groupsService.GetAll()).Select(g => new GroupViewModel { Id = g.Id, Name = g.Name });
+        ViewBag.AvailableGroups = (await groupsService.GetAll(new OrderModel{Order = "ASC", OrderBy = "name"}))
+            .Select(g => new GroupViewModel { Id = g.Id, Name = g.Name });
         
-        var exercises = await _exercisesService.GetAll();
+        var exercises = await _exercisesService.GetAll(orderModel, filterModel);
         var exerciseViewModels = exercises.Select(e => new ExerciseViewModel { Id = e.Id, Name = e.Name, Group = new GroupViewModel {Id = e.Group.Id, Name = e.Group.Name}});
 
         var user = await userManager.GetUserAsync(User);
 
         if (user is not null)
-        {
             ViewBag.UserResults = await resultsService.GetForUser(user.Id);
-        }
         
         return View(exerciseViewModels);
     }

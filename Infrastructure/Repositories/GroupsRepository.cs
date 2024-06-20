@@ -1,5 +1,7 @@
 ﻿using System.Linq.Expressions;
+using Application.Constants;
 using Application.Interfaces.RepositoryInterfaces;
+using Application.Models.Shared;
 using Domain.Defaults;
 using Domain.Exceptions;
 using Domain.Models;
@@ -23,43 +25,18 @@ public class GroupsRepository : IGroupsRepository
         _logger = logger;
     }
     
-    public async Task<OperationResult> CreateGroup(Group? group)
+    public async Task<IEnumerable<Group>> GetAll(FilterModel? filterModel = null)
     {
-        ArgumentNullException.ThrowIfNull(group);
-        ArgumentException.ThrowIfNullOrWhiteSpace(group.Name);
-        if (group.Id == Guid.Empty) throw new ArgumentException("GroupId was empty id");
-        
-        var groupEntity = new GroupEntity { Id = group.Id, Name = group.Name };
         try
         {
-            var sameName = await _dbContext.Groups.AsNoTracking().FirstOrDefaultAsync(g => g.Name == group.Name);
-            if (sameName != null)
-                throw new AlreadyExistsException($"Group with name '{group.Name}' already exist in database");
+            var query = _dbContext.Groups.AsNoTracking();
+
+            if ((filterModel?.TryGetValue(FilterOptionNames.Group.Name, out var value) ?? false) && !string.IsNullOrWhiteSpace(value))
+            {
+                query = query.Where(g => g.Name.Contains(value));
+            }
             
-            await _dbContext.Groups.AddAsync(groupEntity);
-            await _dbContext.SaveChangesAsync();
-        }
-        catch (AlreadyExistsException alreadyExistsException)
-        {
-            _logger.LogInformation(alreadyExistsException, "Group with name '{groupName}' already exist in database", group.Name);
-            return new DefaultOperationResult(false, alreadyExistsException, new []{alreadyExistsException.Message});
-        }
-        catch (Exception e)
-        {
-            _logger.LogError(e, "Exception was thrown while adding new group '{groupName}' to database", group.Name);
-            var ex = new DataBaseException("Error while adding group to database", e);
-            return new DefaultOperationResult(false, ex, new[] { ex.Message });
-        }
-
-        return new DefaultOperationResult(true, group);
-    }
-
-    public async Task<IEnumerable<Group>> GetAll()
-    {
-        try
-        {
-            var groupEntities = await _dbContext.Groups.AsNoTracking().ToListAsync();
-            return groupEntities.Select(g => g.ToGroup());
+            return await query.Select(g => g.ToGroup()).ToListAsync();
         }
         catch (Exception e)
         {
@@ -92,6 +69,37 @@ public class GroupsRepository : IGroupsRepository
     public async Task<Group?> GetById(Guid id)
     {
         return await GetBy(g => g.Id == id);
+    }
+    
+    public async Task<OperationResult> CreateGroup(Group? group)
+    {
+        ArgumentNullException.ThrowIfNull(group);
+        ArgumentException.ThrowIfNullOrWhiteSpace(group.Name);
+        if (group.Id == Guid.Empty) throw new ArgumentException("GroupId was empty id");
+        
+        var groupEntity = new GroupEntity { Id = group.Id, Name = group.Name };
+        try
+        {
+            var sameName = await _dbContext.Groups.AsNoTracking().FirstOrDefaultAsync(g => g.Name == group.Name);
+            if (sameName != null)
+                throw new AlreadyExistsException($"Group with name '{group.Name}' already exist in database");
+            
+            await _dbContext.Groups.AddAsync(groupEntity);
+            await _dbContext.SaveChangesAsync();
+        }
+        catch (AlreadyExistsException alreadyExistsException)
+        {
+            _logger.LogInformation(alreadyExistsException, "Group with name '{groupName}' already exist in database", group.Name);
+            return new DefaultOperationResult(false, alreadyExistsException, new []{alreadyExistsException.Message});
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "Exception was thrown while adding new group '{groupName}' to database", group.Name);
+            var ex = new DataBaseException("Error while adding group to database", e);
+            return new DefaultOperationResult(false, ex, new[] { ex.Message });
+        }
+
+        return new DefaultOperationResult(true, group);
     }
 
     public async Task<OperationResult> UpdateGroup(Group? group)

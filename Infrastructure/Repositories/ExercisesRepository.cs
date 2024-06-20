@@ -1,5 +1,7 @@
 ﻿using System.Linq.Expressions;
+using Application.Constants;
 using Application.Interfaces.RepositoryInterfaces;
+using Application.Models.Shared;
 using Domain.Defaults;
 using Domain.Exceptions;
 using Domain.Models;
@@ -33,7 +35,7 @@ public class ExercisesRepository : IExercisesRepository
         var exerciseEntity = new ExerciseEntity { Id = exercise.Id, Name = exercise.Name, GroupId = exercise.Group.Id};
         try
         {
-            var sameName = await _dbContext.Exercises.AsNoTracking().FirstOrDefaultAsync(e => e.Name == exerciseEntity.Name);
+            var sameName = await _dbContext.Exercises.AsNoTracking().FirstOrDefaultAsync(e => e.Name == exercise.Name && e.GroupId == exercise.Group.Id);
             if (sameName is not null)
                 throw new AlreadyExistsException($"Exercise with name '{exercise.Name}' already exist in database");
             
@@ -55,15 +57,22 @@ public class ExercisesRepository : IExercisesRepository
         return new DefaultOperationResult(true, exercise);
     }
 
-    public async Task<IEnumerable<Exercise>> GetAll()
+    public async Task<IEnumerable<Exercise>> GetAll(FilterModel? filterModel = null)
     {
         try
         {
-            var exerciseEntities = await _dbContext.Exercises
-                .AsNoTracking()
-                .Include(exerciseEntity => exerciseEntity.Group)
-                .ToListAsync();
-            return exerciseEntities.Select(e => e.ToExercise());
+            var query = _dbContext.Exercises.Include(exerciseEntity => exerciseEntity.Group).AsNoTracking();
+
+            if ((filterModel?.TryGetValue(FilterOptionNames.Exercise.Group, out var group) ?? false) && Guid.TryParse(group, out var groupId))
+            {
+                query = query.Where(e => e.Group.Id == groupId);
+            }
+            if ((filterModel?.TryGetValue(FilterOptionNames.Exercise.Name, out var namePart) ?? false) && !string.IsNullOrWhiteSpace(namePart))
+            {
+                query = query.Where(e => e.Name.Contains(namePart));
+            }
+            
+            return await query.Select(e => e.ToExercise()).ToListAsync();
         }
         catch (Exception e)
         {
@@ -113,7 +122,7 @@ public class ExercisesRepository : IExercisesRepository
             if (exerciseEntity is null)
                 throw new NotFoundException($"Exercise with id '{exercise.Id}' was not found");
             
-            var sameName = await _dbContext.Exercises.AsNoTracking().FirstOrDefaultAsync(e => e.Name == exercise.Name && e.Id != exercise.Id);
+            var sameName = await _dbContext.Exercises.AsNoTracking().FirstOrDefaultAsync(e => e.Name == exercise.Name && e.GroupId != exercise.Group.Id);
             if (sameName != null)
                 throw new AlreadyExistsException($"Exercise with name '{exercise.Name}' already exist in database");
 

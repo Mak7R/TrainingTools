@@ -1,10 +1,14 @@
 ﻿using Application.Interfaces.ServiceInterfaces;
+using Application.Models.Shared;
 using Domain.Exceptions;
 using Domain.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using WebUI.Extensions;
+using WebUI.Filters;
+using WebUI.ModelBinding.CustomModelBinders;
 using WebUI.Models.GroupModels;
+using WebUI.Models.SharedModels;
 
 namespace WebUI.Controllers;
 
@@ -22,9 +26,10 @@ public class GroupsController : Controller
     }
 
     [HttpGet("")]
-    public async Task<IActionResult> GetAllGroups()
+    [TypeFilter(typeof(QueryValuesProvidingActionFilter), Arguments = new object[] { typeof(DefaultOrderOptions) })]
+    public async Task<IActionResult> GetAllGroups(OrderModel? orderModel,[ModelBinder(typeof(FilterModelBinder))] FilterModel? filterModel)
     {
-        var groups = await _groupsService.GetAll();
+        var groups = await _groupsService.GetAll(orderModel, filterModel);
         var groupViewModels = groups.Select(g => new GroupViewModel { Id = g.Id, Name = g.Name });
         return View(groupViewModels);
     }

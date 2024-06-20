@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using Serilog;
 using WebUI.Extensions;
 using WebUI.Middlewares;
+using WebUI.ModelBinding.CustomModelBindingProviders;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -26,7 +27,10 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString)
     );
 
-builder.Services.AddControllersWithViews();
+builder.Services.AddControllersWithViews(options =>
+{
+    options.ModelBinderProviders.Insert(0, new FilterModelBinderProvider());
+}).AddRazorRuntimeCompilation();
 builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddIdentity<ApplicationUser, ApplicationRole>(options =>
