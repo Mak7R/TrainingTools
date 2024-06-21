@@ -1,11 +1,15 @@
 ﻿using System.Net.Mime;
 using Application.Interfaces.ServiceInterfaces;
+using Application.Models.Shared;
 using Domain.Enums;
 using Domain.Identity;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using WebUI.Extensions;
+using WebUI.Filters;
+using WebUI.ModelBinding.CustomModelBinders;
+using WebUI.Models.SharedModels;
 using WebUI.Models.UserModels;
 
 namespace WebUI.Controllers;
@@ -26,12 +30,13 @@ public class UsersController : Controller
     }
     
     [HttpGet("")]
-    public async Task<IActionResult> GetAllUsers()
+    [TypeFilter(typeof(QueryValuesProvidingActionFilter), Arguments = new object[] { typeof(DefaultOrderOptions) })]
+    public async Task<IActionResult> GetAllUsers([FromQuery] OrderModel? orderModel, [ModelBinder(typeof(FilterModelBinder))]FilterModel? filterModel)
     {
         var user = await _userManager.GetUserAsync(User);
         if (user is null) return RedirectToAction("Login", "Accounts", new {ReturnUrl = "/users"});
         
-        var userInfos = await _usersService.GetAllUsers(user);
+        var userInfos = await _usersService.GetAllUsers(user, orderModel, filterModel);
 
         return View(userInfos);
     }

@@ -4,73 +4,81 @@
     ViewBag.Title = "Friends";
 }
 
-<div class="container">
-    <nav id="friends-navbar" class="navbar px-3 mb-3">
-        <ul class="nav nav-pills">
-            <li class="nav-item">
-                <a class="nav-link" href="#invitations-for-user">Invitations for you</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="#friends">Friends</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="#user-invitations">Your invitations</a>
-            </li>
-        </ul>
-    </nav>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-lg-3 col-12 mb-2">
+            <h2 id="invitations-for-user">Invitations for you</h2>
+            <div class="list-group">
+                @{ int invitationsCount = 0;}
+                @foreach (var invitation in Model.InvitationsFor)
+                {
+                    <div class="list-group-item list-group-item-action mb-2">
+                        <div class="row">
+                            <a class="col fs-5 text-truncate" asp-controller="Users" asp-action="GetUser" asp-route-userName="@invitation.Invitor.UserName">@invitation.Invitor.UserName</a>
 
-    <div>
-        <h2 id="invitations-for-user">Invitations for you</h2>
-        <div class="list-group">
-            @foreach (var invitation in Model.InvitationsFor)
-            {
-            <div class="list-group-item list-group-item-action mb-2">
-                <div class="row">
-                    <a class="col fs-5" asp-controller="Users" asp-action="GetUser" asp-route-userName="@invitation.Invitor.UserName">@invitation.Invitor.UserName</a>
-
-                    <span class="col-2">
+                            <span class="col-auto">
                                 <a class="btn btn-success" asp-controller="Friends" asp-action="Accept" asp-route-userName="@invitation.Invitor.UserName" asp-route-returnUrl="@Context.Request.Path.Value">Accept</a>
                                 <a class="btn btn-danger" asp-controller="Friends" asp-action="Refuse" asp-route-userName="@invitation.Invitor.UserName" asp-route-returnUrl="@Context.Request.Path.Value">Refuse</a>
                             </span>
-                </div>
+                        </div>
+                    </div>
+                    invitationsCount++;
+                }
+                @if (invitationsCount == 0)
+                {
+                    <span class="fs-4">No invitations for you</span>
+                }
             </div>
-            }
         </div>
-    </div>
+        
+        <div class="col-lg-6 col-12 mb-2">
+            <h2 id="friends">Friends</h2>
 
+            <div class="list-group">
+                @{ var friendsCount = 0;}
+                @foreach (var friend in Model.Friends)
+                {
+                    <div class="list-group-item list-group-item-action mb-2">
+                        <div class="row">
+                            <a class="col fs-5 text-truncate" asp-controller="Users" asp-action="GetUser" asp-route-userName="@friend.UserName">@friend.UserName</a>
 
-    <div>
-        <h2 id="friends">Friends</h2>
-
-        <div class="list-group">
-            @foreach (var friend in Model.Friends)
-            {
-                <div class="list-group-item list-group-item-action mb-2">
-                    <div class="row">
-                        <a class="col fs-5" asp-controller="Users" asp-action="GetUser" asp-route-userName="@friend.UserName">@friend.UserName</a>
-
-                        <a class="col-2 btn btn-danger" asp-controller="Friends" asp-action="RemoveFriendship" asp-route-userName="@friend.UserName" asp-route-returnUrl="@Context.Request.Path.Value">Remove</a>
+                            <a class="col-auto btn btn-danger" asp-controller="Friends" asp-action="RemoveFriendship" asp-route-userName="@friend.UserName" asp-route-returnUrl="@Context.Request.Path.Value">Remove</a>
+                        </div>
                     </div>
-                </div>
-            }
+                    friendsCount++;
+                }
+                @if (friendsCount == 0)
+                {
+                    <p class="fs-4">
+                        You haven't added any friends yet. Click <a asp-controller="Users" asp-action="GetAllUsers">here</a> to see users you can add as friends
+                    </p>
+                }
+            </div>
         </div>
-    </div>
 
+        <div class="col-lg-3 col-12 mb-2">
+            <h2 id="user-invitations">Your invitations</h2>
 
-    <div>
-        <h2 id="user-invitations">Your invitations</h2>
+            <div class="list-group">
+                @{ var userInvitations = 0; }
+                @foreach (var invitation in Model.InvitationsOf)
+                {
+                    <div class="list-group-item list-group-item-action mb-2">
+                        <div class="row">
+                            <a class="col fs-5 text-truncate" asp-controller="Users" asp-action="GetUser" asp-route-userName="@invitation.Target.UserName">@invitation.Target.UserName</a>
 
-        <div class="list-group">
-            @foreach (var invitation in Model.InvitationsOf)
-            {
-                <div class="list-group-item list-group-item-action mb-2">
-                    <div class="row">
-                        <a class="col fs-5" asp-controller="Users" asp-action="GetUser" asp-route-userName="@invitation.Target.UserName">@invitation.Target.UserName</a>
-
-                        <a class="col-2 btn btn-danger" asp-controller="Friends" asp-action="Cancel" asp-route-userName="@invitation.Target.UserName" asp-route-returnUrl="@Context.Request.Path.Value">Cancel</a>
+                            <a class="col-auto btn btn-danger" asp-controller="Friends" asp-action="Cancel" asp-route-userName="@invitation.Target.UserName" asp-route-returnUrl="@Context.Request.Path.Value">Cancel</a>
+                        </div>
                     </div>
-                </div>
-            }
+                    userInvitations++;
+                }
+                @if (userInvitations == 0)
+                {
+                    <p class="fs-4">
+                        You haven't added any friends yet. Click <a asp-controller="Users" asp-action="GetAllUsers">here</a> to see users you can add as friends
+                    </p>
+                }
+            </div>
         </div>
     </div>
 </div>

@@ -1,9 +1,11 @@
 ﻿using System.Globalization;
 using System.Linq.Expressions;
+using Application.Constants;
 using Application.Dtos;
 using Application.Enums;
 using Application.Interfaces.RepositoryInterfaces;
 using Application.Interfaces.ServiceInterfaces;
+using Application.Models.Shared;
 using Domain.Defaults;
 using Domain.Enums;
 using Domain.Exceptions;
@@ -29,16 +31,25 @@ public class UsersService : IUsersService
         _logger = logger;
     }
 
-    public async Task<IEnumerable<UserInfo>> GetAllUsers(ApplicationUser? currentUser)
+    public async Task<IEnumerable<UserInfo>> GetAllUsers(ApplicationUser? currentUser, OrderModel? orderModel = null, FilterModel? filterModel = null)
     {
         ArgumentNullException.ThrowIfNull(currentUser);
         
         var roles = await _userManager.GetRolesAsync(currentUser);
+
+        var query = _userManager.Users;
         
-        var users = 
-            roles.Contains(nameof(Role.Root)) || roles.Contains(nameof(Role.Admin))
-                ? _userManager.Users.Where(u => u.Id != currentUser.Id).ToList()
-                : _userManager.Users.Where(u => u.Id != currentUser.Id && u.IsPublic).ToList();
+        if ((filterModel?.TryGetValue(FilterOptionNames.User.Name, out var namePart) ?? false) &&
+            !string.IsNullOrWhiteSpace(namePart))
+        {
+            query = query.Where(u => u.UserName != null && u.UserName.Contains(namePart));
+        }
+            
+        query = roles.Contains(nameof(Role.Root)) || roles.Contains(nameof(Role.Admin))
+                ? query.Where(u => u.Id != currentUser.Id)
+                : query.Where(u => u.Id != currentUser.Id && u.IsPublic);
+
+        var users = query.ToArray();
         
         var friends = (await _friendsRepository.GetFriendsFor(currentUser.Id)).ToDictionary(f => f.Id);
         var inviters = (await _friendsRepository.GetInviters(currentUser.Id)).ToDictionary(f => f.Id);
@@ -48,10 +59,123 @@ public class UsersService : IUsersService
 
         foreach (var applicationUser in users)
             userInfos.Add(await CreateUserInfo(friends, inviters, invited, applicationUser));
-        
-        return userInfos;
-    }
 
+        IEnumerable<UserInfo> userInfosAsEnumerable = userInfos;
+        
+        if ((filterModel?.TryGetValue(FilterOptionNames.User.Role, out var filterRole) ?? false) &&
+            !string.IsNullOrWhiteSpace(filterRole))
+        {
+            if (string.Equals(filterRole, nameof(Role.Root), StringComparison.CurrentCultureIgnoreCase))
+            {
+                return Array.Empty<UserInfo>();
+            }
+            else if (string.Equals(filterRole, nameof(Role.User), StringComparison.CurrentCultureIgnoreCase))
+            {
+                userInfosAsEnumerable = userInfosAsEnumerable
+                    .Where(u => u.Roles.Count() == 1)
+                    .Where(u => u.Roles.Contains(filterRole, StringComparer.CurrentCultureIgnoreCase));
+            }
+            else
+            {
+                userInfosAsEnumerable = userInfosAsEnumerable.Where(u => u.Roles.Contains(filterRole, StringComparer.CurrentCultureIgnoreCase));
+            }
+        }
+        
+        if ((filterModel?.TryGetValue(FilterOptionNames.User.FriendshipState, out var filterRelationship) ?? false) &&
+            !string.IsNullOrWhiteSpace(filterRelationship))
+        {
+            userInfosAsEnumerable = userInfosAsEnumerable.Where(u => u.RelationshipState.ToString().Equals(filterRelationship, StringComparison.CurrentCultureIgnoreCase));
+        }
+        
+        
+        if (orderModel is null || string.IsNullOrWhiteSpace(orderModel.OrderBy)) return userInfos;
+        if (orderModel.OrderBy.Equals(OrderOptionNames.User.Name, StringComparison.CurrentCultureIgnoreCase))
+        {
+            if (orderModel.Order?.Equals(OrderOptionNames.Shared.Descending, StringComparison.CurrentCultureIgnoreCase) ?? false)
+            {
+                userInfosAsEnumerable = userInfosAsEnumerable.OrderByDescending(i => i.User.UserName);
+            }
+            else
+            {
+                userInfosAsEnumerable = userInfosAsEnumerable.OrderBy(i => i.User.UserName);
+            }
+        }
+        else if (orderModel.OrderBy.Equals(OrderOptionNames.User.Role, StringComparison.CurrentCultureIgnoreCase))
+        {
+            if (orderModel.Order?.Equals(OrderOptionNames.Shared.Descending, StringComparison.CurrentCultureIgnoreCase) ?? false)
+            {
+                userInfosAsEnumerable = userInfosAsEnumerable.OrderByDescending(i => i.Roles, new RolesComparer());
+            }
+            else
+            {
+                userInfosAsEnumerable = userInfosAsEnumerable.OrderBy(i => i.Roles, new RolesComparer());
+            }
+        }
+        else if (orderModel.OrderBy.Equals(OrderOptionNames.User.FriendshipState, StringComparison.CurrentCultureIgnoreCase))
+        {
+            if (orderModel.Order?.Equals(OrderOptionNames.Shared.Descending, StringComparison.CurrentCultureIgnoreCase) ?? false)
+            {
+                userInfosAsEnumerable = userInfosAsEnumerable.OrderByDescending(i => i.RelationshipState, new RelationshipStateComparer());
+            }
+            else
+            {
+                userInfosAsEnumerable = userInfosAsEnumerable.OrderBy(i => i.RelationshipState, new RelationshipStateComparer());
+            }
+        }
+        
+        return userInfosAsEnumerable;
+    }
+    
+    private class RolesComparer : IComparer<IEnumerable<string>>
+    {
+        private static readonly Dictionary<string, int> RolePriorities = new Dictionary<string, int>
+        {
+            { nameof(Role.Root), 3 },
+            { nameof(Role.Admin), 2 },
+            { nameof(Role.Trainer), 1 }
+        };
+
+        public int Compare(IEnumerable<string>? x, IEnumerable<string>? y)
+        {
+            ArgumentNullException.ThrowIfNull(x);
+            ArgumentNullException.ThrowIfNull(y);
+
+            int xValue = GetRolePriority(x);
+            int yValue = GetRolePriority(y);
+
+            return yValue.CompareTo(xValue);
+        }
+
+        private static int GetRolePriority(IEnumerable<string> roles)
+        {
+            var rolesAsArray = roles as string[] ?? roles.ToArray();
+            return (from role in RolePriorities.Keys where rolesAsArray.Contains(role) select RolePriorities[role]).FirstOrDefault();
+        }
+    }
+    private class RelationshipStateComparer : IComparer<RelationshipState>
+    {
+        public int Compare(RelationshipState x, RelationshipState y)
+        {
+            // Определяем приоритеты состояний
+            int xPriority = GetRelationshipStatePriority(x);
+            int yPriority = GetRelationshipStatePriority(y);
+
+            // Сравниваем по приоритетам
+            return yPriority.CompareTo(xPriority);
+        }
+
+        private static int GetRelationshipStatePriority(RelationshipState state)
+        {
+            return state switch
+            {
+                RelationshipState.Friends => 3,
+                RelationshipState.CanBeAccepted => 2,
+                RelationshipState.Invited => 1,
+                _ => 0
+            };
+        }
+    }
+    
     public async Task<Stream> GetAllUsersAsCsv()
     {
         var users = _userManager.Users.ToList();

@@ -18,4 +18,11 @@ public static class OrderOptionNames
         public const string Name = "name";
         public const string GroupName = "group-name";
     }
+    
+    public static class User
+    {
+        public const string Name = "name";
+        public const string Role = "role";
+        public const string FriendshipState = "friendship";
+    }
 }

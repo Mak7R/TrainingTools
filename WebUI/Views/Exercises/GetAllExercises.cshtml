@@ -5,6 +5,7 @@
 @{
     ViewBag.Title = "Exercises";
 
+    var isUserAuthenticated = User.Identity?.IsAuthenticated ?? false;
     var isUserAdmin = User.IsInRole("Admin");
     var isUserRoot = User.IsInRole("Root");
 
@@ -51,7 +52,7 @@
     <table class="table table-striped table-hover">
         <thead>
         <tr>
-            <th class="col-4 fs-5">
+            <th class="col-3 fs-5">
                 <form method="get" onclick="this.submit()" class="cursor-pointer non-selectable">
                     Exercise name
                     @{
@@ -73,7 +74,10 @@
                     <input name="@Filters.Group.AsFilterName()" value="@ViewData[Filters.Group.AsFilterName()]" hidden/>
                 </form>
             </th>
-            <th class="col-1 fs-5">Results status</th>
+            @if (isUserAuthenticated)
+            {
+                <th class="col-1 fs-5">Results status</th>
+            }
             @if (isUserAdmin || isUserRoot)
             {
                 <th class="col-1 fs-5">Actions</th>
@@ -97,16 +101,19 @@
                     <td>
                         <span class="fs-5">@exercise.Group.Name</span>
                     </td>
-                    <td>
-                        @if (exerciseResults.FirstOrDefault(r => r.Exercise.Id == exercise.Id) is null)
-                        {
-                            <a class="btn btn-success" asp-controller="ExerciseResults" asp-action="CreateResult" asp-route-exerciseId="@exercise.Id" asp-route-returnUrl="/exercises">Create Results</a>
-                        }
-                        else
-                        {
-                            <a class="btn btn-primary" asp-controller="ExerciseResults" asp-action="GetUserResults">To Results</a> @* TODO DECIDE TO WHICH URL MAKE REDIRECT*@
-                        }
-                    </td>
+                    @if (isUserAuthenticated)
+                    {
+                        <td>
+                            @if (exerciseResults.FirstOrDefault(r => r.Exercise.Id == exercise.Id) is null)
+                            {
+                                <a class="btn btn-success" asp-controller="ExerciseResults" asp-action="CreateResult" asp-route-exerciseId="@exercise.Id" asp-route-returnUrl="/exercises">Create Results</a>
+                            }
+                            else
+                            {
+                                <a class="btn btn-primary" asp-controller="ExerciseResults" asp-action="GetUserResults">To Results</a>
+                            }
+                        </td>
+                    }
                     @if (isUserAdmin || isUserRoot)
                     {
                         <td>

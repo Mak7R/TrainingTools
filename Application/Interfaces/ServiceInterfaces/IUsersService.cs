@@ -1,5 +1,6 @@
 ﻿using System.Security.Claims;
 using Application.Dtos;
+using Application.Models.Shared;
 using Domain.Identity;
 using Domain.Models;
 
@@ -7,7 +8,7 @@ namespace Application.Interfaces.ServiceInterfaces;
 
 public interface IUsersService
 {
-    Task<IEnumerable<UserInfo>> GetAllUsers(ApplicationUser? currentUser);
+    Task<IEnumerable<UserInfo>> GetAllUsers(ApplicationUser? currentUser, OrderModel? orderModel = null, FilterModel? filterModel = null);
     Task<Stream> GetAllUsersAsCsv();
 
     Task<UserInfo?> GetById(ApplicationUser? currentUser, Guid id);
