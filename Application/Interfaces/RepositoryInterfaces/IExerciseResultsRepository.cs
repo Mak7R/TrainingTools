@@ -1,4 +1,5 @@
-﻿using Domain.Models;
+﻿using Application.Models.Shared;
+using Domain.Models;
 
 namespace Application.Interfaces.RepositoryInterfaces;
 
@@ -9,7 +10,7 @@ public interface IExerciseResultsRepository
     Task<OperationResult> DeleteResult(Guid ownerId, Guid exerciseId);
 
     Task<ExerciseResult?> Get(Guid ownerId, Guid exerciseId);
-    Task<IEnumerable<ExerciseResult>> GetForUser(Guid ownerId);
-    Task<IEnumerable<ExerciseResult>> GetForExercise(Guid exerciseId);
-    Task<IEnumerable<ExerciseResult>> GetOnlyUserAndFriendsResultForExercise(Guid userId, Guid exerciseId);
+    Task<IEnumerable<ExerciseResult>> GetForUser(Guid ownerId, FilterModel? filterModel = null);
+    Task<IEnumerable<ExerciseResult>> GetForExercise(Guid exerciseId, FilterModel? filterModel = null);
+    Task<IEnumerable<ExerciseResult>> GetOnlyUserAndFriendsResultForExercise(Guid userId, Guid exerciseId, FilterModel? filterModel = null);
 }

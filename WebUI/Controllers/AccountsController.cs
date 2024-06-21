@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using WebUI.Extensions;
+using WebUI.Mappers;
 using WebUI.Models.AccountModels;
 
 namespace WebUI.Controllers;
@@ -112,24 +113,9 @@ public class AccountsController(
     public async Task<IActionResult> Profile()
     {
         var user = await userManager.GetUserAsync(User);
+        if (user == null) return RedirectToAction("Login","Accounts", new {ReturnUrl = "/profile"});
         
-        if (user == null)
-        {
-            return RedirectToAction("Login","Accounts", new {ReturnUrl = "/profile"});
-        }
-        
-        var userRoles = await userManager.GetRolesAsync(user);
-
-        var profile = new ProfileViewModel
-        {
-            Username = user.UserName,
-            About = user.About,
-            Email = user.Email,
-            Phone = user.PhoneNumber,
-            Roles = userRoles,
-            IsPublic = user.IsPublic
-        };
-        return View(profile);
+        return View(user.ToProfileViewModel(await userManager.GetRolesAsync(user)));
     }
     
     [Authorize]

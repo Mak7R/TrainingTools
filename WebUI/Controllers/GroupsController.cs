@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using WebUI.Extensions;
 using WebUI.Filters;
+using WebUI.Mappers;
 using WebUI.ModelBinding.CustomModelBinders;
 using WebUI.Models.GroupModels;
 using WebUI.Models.SharedModels;
@@ -30,7 +31,7 @@ public class GroupsController : Controller
     public async Task<IActionResult> GetAllGroups(OrderModel? orderModel,[ModelBinder(typeof(FilterModelBinder))] FilterModel? filterModel)
     {
         var groups = await _groupsService.GetAll(orderModel, filterModel);
-        var groupViewModels = groups.Select(g => new GroupViewModel { Id = g.Id, Name = g.Name });
+        var groupViewModels = groups.Select(g => g.ToGroupViewModel());
         return View(groupViewModels);
     }
 

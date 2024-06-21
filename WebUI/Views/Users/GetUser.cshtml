@@ -1,14 +1,14 @@
-﻿@model Application.Dtos.UserInfo
+﻿@model UserInfoViewModel
 
 @{
-    ViewBag.Title = $"{Model.User.UserName} - Profile";
+    ViewBag.Title = $"{Model.User.Username} - Profile";
 
     var currentUserIsAdmin = User.IsInRole(nameof(Role.Admin));
     var currentUserIsRoot = User.IsInRole(nameof(Role.Root));
 }
 
 <div class="container">
-    <h2>@Model.User.UserName</h2>
+    <h2>@Model.User.Username</h2>
     <h4>About: @Model.User.About</h4>
     
     <h4>
@@ -29,9 +29,9 @@
     
     <div class="mt-2">
         @{
-            await Html.RenderPartialAsync("Partials/UsersRelationshipActions", (Model.RelationshipState, Model.User.UserName, Context.Request.Path.ToString()));
+            await Html.RenderPartialAsync("Partials/UsersRelationshipActions", (Model.RelationshipState, Model.User.Username, Context.Request.Path.ToString()));
         }
-        <a class="btn btn-primary m-2" asp-controller="ExerciseResults" asp-action="GetResultsForUser" asp-route-userName="@Model.User.UserName">Exercise Results</a>
+        <a class="btn btn-primary m-2" asp-controller="ExerciseResults" asp-action="GetResultsForUser" asp-route-userName="@Model.User.Username">Exercise Results</a>
     </div>
     
 
@@ -42,13 +42,13 @@
             <h4>Admin functions</h4>
             <div>
                 <h5>Email: @Model.User.Email</h5>
-                <h5>Phone: @Model.User.PhoneNumber</h5>
+                <h5>Phone: @Model.User.Phone</h5>
             </div>
             <div>
                 @if (!Model.Roles.Contains(nameof(Role.Root)) &&
                 (currentUserIsRoot || !Model.Roles.Contains(nameof(Role.Admin))))
                 {
-                <a class="btn btn-primary" asp-controller="Users" asp-action="UpdateUser" asp-route-userId="@Model.User.Id">Update</a>
+                <a class="btn btn-primary" asp-controller="Users" asp-action="UpdateUser" asp-route-userName="@Model.User.Username">Update</a>
 
                 <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteUserModal">
                     Delete
@@ -58,7 +58,7 @@
                     <div class="modal-dialog">
                         <div class="modal-content">
                             <div class="modal-header">
-                                <h1 class="modal-title fs-5" id="deleteUserModalLabel">Delete user: @Model.User.UserName</h1>
+                                <h1 class="modal-title fs-5" id="deleteUserModalLabel">Delete user: @Model.User.Username</h1>
                                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
                             <div class="modal-body text-danger">
@@ -66,7 +66,7 @@
                             </div>
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Cancel</button>
-                                <a type="button" class="btn btn-danger" asp-controller="Users" asp-action="DeleteUser" asp-route-userId="@Model.User.Id">Delete</a>
+                                <a type="button" class="btn btn-danger" asp-controller="Users" asp-action="DeleteUser" asp-route-userName="@Model.User.Username">Delete</a>
                             </div>
                         </div>
                     </div>

@@ -1,22 +1,22 @@
 ﻿@using System.Globalization
-@model Domain.Models.ExerciseResult
+@model ExerciseResultViewModel
 
 @{
     ViewBag.Title = $"Edit result from {Model.Exercise.Name}";
 }
 
 <div class="container text-center justify-content-center">
-    <h2>Results from <a asp-controller="ExerciseResults" asp-action="GetResultsForExercise" asp-route-exerciseId="@Model.Exercise.Id"></a>@Model.Exercise.Group.Name/@Model.Exercise.Name</h2>
+    <h2>Results from @Model.Exercise.Group.Name/@Model.Exercise.Name</h2>
 
     <form asp-action="UpdateResults" method="post">
         <table class="table table-striped table-hover table-bordered border-black" id="resultsTable">
             <thead>
                 <tr>
-                    <th scope="col">#</th>
-                    <th scope="col">Weight</th>
-                    <th scope="col">Count</th>
-                    <th scope="col">Comment</th>
-                    <th scope="col">Action</th>
+                    <th class="col-1" scope="col">#</th>
+                    <th class="col-2" scope="col">Weight</th>
+                    <th class="col-2" scope="col">Count</th>
+                    <th class="col-4" scope="col">Comment</th>
+                    <th class="col-1" scope="col">Action</th>
                 </tr>
             </thead>
             <tbody>
@@ -46,9 +46,11 @@
             </tbody>
         </table>
         
-        <button type="button" class="btn btn-primary" onclick="addRow()">Add Row</button>
-        <button type="submit" class="btn btn-success">Save changes</button>
-        <a class="btn btn-secondary" asp-controller="ExerciseResults" asp-action="GetUserResults">Cancel</a>
+        <button type="button" class="btn btn-primary d-block w-100 mb-2" onclick="addRow()">Add Row</button>
+        <div class="row justify-content-center">
+            <a class="btn btn-secondary col-4 me-4" asp-controller="ExerciseResults" asp-action="GetUserResults">Cancel</a>
+            <button type="submit" class="btn btn-success col-5">Save changes</button>
+        </div>
     </form>
 </div>
 

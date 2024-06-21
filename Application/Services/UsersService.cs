@@ -88,7 +88,7 @@ public class UsersService : IUsersService
         }
         
         
-        if (orderModel is null || string.IsNullOrWhiteSpace(orderModel.OrderBy)) return userInfos;
+        if (orderModel is null || string.IsNullOrWhiteSpace(orderModel.OrderBy)) return userInfosAsEnumerable;
         if (orderModel.OrderBy.Equals(OrderOptionNames.User.Name, StringComparison.CurrentCultureIgnoreCase))
         {
             if (orderModel.Order?.Equals(OrderOptionNames.Shared.Descending, StringComparison.CurrentCultureIgnoreCase) ?? false)
@@ -320,7 +320,7 @@ public class UsersService : IUsersService
 
         if (currentUserRoles.Contains(nameof(Role.Admin)) || currentUserRoles.Contains(nameof(Role.Root)))
         {
-            var updatingUser = await _userManager.FindByIdAsync(updateUserDto.UserId.ToString());
+            var updatingUser = await _userManager.FindByNameAsync(updateUserDto.CurrentUserName);
             if (updatingUser == null) return new DefaultOperationResult(false, new NotFoundException("User was not found"), new []{"User was not found"}) ;
 
             if (await _userManager.IsInRoleAsync(updatingUser, nameof(Role.Root)))
@@ -376,18 +376,19 @@ public class UsersService : IUsersService
             new[] { "User is not admin or root" });
     }
 
-    public async Task<OperationResult> DeleteUser(ApplicationUser? currentUser, Guid userId)
+    public async Task<OperationResult> DeleteUser(ApplicationUser? currentUser, string userName)
     {
         ArgumentNullException.ThrowIfNull(currentUser);
-
+        ArgumentException.ThrowIfNullOrWhiteSpace(userName);
+        
         var currentUserRoles = await _userManager.GetRolesAsync(currentUser);
         
         if (currentUserRoles.Contains(nameof(Role.Admin)) || currentUserRoles.Contains(nameof(Role.Root)))
         {
-            var user = await _userManager.FindByIdAsync(userId.ToString());
+            var user = await _userManager.FindByNameAsync(userName);
             if (user == null)
             {
-                var message = $"User with id '{userId}' was not found";
+                var message = $"User with name '{userName}' was not found";
                 return new DefaultOperationResult(false, 
                     new NotFoundException(message),
                     new[] { message });

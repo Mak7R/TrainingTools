@@ -1,6 +1,6 @@
 ﻿namespace Domain.Models;
 
-public class Approach(decimal weight, int count, string comment)
+public class Approach(decimal weight, int count, string? comment)
 {
     public decimal Weight { get; set; } = weight;
     public int Count { get; set; } = count;

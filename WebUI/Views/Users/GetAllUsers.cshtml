@@ -1,6 +1,6 @@
 ﻿@using Filters = Application.Constants.FilterOptionNames.User
 @using Orders = Application.Constants.OrderOptionNames.User
-@model IEnumerable<Application.Dtos.UserInfo>
+@model IEnumerable<UserInfoViewModel>
 
 @{
     ViewBag.Title = "Users";
@@ -114,7 +114,7 @@
         {
             <tr>
                 <td>
-                    <a class="col fs-5" asp-controller="Users" asp-action="GetUser" asp-route-userName="@userInfo.User.UserName">@userInfo.User.UserName</a>
+                    <a class="col fs-5" asp-controller="Users" asp-action="GetUser" asp-route-userName="@userInfo.User.Username">@userInfo.User.Username</a>
                 </td>
                 <td>
                     @foreach (var role in userInfo.Roles)
@@ -124,7 +124,7 @@
                 </td>
                 <td>
                     @{
-                        await Html.RenderPartialAsync("Partials/UsersRelationshipActions", (userInfo.RelationshipState, userInfo.User.UserName, Context.Request.Path.ToString()));
+                        await Html.RenderPartialAsync("Partials/UsersRelationshipActions", (userInfo.RelationshipState, userInfo.User.Username, Context.Request.Path.ToString()));
                     }
                 </td>
             </tr>

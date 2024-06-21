@@ -1,5 +1,6 @@
 ﻿using System.Globalization;
 using Application.Interfaces.ServiceInterfaces;
+using Application.Models.Shared;
 using Domain.Enums;
 using Domain.Identity;
 using Domain.Models;
@@ -8,10 +9,13 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WebUI.Extensions;
+using WebUI.Filters;
+using WebUI.Mappers;
+using WebUI.ModelBinding.CustomModelBinders;
 using WebUI.Models.ExerciseModels;
 using WebUI.Models.ExerciseResultModels;
 using WebUI.Models.GroupModels;
-
+using WebUI.Models.SharedModels;
 namespace WebUI.Controllers;
 
 [Controller]
@@ -31,13 +35,15 @@ public class ExerciseResultsController : Controller
     }
 
     [HttpGet("")]
-    public async Task<IActionResult> GetUserResults()
+    [TypeFilter(typeof(QueryValuesProvidingActionFilter), Arguments = new object[] { typeof(DefaultOrderOptions) })]
+    public async Task<IActionResult> GetUserResults(OrderModel? orderModel,[ModelBinder(typeof(FilterModelBinder))] FilterModel? filterModel)
     {
         var user = await _userManager.GetUserAsync(HttpContext.User);
         if (user is null) return RedirectToAction("Login", "Accounts", new {returnUrl = "/exercises/results"});
         
-        var results = await _exerciseResultsService.GetForUser(user.Id);
-        return View(results);
+        var results = await _exerciseResultsService.GetForUser(user.Id, orderModel, filterModel);
+        
+        return View(results.Select(r => r.ToExerciseResultViewModel()));
     }
     
     [HttpGet("as-exel")]
@@ -53,7 +59,9 @@ public class ExerciseResultsController : Controller
     }
     
     [HttpGet("for-exercise/{exerciseId:guid}")]
-    public async Task<IActionResult> GetFriendsResultsForExercise(Guid exerciseId, [FromServices] IExercisesService exercisesService)
+    [TypeFilter(typeof(QueryValuesProvidingActionFilter), Arguments = new object[] { typeof(DefaultOrderOptions) })]
+    public async Task<IActionResult> GetFriendsResultsForExercise(Guid exerciseId, [FromServices] IExercisesService exercisesService,
+        OrderModel? orderModel,[ModelBinder(typeof(FilterModelBinder))] FilterModel? filterModel)
     {
         var user = await _userManager.GetUserAsync(HttpContext.User);
         if (user is null) return RedirectToAction("Login", "Accounts", new {returnUrl = $"/exercises/results/for-exercise/{exerciseId}"});
@@ -69,12 +77,13 @@ public class ExerciseResultsController : Controller
             Group = new GroupViewModel { Id = exercise.Group.Id, Name = exercise.Group.Name }
         };
         
-        var results = await _exerciseResultsService.GetOnlyUserAndFriendsResultForExercise(user.Id, exerciseId);
-        return View(results);
+        var results = await _exerciseResultsService.GetOnlyUserAndFriendsResultForExercise(user.Id, exerciseId, orderModel, filterModel);
+        return View(results.Select(r => r.ToExerciseResultViewModel()));
     }  
     
     [HttpGet("for-user/{userName}")]
-    public async Task<IActionResult> GetResultsForUser(string userName)
+    [TypeFilter(typeof(QueryValuesProvidingActionFilter), Arguments = new object[] { typeof(DefaultOrderOptions) })]
+    public async Task<IActionResult> GetResultsForUser(string userName, OrderModel? orderModel,[ModelBinder(typeof(FilterModelBinder))] FilterModel? filterModel)
     {
         var user = await _userManager.GetUserAsync(HttpContext.User);
         if (user is null) return RedirectToAction("Login", "Accounts", new {returnUrl = "/exercises/results"});
@@ -101,9 +110,9 @@ public class ExerciseResultsController : Controller
         if (searchableUser is null)
             return this.NotFoundView("User was not found");
         
-        var results = await _exerciseResultsService.GetForUser(searchableUser.Id);
+        var results = await _exerciseResultsService.GetForUser(searchableUser.Id, orderModel, filterModel);
         ViewBag.UserName = userName;
-        return View("GetUserResults", results);
+        return View("GetUserResults", results.Select(r => r.ToExerciseResultViewModel()));
     }
 
     [HttpGet("add/{exerciseId:guid}")]
@@ -141,7 +150,7 @@ public class ExerciseResultsController : Controller
         var result = await _exerciseResultsService.Get(user.Id, exerciseId);
         if (result is null) return this.NotFoundView("Result was not found");
 
-        return View(result);
+        return View(result.ToExerciseResultViewModel());
     }
     
     [HttpPost("update/{exerciseId:guid}")]
@@ -175,7 +184,7 @@ public class ExerciseResultsController : Controller
         {
             Owner = user,
             Exercise = new Exercise { Id = exerciseId },
-            ApproachInfos = updateResultsModel.ApproachInfos
+            ApproachInfos = updateResultsModel.ApproachInfos.Select(ai => new Approach(ai.Weight, ai.Count, ai.Comment)).ToList()
         };
         
         var operationResult = await _exerciseResultsService.UpdateResult(result);

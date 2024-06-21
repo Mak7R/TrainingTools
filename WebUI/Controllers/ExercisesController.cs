@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using WebUI.Extensions;
 using WebUI.Filters;
+using WebUI.Mappers;
 using WebUI.ModelBinding.CustomModelBinders;
 using WebUI.Models.ExerciseModels;
 using WebUI.Models.GroupModels;
@@ -41,7 +42,7 @@ public class ExercisesController : Controller
             .Select(g => new GroupViewModel { Id = g.Id, Name = g.Name });
         
         var exercises = await _exercisesService.GetAll(orderModel, filterModel);
-        var exerciseViewModels = exercises.Select(e => new ExerciseViewModel { Id = e.Id, Name = e.Name, Group = new GroupViewModel {Id = e.Group.Id, Name = e.Group.Name}});
+        var exerciseViewModels = exercises.Select(e => e.ToExerciseViewMode());
 
         var user = await userManager.GetUserAsync(User);
 

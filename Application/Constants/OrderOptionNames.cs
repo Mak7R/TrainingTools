@@ -25,4 +25,17 @@ public static class OrderOptionNames
         public const string Role = "role";
         public const string FriendshipState = "friendship";
     }
+    
+    public static class ExerciseResults
+    {
+        public static class ForUser
+        {
+            public const string GroupName = "group-name";
+        }
+        
+        public static class ForExercise
+        {
+            public const string OwnerName = "owner";
+        }
+    }
 }

@@ -1,5 +1,7 @@
 ﻿using System.Linq.Expressions;
+using Application.Constants;
 using Application.Interfaces.RepositoryInterfaces;
+using Application.Models.Shared;
 using Domain.Defaults;
 using Domain.Exceptions;
 using Domain.Models;
@@ -168,20 +170,58 @@ public class ExerciseResultsRepository : IExerciseResultsRepository
         }
     }
     
-    public async Task<IEnumerable<ExerciseResult>> GetForUser(Guid ownerId)
+    public async Task<IEnumerable<ExerciseResult>> GetForUser(Guid ownerId, FilterModel? filterModel = null)
     {
-        return await GetFor(r => r.OwnerId == ownerId);
+        if ((filterModel?.TryGetValue(FilterOptionNames.ExerciseResults.ForUser.FullName, out var fullName) ?? false) && !string.IsNullOrWhiteSpace(fullName))
+        {
+            var nameParts = fullName.Split("/");
+            return nameParts.Length switch
+            {
+                > 2 => Array.Empty<ExerciseResult>(),
+                2 => await GetFor(r =>
+                    r.OwnerId == ownerId && 
+                    r.Exercise.Group.Name.Contains(nameParts[0]) &&
+                    r.Exercise.Name.Contains(nameParts[1])),
+                _ => await GetFor(r =>
+                    r.OwnerId == ownerId &&
+                    (r.Exercise.Group.Name.Contains(nameParts[0]) || 
+                     r.Exercise.Name.Contains(nameParts[0])))
+            };
+        }
+        else
+        {
+            return await GetFor(r => r.OwnerId == ownerId);
+        }
     }
 
-    public async Task<IEnumerable<ExerciseResult>> GetForExercise(Guid exerciseId)
+    public async Task<IEnumerable<ExerciseResult>> GetForExercise(Guid exerciseId, FilterModel? filterModel = null)
     {
-        return await GetFor(r => r.ExerciseId == exerciseId);
+        if ((filterModel?.TryGetValue(FilterOptionNames.ExerciseResults.ForExercise.OwnerName, out var value) ?? false) &&
+            !string.IsNullOrWhiteSpace(value))
+        {
+            return await GetFor(r => r.ExerciseId == exerciseId && r.Owner.UserName != null && r.Owner.UserName.Contains(value));
+        }
+        else
+        {
+            return await GetFor(r => r.ExerciseId == exerciseId);
+        }
     }
 
-    public async Task<IEnumerable<ExerciseResult>> GetOnlyUserAndFriendsResultForExercise(Guid userId, Guid exerciseId)
+    public async Task<IEnumerable<ExerciseResult>> GetOnlyUserAndFriendsResultForExercise(Guid userId, Guid exerciseId, FilterModel? filterModel = null)
     {
         var userIds = (await _friendsRepository.GetFriendsFor(userId)).Select(u => u.Id);
-
-        return await GetFor(r => r.ExerciseId == exerciseId && (r.OwnerId == userId || userIds.Contains(r.OwnerId)) );
+        
+        if ((filterModel?.TryGetValue(FilterOptionNames.ExerciseResults.ForExercise.OwnerName, out var value) ?? false) &&
+            !string.IsNullOrWhiteSpace(value))
+        {
+            return await GetFor(r => 
+                r.ExerciseId == exerciseId && 
+                (r.OwnerId == userId || userIds.Contains(r.OwnerId)) && 
+                r.Owner.UserName != null && r.Owner.UserName.Contains(value));
+        }
+        
+        return await GetFor(r => 
+            r.ExerciseId == exerciseId && 
+            (r.OwnerId == userId || userIds.Contains(r.OwnerId)));
     }
 }

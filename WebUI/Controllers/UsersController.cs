@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using WebUI.Extensions;
 using WebUI.Filters;
+using WebUI.Mappers;
 using WebUI.ModelBinding.CustomModelBinders;
 using WebUI.Models.SharedModels;
 using WebUI.Models.UserModels;
@@ -37,8 +38,8 @@ public class UsersController : Controller
         if (user is null) return RedirectToAction("Login", "Accounts", new {ReturnUrl = "/users"});
         
         var userInfos = await _usersService.GetAllUsers(user, orderModel, filterModel);
-
-        return View(userInfos);
+        
+        return View(userInfos.Select(userInfo => userInfo.ToUserInfoViewModel()));
     }
     
     [HttpGet("as-csv")]
@@ -64,8 +65,8 @@ public class UsersController : Controller
         
         var userInfo = await _usersService.GetByName(user, userName);
         if (userInfo is null) return this.NotFoundView("User with this username was not found");
-
-        return View(userInfo);
+        
+        return View(userInfo.ToUserInfoViewModel());
     }
     
     [Authorize(Roles = "Admin,Root")]
@@ -106,13 +107,16 @@ public class UsersController : Controller
     }
 
     [Authorize(Roles = "Admin,Root")]
-    [HttpGet("{userId:guid}/update")]
-    public async Task<IActionResult> UpdateUser(Guid userId)
+    [HttpGet("{userName}/update")]
+    public async Task<IActionResult> UpdateUser(string? userName)
     {
-        var currentUser = await _userManager.GetUserAsync(User);
-        if (currentUser is null) return RedirectToAction("Login", "Accounts", new {ReturnUrl = $"/users/{userId}/update"});
+        if (string.IsNullOrWhiteSpace(userName))
+            return this.BadRequestView(new[] { "User name was empty" });
         
-        var user = await _usersService.GetById(currentUser, userId);
+        var currentUser = await _userManager.GetUserAsync(User);
+        if (currentUser is null) return RedirectToAction("Login", "Accounts", new {ReturnUrl = $"/users/{userName}/update"});
+        
+        var user = await _usersService.GetByName(currentUser, userName);
         if (user is null) return this.NotFoundView("User was not found");
         
         var updateUserDto = new UpdateUserDto
@@ -128,18 +132,21 @@ public class UsersController : Controller
     }
     
     [Authorize(Roles = "Admin,Root")]
-    [HttpPost("{userId:guid}/update")]
-    public async Task<IActionResult> UpdateUser(Guid userId, UpdateUserDto updateUserDto)
+    [HttpPost("{userName}/update")]
+    public async Task<IActionResult> UpdateUser(string? userName, UpdateUserDto updateUserDto)
     {
+        if (string.IsNullOrWhiteSpace(userName))
+            return this.BadRequestView(new[] { "User name was empty" });
+        
         var user = await _userManager.GetUserAsync(User);
-        if (user is null) return RedirectToAction("Login", "Accounts", new {ReturnUrl = $"/users/{userId}/update"});
+        if (user is null) return RedirectToAction("Login", "Accounts", new {ReturnUrl = $"/users/{userName}/update"});
         
         if (!ModelState.IsValid)
             return View(updateUserDto);
         
         var appUpdateUserDto = new Application.Dtos.UpdateUserDto
         {
-            UserId = userId,
+            CurrentUserName = userName,
             Username = updateUserDto.Username,
             ClearAbout = updateUserDto.ClearAbout,
             IsAdmin = updateUserDto.IsAdmin,
@@ -158,13 +165,16 @@ public class UsersController : Controller
     }
 
     [Authorize(Roles = "Admin,Root")]
-    [HttpGet("{userId:guid}/delete")]
-    public async Task<IActionResult> DeleteUser([FromRoute] Guid userId)
+    [HttpGet("{userName}/delete")]
+    public async Task<IActionResult> DeleteUser([FromRoute] string? userName)
     {
+        if (string.IsNullOrWhiteSpace(userName))
+            return this.BadRequestView(new[] { "User name was empty" });
+        
         var user = await _userManager.GetUserAsync(User);
         if (user is null) return RedirectToAction("Login", "Accounts", new {ReturnUrl = "/users"});
         
-        var result = await _usersService.DeleteUser(user, userId);
+        var result = await _usersService.DeleteUser(user, userName);
         if (!result.IsSuccessful) return this.BadRequestView(result.Errors);
         return RedirectToAction("GetAllUsers");
     }

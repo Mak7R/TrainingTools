@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using WebUI.Extensions;
+using WebUI.Mappers;
 using WebUI.Models.FriendModels;
 
 namespace WebUI.Controllers;
@@ -161,13 +162,6 @@ public class FriendsController : Controller
         var friends = await _friendsService.GetFriendsFor(user);
         var invitationsOf = await _friendsService.GetInvitationsOf(user);
 
-        var friendsRelationshipsInfo = new FriendRelationshipsInfo
-        {
-            InvitationsFor = invitationsFor,
-            Friends = friends,
-            InvitationsOf = invitationsOf
-        };
-
-        return View(friendsRelationshipsInfo);
+        return View(friends.ToFriendRelationshipsInfoViewModel(invitationsFor: invitationsFor, invitationsOf: invitationsOf));
     }
 }

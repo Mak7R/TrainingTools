@@ -1,4 +1,4 @@
-﻿@model FriendRelationshipsInfo
+﻿@model FriendRelationshipsInfoViewModel
 
 @{
     ViewBag.Title = "Friends";
@@ -14,11 +14,11 @@
                 {
                     <div class="list-group-item list-group-item-action mb-2">
                         <div class="row">
-                            <a class="col fs-5 text-truncate" asp-controller="Users" asp-action="GetUser" asp-route-userName="@invitation.Invitor.UserName">@invitation.Invitor.UserName</a>
+                            <a class="col fs-5 text-truncate" asp-controller="Users" asp-action="GetUser" asp-route-userName="@invitation.Invitor.Username">@invitation.Invitor.Username</a>
 
                             <span class="col-auto">
-                                <a class="btn btn-success" asp-controller="Friends" asp-action="Accept" asp-route-userName="@invitation.Invitor.UserName" asp-route-returnUrl="@Context.Request.Path.Value">Accept</a>
-                                <a class="btn btn-danger" asp-controller="Friends" asp-action="Refuse" asp-route-userName="@invitation.Invitor.UserName" asp-route-returnUrl="@Context.Request.Path.Value">Refuse</a>
+                                <a class="btn btn-success" asp-controller="Friends" asp-action="Accept" asp-route-userName="@invitation.Invitor.Username" asp-route-returnUrl="@Context.Request.Path.Value">Accept</a>
+                                <a class="btn btn-danger" asp-controller="Friends" asp-action="Refuse" asp-route-userName="@invitation.Invitor.Username" asp-route-returnUrl="@Context.Request.Path.Value">Refuse</a>
                             </span>
                         </div>
                     </div>
@@ -40,9 +40,9 @@
                 {
                     <div class="list-group-item list-group-item-action mb-2">
                         <div class="row">
-                            <a class="col fs-5 text-truncate" asp-controller="Users" asp-action="GetUser" asp-route-userName="@friend.UserName">@friend.UserName</a>
+                            <a class="col fs-5 text-truncate" asp-controller="Users" asp-action="GetUser" asp-route-userName="@friend.Username">@friend.Username</a>
 
-                            <a class="col-auto btn btn-danger" asp-controller="Friends" asp-action="RemoveFriendship" asp-route-userName="@friend.UserName" asp-route-returnUrl="@Context.Request.Path.Value">Remove</a>
+                            <a class="col-auto btn btn-danger" asp-controller="Friends" asp-action="RemoveFriendship" asp-route-userName="@friend.Username" asp-route-returnUrl="@Context.Request.Path.Value">Remove</a>
                         </div>
                     </div>
                     friendsCount++;
@@ -65,9 +65,9 @@
                 {
                     <div class="list-group-item list-group-item-action mb-2">
                         <div class="row">
-                            <a class="col fs-5 text-truncate" asp-controller="Users" asp-action="GetUser" asp-route-userName="@invitation.Target.UserName">@invitation.Target.UserName</a>
+                            <a class="col fs-5 text-truncate" asp-controller="Users" asp-action="GetUser" asp-route-userName="@invitation.Target.Username">@invitation.Target.Username</a>
 
-                            <a class="col-auto btn btn-danger" asp-controller="Friends" asp-action="Cancel" asp-route-userName="@invitation.Target.UserName" asp-route-returnUrl="@Context.Request.Path.Value">Cancel</a>
+                            <a class="col-auto btn btn-danger" asp-controller="Friends" asp-action="Cancel" asp-route-userName="@invitation.Target.Username" asp-route-returnUrl="@Context.Request.Path.Value">Cancel</a>
                         </div>
                     </div>
                     userInvitations++;

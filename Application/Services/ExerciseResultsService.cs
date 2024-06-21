@@ -1,5 +1,7 @@
-﻿using Application.Interfaces.RepositoryInterfaces;
+﻿using Application.Constants;
+using Application.Interfaces.RepositoryInterfaces;
 using Application.Interfaces.ServiceInterfaces;
+using Application.Models.Shared;
 using Domain.Defaults;
 using Domain.Models;
 using Domain.Rules;
@@ -58,18 +60,69 @@ public class ExerciseResultsService : IExerciseResultsService
         return await _exerciseResultsRepository.Get(ownerId, exerciseId);
     }
 
-    public async Task<IEnumerable<ExerciseResult>> GetForUser(Guid ownerId)
+    public async Task<IEnumerable<ExerciseResult>> GetForUser(Guid ownerId, OrderModel? orderModel = null, FilterModel? filterModel = null)
     {
-        return await _exerciseResultsRepository.GetForUser(ownerId);
+        var results = await _exerciseResultsRepository.GetForUser(ownerId, filterModel);
+        
+        if (orderModel is null || string.IsNullOrWhiteSpace(orderModel.OrderBy)) return results;
+        
+        if (orderModel.OrderBy.Equals(OrderOptionNames.ExerciseResults.ForUser.GroupName, StringComparison.CurrentCultureIgnoreCase))
+        {
+            if (orderModel.Order?.Equals(OrderOptionNames.Shared.Descending, StringComparison.CurrentCultureIgnoreCase) ?? false)
+            {
+                results = results
+                    .OrderByDescending(e => e.Exercise.Group.Name)
+                    .ThenByDescending(e => e.Exercise.Name);
+            }
+            else
+            {
+                results = results
+                    .OrderBy(e => e.Exercise.Group.Name)
+                    .ThenBy(e => e.Exercise.Name);
+            }
+        }
+
+        return results;
     }
 
-    public async Task<IEnumerable<ExerciseResult>> GetForExercise(Guid exerciseId)
+    public async Task<IEnumerable<ExerciseResult>> GetForExercise(Guid exerciseId, OrderModel? orderModel = null, FilterModel? filterModel = null)
     {
-        return await _exerciseResultsRepository.GetForExercise(exerciseId);
+        var results = await _exerciseResultsRepository.GetForExercise(exerciseId, filterModel);
+        if (orderModel is null || string.IsNullOrWhiteSpace(orderModel.OrderBy)) return results;
+        
+        if (orderModel.OrderBy.Equals(OrderOptionNames.ExerciseResults.ForExercise.OwnerName, StringComparison.CurrentCultureIgnoreCase))
+        {
+            if (orderModel.Order?.Equals(OrderOptionNames.Shared.Descending, StringComparison.CurrentCultureIgnoreCase) ?? false)
+            {
+                results = results.OrderByDescending(e => e.Owner.UserName);
+            }
+            else
+            {
+                results = results.OrderBy(e => e.Owner.UserName);
+            }
+        }
+
+        return results;
     }
 
-    public async Task<IEnumerable<ExerciseResult>> GetOnlyUserAndFriendsResultForExercise(Guid userId, Guid exerciseId)
+    public async Task<IEnumerable<ExerciseResult>> GetOnlyUserAndFriendsResultForExercise(Guid userId, Guid exerciseId, OrderModel? orderModel = null, FilterModel? filterModel = null)
     {
-        return await _exerciseResultsRepository.GetOnlyUserAndFriendsResultForExercise(userId, exerciseId);
+        var results = await _exerciseResultsRepository.GetOnlyUserAndFriendsResultForExercise(userId, exerciseId, filterModel);
+
+        if (orderModel is null || string.IsNullOrWhiteSpace(orderModel.OrderBy)) return results;
+        
+        if (orderModel.OrderBy.Equals(OrderOptionNames.ExerciseResults.ForExercise.OwnerName, StringComparison.CurrentCultureIgnoreCase))
+        {
+            if (orderModel.Order?.Equals(OrderOptionNames.Shared.Descending, StringComparison.CurrentCultureIgnoreCase) ?? false)
+            {
+                results = results.OrderByDescending(e => e.Owner.UserName);
+            }
+            else
+            {
+                results = results.OrderBy(e => e.Owner.UserName);
+            }
+        }
+        
+        return results;
     }
 }
