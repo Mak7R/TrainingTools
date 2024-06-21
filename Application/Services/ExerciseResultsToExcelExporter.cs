@@ -4,9 +4,9 @@ using OfficeOpenXml;
 
 namespace Application.Services;
 
-public class ExerciseResultsToExcelExporter : IExerciseResultsToExelExporter
+public class ExerciseResultsToExcelExporter : IExerciseResultsToExсelExporter
 {
-    public async Task<Stream> ToExel(IEnumerable<ExerciseResult> results)
+    public async Task<Stream> ToExсel(IEnumerable<ExerciseResult> results)
     {
         var stream = new MemoryStream();
         using var excelPackage = new ExcelPackage(stream);

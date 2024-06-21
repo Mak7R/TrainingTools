@@ -1,5 +1,4 @@
 ﻿using System.Globalization;
-using System.Net.Mime;
 using Application.Interfaces.ServiceInterfaces;
 using Domain.Enums;
 using Domain.Identity;
@@ -42,13 +41,13 @@ public class ExerciseResultsController : Controller
     }
     
     [HttpGet("as-exel")]
-    public async Task<IActionResult> GetUserResultsAsExcel([FromServices] IExerciseResultsToExelExporter exelExporter)
+    public async Task<IActionResult> GetUserResultsAsExcel([FromServices] IExerciseResultsToExсelExporter exсelExporter)
     {
         var user = await _userManager.GetUserAsync(HttpContext.User);
         if (user is null) return RedirectToAction("Login", "Accounts", new {returnUrl = "/exercises/results"});
         
         var results = await _exerciseResultsService.GetForUser(user.Id);
-        var stream = await exelExporter.ToExel(results);
+        var stream = await exсelExporter.ToExсel(results);
         
         return File(stream, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "results.xlsx");
     }
@@ -190,13 +189,4 @@ public class ExerciseResultsController : Controller
             return this.ServerErrorView(StatusCodes.Status500InternalServerError, operationResult.Errors);
         }
     }
-    
-    [Authorize(Roles = "Admin,Root")]
-    [HttpGet("/admins-statistic/exercises/results/for-exercise/{exerciseId:guid}")]
-    public async Task<IActionResult> GetResultsForExercise(Guid exerciseId)
-    {
-        throw new NotImplementedException();
-
-        var results = await _exerciseResultsService.GetForExercise(exerciseId);
-    }   
 }

@@ -1,4 +1,5 @@
-﻿@using Domain.Models
+﻿@using Filters = Application.Constants.FilterOptionNames.Exercise
+@using Orders = Application.Constants.OrderOptionNames.Exercise
 @model IEnumerable<ExerciseViewModel>
 
 @{
@@ -7,7 +8,8 @@
     var isUserAdmin = User.IsInRole("Admin");
     var isUserRoot = User.IsInRole("Root");
 
-
+    IEnumerable<GroupViewModel> availableGroups = ViewBag.AvailableGroups;
+    
     ExerciseResult[] exerciseResults;
     if (ViewBag.UserResults is IEnumerable<ExerciseResult> eR) exerciseResults = eR.ToArray();
     else exerciseResults = new ExerciseResult[]{};
@@ -16,23 +18,86 @@
 <div class="container">
     <h2 class="text-center">Exercises</h2>
 
-    <div class="list-group">
-        @foreach (var exercise in Model)
-        {
-            <div class="list-group-item list-group-item-action mb-2">
-                <div class="row">
-                    @if (isUserAdmin || isUserRoot)
+    <form class="d-flex justify-content-end" method="get">
+        <div class="input-group mb-1">
+            <label for="filter-by-group-input" hidden></label>
+            
+            @{ var currentFilterGroup = ViewData[Filters.Group.AsFilterName()] as string;}
+            <select id="filter-by-group-input" class="form-select rounded-start-5 me-1" style="max-width: 30%;" name="@Filters.Group.AsFilterName()">
+                <option value="">Not selected</option>
+                @foreach (var group in availableGroups)
+                {
+                    if (group.Id.ToString() == currentFilterGroup)
                     {
-                        <a type="button" class="link-dark col fs-5" data-bs-toggle="modal" data-bs-target="#edtExerciseModal-@exercise.Id"><span class="fs-5">@exercise.Name</span></a>
+                        <option value="@group.Id" selected>@group.Name</option>
                     }
                     else
                     {
-                        <span class="col fs-5">@exercise.Name</span>
+                        <option value="@group.Id">@group.Name</option>
+                    }
+                }
+            </select>
+            
+            <label for="filter-by-name-input" hidden></label>
+            <input id="filter-by-name-input" class="form-control me-1" name="@Filters.Name.AsFilterName()" value="@ViewData[Filters.Name.AsFilterName()]" placeholder="search"/>
+            
+            <button type="submit" class="btn btn-primary rounded-end-5"><img style="width: 2em;height: 2em;" src="/img/icons/search.svg" alt="Search"/></button>
+            
+            <input name="order" value="@(ViewData["current_order"] ?? "")" hidden/>
+            <input name="order_by" value="@(ViewData["order_by"])" hidden/>
+        </div>
+    </form>
+
+    <table class="table table-striped table-hover">
+        <thead>
+        <tr>
+            <th class="col-4 fs-5">
+                <form method="get" onclick="this.submit()" class="cursor-pointer non-selectable">
+                    Exercise name
+                    @{
+                        await Html.RenderPartialAsync("Partials/DefaultOrderFormPartialView", Orders.Name);
                     }
 
-                    <span class="col fs-5">@exercise.Group.Name</span>
+                    <input name="@Filters.Name.AsFilterName()" value="@ViewData[Filters.Name.AsFilterName()]" hidden/>
+                    <input name="@Filters.Group.AsFilterName()" value="@ViewData[Filters.Group.AsFilterName()]" hidden/>
+                </form>
+            </th>
+            <th class="col-2 fs-5">
+                <form method="get" onclick="this.submit()" class="cursor-pointer non-selectable">
+                    Group name
+                    @{
+                        await Html.RenderPartialAsync("Partials/DefaultOrderFormPartialView", Orders.GroupName);
+                    }
                     
-                    <span class="col fs-5">
+                    <input name="@Filters.Name.AsFilterName()" value="@ViewData[Filters.Name.AsFilterName()]" hidden/>
+                    <input name="@Filters.Group.AsFilterName()" value="@ViewData[Filters.Group.AsFilterName()]" hidden/>
+                </form>
+            </th>
+            <th class="col-1 fs-5">Results status</th>
+            @if (isUserAdmin || isUserRoot)
+            {
+                <th class="col-1 fs-5">Actions</th>
+            }
+        </tr>
+        </thead>
+        <tbody>
+            @foreach (var exercise in Model)
+            {
+                <tr>
+                    <td>
+                        @if (isUserAdmin || isUserRoot)
+                        {
+                            <a type="button" class="link-dark fs-5" data-bs-toggle="modal" data-bs-target="#edtExerciseModal-@exercise.Id"><span class="fs-5">@exercise.Name</span></a>
+                        }
+                        else
+                        {
+                            <span class="fs-5">@exercise.Name</span>
+                        }
+                    </td>
+                    <td>
+                        <span class="fs-5">@exercise.Group.Name</span>
+                    </td>
+                    <td>
                         @if (exerciseResults.FirstOrDefault(r => r.Exercise.Id == exercise.Id) is null)
                         {
                             <a class="btn btn-success" asp-controller="ExerciseResults" asp-action="CreateResult" asp-route-exerciseId="@exercise.Id" asp-route-returnUrl="/exercises">Create Results</a>
@@ -41,17 +106,19 @@
                         {
                             <a class="btn btn-primary" asp-controller="ExerciseResults" asp-action="GetUserResults">To Results</a> @* TODO DECIDE TO WHICH URL MAKE REDIRECT*@
                         }
-                    </span>
-                    
+                    </td>
                     @if (isUserAdmin || isUserRoot)
                     {
-                        <button class="col-1 btn btn-danger ms-auto" type="button" data-bs-toggle="modal" data-bs-target="#deleteExercise-@exercise.Id-Modal">
-                            Remove
-                        </button>
+                        <td>
+                            <button class="btn btn-danger ms-auto" type="button" data-bs-toggle="modal" data-bs-target="#deleteExercise-@exercise.Id-Modal">
+                                Remove
+                            </button>
+                        </td>
                     }
-                </div>
-            </div>
-            <div class="modal fade" id="deleteExercise-@exercise.Id-Modal" tabindex="-1" aria-labelledby="deleteExercise-@exercise.Id-ModalLabel" aria-hidden="true">
+                </tr>
+                
+                
+                <div class="modal fade" id="deleteExercise-@exercise.Id-Modal" tabindex="-1" aria-labelledby="deleteExercise-@exercise.Id-ModalLabel" aria-hidden="true">
                 <div class="modal-dialog">
                     <div class="modal-content">
                         <div class="modal-header">
@@ -69,7 +136,7 @@
                 </div>
             </div>
             
-            @if (isUserAdmin || isUserRoot)
+            if (isUserAdmin || isUserRoot)
             {
                 <div class="modal fade" id="edtExerciseModal-@exercise.Id" tabindex="-1" aria-labelledby="edtExerciseModal-@exercise.Id-Label" aria-hidden="true">
                     <div class="modal-dialog">
@@ -89,7 +156,7 @@
 
                                         <label for="edit-exercise-group-select">Group</label>
                                         <select id="edit-exercise-group-select" name="GroupId" class="form-select">
-                                            @foreach (GroupViewModel group in ViewBag.AvailableGroups)
+                                            @foreach (var group in availableGroups)
                                             {
                                                 if (group.Id == exercise.Group.Id)
                                                 {
@@ -112,8 +179,9 @@
                     </div>
                 </div>
             }
-        }
-    </div>
+            }
+        </tbody>
+    </table>
 
     @if (isUserAdmin || isUserRoot)
     {
@@ -134,7 +202,7 @@
 
                                 <label for="add-exercise-group-select">Group</label>
                                 <select id="add-exercise-group-select" name="GroupId" class="form-select">
-                                    @foreach (GroupViewModel group in ViewBag.AvailableGroups)
+                                    @foreach (var group in availableGroups)
                                     {
                                         <option value="@group.Id">@group.Name</option>
                                     }

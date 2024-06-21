@@ -19,6 +19,6 @@ public static class SetupServicesExtensions
         services.AddScoped<IExerciseResultsRepository, ExerciseResultsRepository>();
         services.AddScoped<IExerciseResultsService, ExerciseResultsService>();
         
-        services.AddTransient<IExerciseResultsToExelExporter, ExerciseResultsToExcelExporter>();
+        services.AddTransient<IExerciseResultsToExсelExporter, ExerciseResultsToExcelExporter>();
     }
 }

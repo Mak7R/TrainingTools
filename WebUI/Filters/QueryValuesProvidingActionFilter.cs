@@ -37,7 +37,6 @@ public class QueryValuesProvidingActionFilter : IActionFilter
                 {
                     controller.ViewData["current_order"] = _orderOptions.Set(value).Current;
                     controller.ViewData[key] = _orderOptions.MoveNext().Current;
-                    
                 }
                 
                 else if (!string.IsNullOrWhiteSpace(value) && 
