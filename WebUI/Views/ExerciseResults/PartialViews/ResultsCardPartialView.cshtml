@@ -9,11 +9,19 @@
                     <a class="col d-block w-75" asp-controller="ExerciseResults" asp-action="GetResultsForUser" asp-route-userName="@Model.Owner.Username">
                         <h4>@Model.Owner.Username</h4>
                     </a>
+                    
+                    <a class="col-auto p-0 m-1" asp-controller="Exercises" asp-action="GetExercise" asp-route-exerciseId="@Model.Exercise.Id">
+                        <img src="/img/icons/info.svg" alt="Info" style="width: 2em; height: 2em;"/>
+                    </a>
                 }
                 else
                 {
                     <a class="col d-block w-75" asp-controller="ExerciseResults" asp-action="GetFriendsResultsForExercise" asp-route-exerciseId="@Model.Exercise.Id">
                         <h4 class="text-truncate">@Model.Exercise.Group.Name/@Model.Exercise.Name</h4>
+                    </a>
+                    
+                    <a class="col-auto p-0 m-1" asp-controller="Exercises" asp-action="GetExercise" asp-route-exerciseId="@Model.Exercise.Id">
+                        <img src="/img/icons/info.svg" alt="Info" style="width: 2em; height: 2em;"/>
                     </a>
                     
                     if (User.Identity?.Name == Model.Owner.Username)
@@ -43,6 +51,7 @@
                             </div>
                         </div>
                     }
+                    
                 }
             </div>
         </div>

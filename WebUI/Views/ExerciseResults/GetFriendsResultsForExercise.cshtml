@@ -27,6 +27,18 @@
         {
             await Html.RenderPartialAsync("PartialViews/ResultsCardPartialView", result);
         }
+        <div class="col mb-2 px-1">
+            <div class="card text-center h-100">
+                <div class="card-header p-1">
+                    Add More Results
+                </div>
+                <div class="card-body p-1">
+                    <a class="d-block btn btn-success w-100 h-100 justify-content-center align-content-center" asp-controller="Exercises" asp-action="GetAllExercises">
+                        <img src="/img/icons/plus-white.svg" alt="+" style="width: 4em;height: 4em;"/>
+                    </a>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 

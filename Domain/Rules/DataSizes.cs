@@ -27,6 +27,7 @@ public static class DataSizes
     {
         public const int MaxNameSize = 32;
         public const int MinNameSize = 4;
+        public const int MaxAboutSize = 2048;
     }
     
     public static class ExerciseResults

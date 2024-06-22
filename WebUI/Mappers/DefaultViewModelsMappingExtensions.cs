@@ -63,7 +63,8 @@ public static class DefaultViewModelsMappingExtensions
         {
             Id = exercise.Id,
             Name = exercise.Name,
-            Group = exercise.Group.ToGroupViewModel()
+            Group = exercise.Group.ToGroupViewModel(),
+            About = exercise.About
         };
     }
 

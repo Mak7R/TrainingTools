@@ -32,7 +32,7 @@ public class ExercisesRepository : IExercisesRepository
         
         if (exercise.Id == Guid.Empty) throw new ArgumentException("ExerciseId was empty id");
         
-        var exerciseEntity = new ExerciseEntity { Id = exercise.Id, Name = exercise.Name, GroupId = exercise.Group.Id};
+        var exerciseEntity = new ExerciseEntity { Id = exercise.Id, Name = exercise.Name, GroupId = exercise.Group.Id, About = exercise.About };
         try
         {
             var sameName = await _dbContext.Exercises.AsNoTracking().FirstOrDefaultAsync(e => e.Name == exercise.Name && e.GroupId == exercise.Group.Id);
@@ -129,6 +129,7 @@ public class ExercisesRepository : IExercisesRepository
             exerciseEntity.Name = exercise.Name;
             exerciseEntity.Group = await _dbContext.Groups.FirstOrDefaultAsync(g => g.Id == exercise.Group.Id) ?? 
                                    throw new NotFoundException($"Group with id '{exercise.Group.Id}' was not found");
+            exerciseEntity.About = exercise.About;
             
             await _dbContext.SaveChangesAsync();
         }

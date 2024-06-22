@@ -13,4 +13,6 @@ public class ExerciseEntity
     public Guid GroupId { get; set; }
     
     public GroupEntity Group { get; set; }
+    
+    [StringLength(DataSizes.Exercise.MaxAboutSize)]public string? About { get; set; }
 }

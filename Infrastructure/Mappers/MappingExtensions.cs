@@ -21,7 +21,8 @@ public static class MappingExtensions
         {
             Id = exerciseEntity.Id, 
             Name = exerciseEntity.Name, 
-            Group = exerciseEntity.Group.ToGroup()
+            Group = exerciseEntity.Group.ToGroup(),
+            About = exerciseEntity.About
         };
     }
 

@@ -1,0 +1,43 @@
+
+.youtube-video {
+    width: 426px;
+    height: 240px;
+}
+
+@media (min-width: 576px) {
+    .youtube-video {
+        width: 560px;
+        height: 315px;
+    }
+}
+
+
+@media (min-width: 768px) {
+    .youtube-video {
+        width: 640px;
+        height: 360px;
+    }
+}
+
+
+@media (min-width: 992px) {
+    .youtube-video {
+        width: 854px;
+        height: 480px;
+    }
+}
+
+
+@media (min-width: 1200px) {
+    .youtube-video {
+        width: 854px;
+        height: 480px;
+    }
+}
+
+@media (min-width: 1400px) {
+    .youtube-video {
+        width: 1280px;
+        height: 720px;
+    }
+}
