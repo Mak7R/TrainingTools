@@ -36,12 +36,12 @@
         <div class="mb-3">
             <div class="mb-3">
                 <label asp-for="About" class="form-label">About: </label>
-                <textarea rows="10" asp-for="About" class="form-control"></textarea>
+                <textarea id="aboutTextArea" rows="10" asp-for="About" class="form-control"></textarea>
                 <span asp-validation-for="About" class="text-danger"></span>
             </div>
             <div>
                 <h6>Preview</h6>
-                <span>Preview is not implemented @*todo: Preview is not implemented*@</span>
+                <span id="previewPlaceholder"></span>
             </div>
         </div>
 
@@ -55,3 +55,10 @@
         </div>
     </form>
 </div>
+
+@section Scripts
+{
+    <script async src='https://www.tiktok.com/embed.js'></script>
+    <script>new PreviewController('aboutTextArea', 'previewPlaceholder');</script>
+
+}

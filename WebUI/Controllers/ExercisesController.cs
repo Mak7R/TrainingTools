@@ -61,6 +61,12 @@ public class ExercisesController : Controller
         return View(exercise.ToExerciseViewMode());
     }
 
+    [HttpPost("render-about-preview")]
+    public async Task<IActionResult> RenderAboutPreview(string? about, [FromServices] IReferencedContentProvider referencedContentProvider)
+    {
+        return Content(await referencedContentProvider.ParseContentAsync(about));
+    }
+
     [HttpGet("add-exercise")]
     [Authorize(Roles = "Admin,Root")]
     public async Task<IActionResult> AddExercise()

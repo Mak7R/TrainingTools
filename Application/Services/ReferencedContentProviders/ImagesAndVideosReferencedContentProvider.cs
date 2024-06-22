@@ -36,11 +36,6 @@ public class ImagesAndVideosReferencedContentProvider : IReferencedContentProvid
             {
                 embeddedContent = $"<blockquote class='tiktok-embed' cite='{url}' data-video-id='{GetTikTokVideoId(url)}' style='max-width: 605px;min-width: 325px;' >" +
                                   $"<section><a target='_blank' title='Watch on TikTok' href='{url}'></a></section></blockquote>";
-                if (!_tiktokScriptAdded)
-                {
-                    embeddedContent += "<script async src='https://www.tiktok.com/embed.js'></script>";
-                    _tiktokScriptAdded = true;
-                }
             }
             else if (await IsImageUrl(url))
             {
@@ -96,9 +91,6 @@ public class ImagesAndVideosReferencedContentProvider : IReferencedContentProvid
     {
         ".png", ".jpeg", ".gif", ".svg"
     };
-
-    private bool _tiktokScriptAdded = false;
-
     private async Task<bool> IsImageUrl(string url)
     {
         if (DefaultImageEndings.Any(url.EndsWith)) return true;
