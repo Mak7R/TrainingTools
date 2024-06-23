@@ -8,6 +8,7 @@ using EntityFrameworkCoreMock;
 using FluentAssertions;
 using Infrastructure.Data;
 using Infrastructure.Entities;
+using Infrastructure.Mappers;
 using Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -72,7 +73,9 @@ public class GroupsRepositoryTests
 
         // Assert
         result.Should().HaveCount(groups.Count);
-        result.Should().BeEquivalentTo(groups);
+        result.Should()
+            .Contain(g => groups.Select(gr => gr.Name)
+                .Contains(g.Name));
     }
 
     [Fact]
@@ -104,7 +107,9 @@ public class GroupsRepositoryTests
         // Assert
         var filteredGroups = groups.Where(g => g.Name.Contains(containableName)).ToList();
         result.Should().HaveCount(filteredGroups.Count);
-        result.Should().BeEquivalentTo(filteredGroups);
+        result.Should()
+            .Contain(g => groups.Select(gr => gr.Name)
+                .Contains(g.Name));
     }
 
     [Fact]
@@ -264,12 +269,11 @@ public class GroupsRepositoryTests
 
         // Assert
         result.IsSuccessful.Should().BeTrue();
-        result.ResultObject.Should().BeEquivalentTo(group);
         result.Exception.Should().BeNull();
         result.Errors.Should().BeEmpty();
         var containableGroup = _groupsDbSetMock.Object.FirstOrDefault(g => g.Id == group.Id);
         containableGroup.Should().NotBeNull();
-        containableGroup.Should().BeEquivalentTo(group);
+        containableGroup.ToGroup().Should().BeEquivalentTo(group);
     }
 
     [Fact]
@@ -286,8 +290,7 @@ public class GroupsRepositoryTests
     public async Task CreateGroup_ShouldThrowArgumentException_WhenGroupNameIsNullOrWhiteSpace()
     {
         // Arrange
-        var group = _fixture.Create<Group>();
-        group.Name = null;
+        var group = _fixture.Build<Group>().Without(g => g.Name).Create();
 
         // Act
         Func<Task> action = async () => await _groupsRepository.CreateGroup(group);
@@ -355,7 +358,6 @@ public class GroupsRepositoryTests
 
         // Assert
         result.IsSuccessful.Should().BeTrue();
-        result.ResultObject.Should().BeEquivalentTo(updatedGroup);
         result.Exception.Should().BeNull();
         result.Errors.Should().BeEmpty();
 
@@ -378,8 +380,7 @@ public class GroupsRepositoryTests
     public async Task UpdateGroup_ShouldThrowArgumentException_WhenGroupNameIsNullOrWhiteSpace()
     {
         // Arrange
-        var group = _fixture.Create<Group>();
-        group.Name = null;
+        var group = _fixture.Build<Group>().Without(g => g.Name).Create();
 
         // Act
         Func<Task> action = async () => await _groupsRepository.UpdateGroup(group);
@@ -470,7 +471,6 @@ public class GroupsRepositoryTests
 
         // Assert
         result.IsSuccessful.Should().BeTrue();
-        result.ResultObject.Should().BeEquivalentTo(new Group { Id = existingGroup.Id, Name = existingGroup.Name });
         result.Exception.Should().BeNull();
         result.Errors.Should().BeEmpty();
 

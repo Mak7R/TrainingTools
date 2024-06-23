@@ -20,7 +20,7 @@
         <div class="row">
             <a class="col-auto btn btn-secondary me-3" asp-controller="Exercises" asp-action="GetAllExercises">To Exercises</a>
             <a class="col-auto btn btn-primary me-3" asp-controller="ExerciseResults" asp-action="GetFriendsResultsForExercise" asp-route-exerciseId="@Model.Id">
-                To Results
+                To Results From Current Exercise
             </a>
             @if (User.IsInRole(nameof(Role.Admin)) || User.IsInRole(nameof(Role.Root)))
             {

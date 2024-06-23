@@ -121,7 +121,7 @@ public class UsersController : Controller
         
         var updateUserDto = new UpdateUserDto
         {
-            Username = user.User.UserName,
+            UpdateUsername = user.User.UserName,
             IsAdmin = user.Roles.Contains(nameof(Role.Admin)),
             ClearAbout = false,
             SetPrivate = false,
@@ -133,7 +133,7 @@ public class UsersController : Controller
     
     [Authorize(Roles = "Admin,Root")]
     [HttpPost("{userName}/update")]
-    public async Task<IActionResult> UpdateUser(string? userName, UpdateUserDto updateUserDto)
+    public async Task<IActionResult> UpdateUser([FromRoute] string? userName, [FromForm] UpdateUserDto updateUserDto)
     {
         if (string.IsNullOrWhiteSpace(userName))
             return this.BadRequestView(new[] { "User name was empty" });
@@ -147,7 +147,7 @@ public class UsersController : Controller
         var appUpdateUserDto = new Application.Dtos.UpdateUserDto
         {
             CurrentUserName = userName,
-            Username = updateUserDto.Username,
+            Username = updateUserDto.UpdateUsername,
             ClearAbout = updateUserDto.ClearAbout,
             IsAdmin = updateUserDto.IsAdmin,
             SetPrivate = updateUserDto.SetPrivate,

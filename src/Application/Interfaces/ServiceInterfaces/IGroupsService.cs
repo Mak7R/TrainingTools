@@ -7,7 +7,6 @@ public interface IGroupsService
 {
     Task<IEnumerable<Group>> GetAll(OrderModel? orderModel = null, FilterModel? filterModel = null);
     
-    
     Task<Group?> GetByName(string? name);
     Task<Group?> GetById(Guid id);
     

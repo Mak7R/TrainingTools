@@ -8,9 +8,9 @@
     <form method="post" asp-controller="Users" asp-action="UpdateUser">
         <div class="col">
             <div class="mb-3">
-                <label asp-for="Username" class="form-label"></label>
-                <input asp-for="Username" class="form-control"/>
-                <span asp-validation-for="Username" class="text-danger"></span>
+                <label asp-for="UpdateUsername" class="form-label"></label>
+                <input asp-for="UpdateUsername" class="form-control"/>
+                <span asp-validation-for="UpdateUsername" class="text-danger"></span>
             </div>
         </div>
 
@@ -42,7 +42,7 @@
         </div>
 
         <div class="mb-3">
-            <a class="btn btn-secondary" asp-controller="Users" asp-action="GetUser" asp-route-userName="@Model.Username">Cancel</a>
+            <a class="btn btn-secondary" asp-controller="Users" asp-action="GetUser" asp-route-userName="@Model.UpdateUsername">Cancel</a>
             <button type="submit" class="btn btn-primary">Update</button>
         </div>
 

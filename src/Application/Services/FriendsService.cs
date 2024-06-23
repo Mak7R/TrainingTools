@@ -14,7 +14,28 @@ public class FriendsService : IFriendsService
     {
         _friendsRepository = friendsRepository;
     }
-    
+
+    public async Task<IEnumerable<FriendInvitation>> GetInvitationsFor(ApplicationUser user)
+    {
+        ArgumentNullException.ThrowIfNull(user);
+        
+        return await _friendsRepository.GetInvitationsFor(user.Id);
+    }
+
+    public async Task<IEnumerable<FriendInvitation>> GetInvitationsOf(ApplicationUser user)
+    {
+        ArgumentNullException.ThrowIfNull(user);
+        
+        return await _friendsRepository.GetInvitationsOf(user.Id);
+    }
+
+    public async Task<IEnumerable<ApplicationUser>> GetFriendsFor(ApplicationUser user)
+    {
+        ArgumentNullException.ThrowIfNull(user);
+        
+        return await _friendsRepository.GetFriendsFor(user.Id);
+    }
+
     public async Task<OperationResult> CreateInvitation(ApplicationUser invitor, ApplicationUser target)
     {
         ArgumentNullException.ThrowIfNull(invitor);
@@ -59,28 +80,7 @@ public class FriendsService : IFriendsService
 
         return await _friendsRepository.RemoveInvitation(friendInvitation);
     }
-
-    public async Task<IEnumerable<FriendInvitation>> GetInvitationsFor(ApplicationUser user)
-    {
-        ArgumentNullException.ThrowIfNull(user);
-        
-        return await _friendsRepository.GetInvitationsFor(user.Id);
-    }
-
-    public async Task<IEnumerable<FriendInvitation>> GetInvitationsOf(ApplicationUser user)
-    {
-        ArgumentNullException.ThrowIfNull(user);
-        
-        return await _friendsRepository.GetInvitationsOf(user.Id);
-    }
-
-    public async Task<IEnumerable<ApplicationUser>> GetFriendsFor(ApplicationUser user)
-    {
-        ArgumentNullException.ThrowIfNull(user);
-        
-        return await _friendsRepository.GetFriendsFor(user.Id);
-    }
-
+    
     public async Task<OperationResult> RemoveFriendship(ApplicationUser user1, ApplicationUser user2)
     {
         ArgumentNullException.ThrowIfNull(user1);

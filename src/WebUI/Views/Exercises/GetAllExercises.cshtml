@@ -100,7 +100,7 @@
                         }
                         else
                         {
-                            <a class="btn btn-primary" asp-controller="ExerciseResults" asp-action="GetUserResults">To Results</a>
+                            <a class="btn btn-primary" asp-controller="ExerciseResults" asp-action="GetUserResults" asp-route-f_full-name="@exercise.Group.Name/@exercise.Name">To Results</a>
                         }
                     </td>
                 }

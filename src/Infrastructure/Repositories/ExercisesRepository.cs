@@ -24,36 +24,6 @@ public class ExercisesRepository : IExercisesRepository
         _logger = logger;
     }
     
-    public async Task<OperationResult> CreateExercise(Exercise? exercise)
-    {
-        ArgumentNullException.ThrowIfNull(exercise);
-        ArgumentException.ThrowIfNullOrWhiteSpace(exercise.Name);
-        ArgumentNullException.ThrowIfNull(exercise.Group);
-        
-        var exerciseEntity = new ExerciseEntity { Id = exercise.Id, Name = exercise.Name, GroupId = exercise.Group.Id, About = exercise.About };
-        try
-        {
-            var sameName = await _dbContext.Exercises.AsNoTracking().FirstOrDefaultAsync(e => e.Name == exercise.Name && e.GroupId == exercise.Group.Id);
-            if (sameName is not null)
-                throw new AlreadyExistsException($"Exercise with name '{exercise.Name}' already exist in database");
-            
-            await _dbContext.Exercises.AddAsync(exerciseEntity);
-            await _dbContext.SaveChangesAsync();
-        }
-        catch (AlreadyExistsException alreadyExistsException)
-        {
-            _logger.LogInformation(alreadyExistsException, "Exercise with name '{exerciseName}' already exist in database", exercise.Name);
-            return DefaultOperationResult.FromException(alreadyExistsException);
-        }
-        catch (Exception e)
-        {
-            _logger.LogError(e, "Exception was thrown while adding new exercise '{exerciseName}' to database", exerciseEntity.Name);
-            return DefaultOperationResult.FromException(new DataBaseException("Error while adding exercise to database", e));
-        }
-
-        return new DefaultOperationResult(exercise);
-    }
-
     public async Task<IEnumerable<Exercise>> GetAll(FilterModel? filterModel = null)
     {
         try
@@ -62,7 +32,7 @@ public class ExercisesRepository : IExercisesRepository
 
             if ((filterModel?.TryGetValue(FilterOptionNames.Exercise.Group, out var group) ?? false) && Guid.TryParse(group, out var groupId))
             {
-                query = query.Where(e => e.Group.Id == groupId);
+                query = query.Where(e => e.GroupId == groupId);
             }
             if ((filterModel?.TryGetValue(FilterOptionNames.Exercise.Name, out var namePart) ?? false) && !string.IsNullOrWhiteSpace(namePart))
             {
@@ -104,6 +74,36 @@ public class ExercisesRepository : IExercisesRepository
     public async Task<Exercise?> GetById(Guid id)
     {
         return await GetBy(e => e.Id == id);
+    }
+    
+    public async Task<OperationResult> CreateExercise(Exercise? exercise)
+    {
+        ArgumentNullException.ThrowIfNull(exercise);
+        ArgumentException.ThrowIfNullOrWhiteSpace(exercise.Name);
+        ArgumentNullException.ThrowIfNull(exercise.Group);
+        
+        var exerciseEntity = new ExerciseEntity { Id = exercise.Id, Name = exercise.Name, GroupId = exercise.Group.Id, About = exercise.About };
+        try
+        {
+            var sameName = await _dbContext.Exercises.AsNoTracking().FirstOrDefaultAsync(e => e.Name == exercise.Name && e.GroupId == exercise.Group.Id);
+            if (sameName is not null)
+                throw new AlreadyExistsException($"Exercise with name '{exercise.Name}' already exist in database");
+            
+            await _dbContext.Exercises.AddAsync(exerciseEntity);
+            await _dbContext.SaveChangesAsync();
+        }
+        catch (AlreadyExistsException alreadyExistsException)
+        {
+            _logger.LogInformation(alreadyExistsException, "Exercise with name '{exerciseName}' already exist in database", exercise.Name);
+            return DefaultOperationResult.FromException(alreadyExistsException);
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "Exception was thrown while adding new exercise '{exerciseName}' to database", exerciseEntity.Name);
+            return DefaultOperationResult.FromException(new DataBaseException("Error while adding exercise to database", e));
+        }
+
+        return new DefaultOperationResult(exercise);
     }
 
     public async Task<OperationResult> UpdateExercise(Exercise? exercise)

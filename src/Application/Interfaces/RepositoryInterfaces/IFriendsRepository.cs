@@ -6,11 +6,6 @@ namespace Application.Interfaces.RepositoryInterfaces;
 
 public interface IFriendsRepository
 {
-    Task<OperationResult> CreateInvitation(FriendInvitation friendInvitation);
-    Task<OperationResult> AcceptInvitation(FriendInvitation friendInvitation);
-    Task<OperationResult> RemoveInvitation(FriendInvitation friendInvitation);
-    
-    
     /// <summary>
     /// Returns friend invitations for (where user is target) user with id userId
     /// </summary>
@@ -29,8 +24,9 @@ public interface IFriendsRepository
     Task<IEnumerable<ApplicationUser>> GetInviters(Guid userId);
     
     Task<IEnumerable<ApplicationUser>> GetFriendsFor(Guid userId);
-
-    // Task<FriendRelationship?> GetRelationshipFor(Guid user1Id, Guid user2Id);
     
+    Task<OperationResult> CreateInvitation(FriendInvitation friendInvitation);
+    Task<OperationResult> AcceptInvitation(FriendInvitation friendInvitation);
+    Task<OperationResult> RemoveInvitation(FriendInvitation friendInvitation);
     Task<OperationResult> RemoveFriendship(Guid user1Id, Guid user2Id);
 }

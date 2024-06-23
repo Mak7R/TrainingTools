@@ -18,46 +18,6 @@ public class ExerciseResultsService : IExerciseResultsService
         _exerciseResultsRepository = exerciseResultsRepository;
     }
     
-    public async Task<OperationResult> CreateResult(ExerciseResult result)
-    {
-        ArgumentNullException.ThrowIfNull(result);
-
-        result.ApproachInfos = new[]
-        {
-            new Approach(0, 0, ""),
-            new Approach(0, 0, ""),
-            new Approach(0, 0, "")
-        };
-
-        return await _exerciseResultsRepository.CreateResult(result);
-    }
-
-    public async Task<OperationResult> UpdateResult(ExerciseResult result)
-    {
-        ArgumentNullException.ThrowIfNull(result);
-        if (result.ApproachInfos.Select(ai => ai.Weight).Any(w => w < 0) || result.ApproachInfos.Select(ai => ai.Count).Any(c => c < 0))
-        {
-            return DefaultOperationResult.FromException(new InvalidOperationException("Weight and count cannot be less than 0"));
-        }
-        
-        if (result.ApproachInfos.Select(ai => ai.Comment).Any(comment => comment?.Contains(SpecialConstants.DefaultSeparator) ?? false))
-        {
-            return DefaultOperationResult.FromException(new InvalidOperationException($"Comments cannot contain symbol {SpecialConstants.DefaultSeparator}"));
-        }
-        
-        return await _exerciseResultsRepository.UpdateResult(result);
-    }
-
-    public async Task<OperationResult> DeleteResult(Guid ownerId, Guid exerciseId)
-    {
-        return await _exerciseResultsRepository.DeleteResult(ownerId, exerciseId);
-    }
-
-    public async Task<ExerciseResult?> Get(Guid ownerId, Guid exerciseId)
-    {
-        return await _exerciseResultsRepository.Get(ownerId, exerciseId);
-    }
-
     public async Task<IEnumerable<ExerciseResult>> GetForUser(Guid ownerId, OrderModel? orderModel = null, FilterModel? filterModel = null)
     {
         var results = await _exerciseResultsRepository.GetForUser(ownerId, filterModel);
@@ -122,5 +82,45 @@ public class ExerciseResultsService : IExerciseResultsService
         }
         
         return results;
+    }
+    
+    public async Task<OperationResult> CreateResult(ExerciseResult result)
+    {
+        ArgumentNullException.ThrowIfNull(result);
+
+        result.ApproachInfos = new[]
+        {
+            new Approach(0, 0, ""),
+            new Approach(0, 0, ""),
+            new Approach(0, 0, "")
+        };
+
+        return await _exerciseResultsRepository.CreateResult(result);
+    }
+
+    public async Task<OperationResult> UpdateResult(ExerciseResult result)
+    {
+        ArgumentNullException.ThrowIfNull(result);
+        if (result.ApproachInfos.Select(ai => ai.Weight).Any(w => w < 0) || result.ApproachInfos.Select(ai => ai.Count).Any(c => c < 0))
+        {
+            return DefaultOperationResult.FromException(new InvalidOperationException("Weight and count cannot be less than 0"));
+        }
+        
+        if (result.ApproachInfos.Select(ai => ai.Comment).Any(comment => comment?.Contains(SpecialConstants.DefaultSeparator) ?? false))
+        {
+            return DefaultOperationResult.FromException(new InvalidOperationException($"Comments cannot contain symbol {SpecialConstants.DefaultSeparator}"));
+        }
+        
+        return await _exerciseResultsRepository.UpdateResult(result);
+    }
+
+    public async Task<OperationResult> DeleteResult(Guid ownerId, Guid exerciseId)
+    {
+        return await _exerciseResultsRepository.DeleteResult(ownerId, exerciseId);
+    }
+
+    public async Task<ExerciseResult?> Get(Guid ownerId, Guid exerciseId)
+    {
+        return await _exerciseResultsRepository.Get(ownerId, exerciseId);
     }
 }

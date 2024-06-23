@@ -25,7 +25,19 @@
     <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3">
         @foreach (var result in Model)
         {
-            await Html.RenderPartialAsync("PartialViews/ResultsCardPartialView", result);
+            @if (result.Owner.Username == User.Identity?.Name)
+            {
+                await Html.RenderPartialAsync("PartialViews/ResultsCardPartialView", result);
+                break;
+            }
+        }
+        
+        @foreach (var result in Model)
+        {
+            @if (result.Owner.Username != User.Identity?.Name)
+            {
+                await Html.RenderPartialAsync("PartialViews/ResultsCardPartialView", result);
+            }
         }
         <div class="col mb-2 px-1">
             <div class="card text-center h-100">

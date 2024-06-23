@@ -23,6 +23,87 @@ public class FriendsRepository : IFriendsRepository
         _logger = logger;
     }
     
+    public async Task<IEnumerable<FriendInvitation>> GetInvitationsFor(Guid userId)
+    {
+        try
+        {
+            return await _dbContext.FriendInvitations
+                .Where(fi => fi.TargetId == userId)
+                .Select(fi => new FriendInvitation
+                    { Invitor = fi.Invitor, Target = fi.Target, InvitationTime = fi.InvitationTime})
+                .ToListAsync();
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "Exception was thrown while getting invitations for user '{userId}' from database", userId);
+            throw new DataBaseException("Error while getting invitations for user", e);
+        }
+    }
+    public async Task<IEnumerable<FriendInvitation>> GetInvitationsOf(Guid userId)
+    {
+        try
+        {
+            return await _dbContext.FriendInvitations
+                .Where(fi => fi.InvitorId == userId)
+                .Select(fi => new FriendInvitation
+                    { Invitor = fi.Invitor, Target = fi.Target, InvitationTime = fi.InvitationTime})
+                .ToListAsync();
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "Exception was thrown while getting invitations of user '{userId}' from database", userId);
+            throw new DataBaseException("Error while getting invitations of user", e);
+        }
+    }
+    
+    public async Task<IEnumerable<ApplicationUser>> GetInvitedUsersBy(Guid userId)
+    {
+        try
+        {
+            return await _dbContext.FriendInvitations
+                .Where(fi => fi.InvitorId == userId)
+                .Select(fi => fi.Target)
+                .ToListAsync();
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "Exception was thrown while getting invited users by user '{userId}' from database", userId);
+            throw new DataBaseException("Error while getting invited users by user", e);
+        }
+    }
+
+    public async Task<IEnumerable<ApplicationUser>> GetInviters(Guid userId)
+    {
+        try
+        {
+            return await _dbContext.FriendInvitations
+                .Where(fi => fi.TargetId == userId)
+                .Select(fi => fi.Invitor)
+                .ToListAsync();
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "Exception was thrown while getting inviters for user '{userId}' from database", userId);
+            throw new DataBaseException("Error while getting inviters for user", e);
+        }
+    }
+    public async Task<IEnumerable<ApplicationUser>> GetFriendsFor(Guid userId)
+    {
+        try
+        {
+            return await _dbContext.FriendRelationships
+                .Where(fr =>
+                    fr.FirstFriendId == userId || fr.SecondFriendId == userId)
+                .Select(fr => fr.FirstFriendId == userId ? fr.SecondFriend : fr.FirstFriend)
+                .ToListAsync();
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "Exception was thrown while getting friends for user '{userId}' from database", userId);
+            throw new DataBaseException("Error while getting friends for user", e);
+        }
+    }
+    
     public async Task<OperationResult> CreateInvitation(FriendInvitation friendInvitation)
     {
         ArgumentNullException.ThrowIfNull(friendInvitation);
@@ -166,87 +247,7 @@ public class FriendsRepository : IFriendsRepository
 
         return new DefaultOperationResult(true);
     }
-    public async Task<IEnumerable<FriendInvitation>> GetInvitationsFor(Guid userId)
-    {
-        try
-        {
-            return await _dbContext.FriendInvitations
-                .Where(fi => fi.TargetId == userId)
-                .Select(fi => new FriendInvitation
-                    { Invitor = fi.Invitor, Target = fi.Target, InvitationTime = fi.InvitationTime})
-                .ToListAsync();
-        }
-        catch (Exception e)
-        {
-            _logger.LogError(e, "Exception was thrown while getting invitations for user '{userId}' from database", userId);
-            throw new DataBaseException("Error while getting invitations for user", e);
-        }
-    }
-    public async Task<IEnumerable<FriendInvitation>> GetInvitationsOf(Guid userId)
-    {
-        try
-        {
-            return await _dbContext.FriendInvitations
-                .Where(fi => fi.InvitorId == userId)
-                .Select(fi => new FriendInvitation
-                    { Invitor = fi.Invitor, Target = fi.Target, InvitationTime = fi.InvitationTime})
-                .ToListAsync();
-        }
-        catch (Exception e)
-        {
-            _logger.LogError(e, "Exception was thrown while getting invitations of user '{userId}' from database", userId);
-            throw new DataBaseException("Error while getting invitations of user", e);
-        }
-    }
     
-    public async Task<IEnumerable<ApplicationUser>> GetInvitedUsersBy(Guid userId)
-    {
-        try
-        {
-            return await _dbContext.FriendInvitations
-                .Where(fi => fi.InvitorId == userId)
-                .Select(fi => fi.Target)
-                .ToListAsync();
-        }
-        catch (Exception e)
-        {
-            _logger.LogError(e, "Exception was thrown while getting invited users by user '{userId}' from database", userId);
-            throw new DataBaseException("Error while getting invited users by user", e);
-        }
-    }
-
-    public async Task<IEnumerable<ApplicationUser>> GetInviters(Guid userId)
-    {
-        try
-        {
-            return await _dbContext.FriendInvitations
-                .Where(fi => fi.TargetId == userId)
-                .Select(fi => fi.Invitor)
-                .ToListAsync();
-        }
-        catch (Exception e)
-        {
-            _logger.LogError(e, "Exception was thrown while getting inviters for user '{userId}' from database", userId);
-            throw new DataBaseException("Error while getting inviters for user", e);
-        }
-    }
-    public async Task<IEnumerable<ApplicationUser>> GetFriendsFor(Guid userId)
-    {
-        try
-        {
-            return await _dbContext.FriendRelationships
-                .Where(fr =>
-                    fr.FirstFriendId == userId || fr.SecondFriendId == userId)
-                .Select(fr => fr.FirstFriendId == userId ? fr.SecondFriend : fr.FirstFriend)
-                .ToListAsync();
-        }
-        catch (Exception e)
-        {
-            _logger.LogError(e, "Exception was thrown while getting friends for user '{userId}' from database", userId);
-            throw new DataBaseException("Error while getting friends for user", e);
-        }
-    }
-
     public async Task<OperationResult> RemoveFriendship(Guid user1Id, Guid user2Id)
     {
         var friendship = await _dbContext.FriendRelationships.FirstOrDefaultAsync(fr =>

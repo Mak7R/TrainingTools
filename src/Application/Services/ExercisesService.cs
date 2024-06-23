@@ -14,14 +14,6 @@ public class ExercisesService : IExercisesService
     {
         _exercisesRepository = exercisesRepository;
     }
-    
-    public async Task<OperationResult> CreateExercise(Exercise? exercise)
-    {
-        ArgumentNullException.ThrowIfNull(exercise);
-        exercise.Id = Guid.NewGuid();
-        exercise.Name = exercise.Name?.Trim();
-        return await _exercisesRepository.CreateExercise(exercise);
-    }
 
     public async Task<IEnumerable<Exercise>> GetAll(OrderModel? orderModel = null, FilterModel? filterModel = null)
     {
@@ -65,6 +57,14 @@ public class ExercisesService : IExercisesService
     public async Task<Exercise?> GetById(Guid id)
     {
         return await _exercisesRepository.GetById(id);
+    }
+    
+    public async Task<OperationResult> CreateExercise(Exercise? exercise)
+    {
+        ArgumentNullException.ThrowIfNull(exercise);
+        exercise.Id = Guid.NewGuid();
+        exercise.Name = exercise.Name?.Trim();
+        return await _exercisesRepository.CreateExercise(exercise);
     }
 
     public async Task<OperationResult> UpdateExercise(Exercise? exercise)
