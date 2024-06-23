@@ -48,9 +48,9 @@ public class GroupsController : Controller
         
         if (result.IsSuccessful) return RedirectToAction("GetAllGroups");
         
-        if (result.ResultObject is AlreadyExistsException exception)
+        if (result.Exception is AlreadyExistsException)
         {
-            return this.BadRequestView([exception.Message]);
+            return this.BadRequestView(result.Errors);
         }
         else
         {
@@ -68,14 +68,14 @@ public class GroupsController : Controller
         var group = new Group{Id = editGroupModel.Id, Name = editGroupModel.Name};
         var result = await _groupsService.UpdateGroup(group);
         
-        if (result.IsSuccessful) return RedirectToAction("GetAllGroups");
-        if (result.ResultObject is AlreadyExistsException alreadyExistsException)
+        if (result.IsSuccessful) return RedirectToAction("GetAllGroups", "Groups");
+        if (result.Exception is AlreadyExistsException)
         {
-            return this.BadRequestView([alreadyExistsException.Message]);
+            return this.BadRequestView(result.Errors);
         }
-        else if (result.ResultObject is NotFoundException notFoundException)
+        else if (result.Exception is NotFoundException)
         {
-            return this.NotFoundView(notFoundException.Message);
+            return this.NotFoundView(result.Errors);
         }
         else
         {
@@ -90,9 +90,9 @@ public class GroupsController : Controller
 
         if (result.IsSuccessful) return RedirectToAction("GetAllGroups");
 
-        if (result.ResultObject is NotFoundException exception)
+        if (result.Exception is NotFoundException)
         {
-            return this.NotFoundView(exception.Message);
+            return this.NotFoundView(result.Errors);
         }
         else
         {

@@ -30,8 +30,6 @@ public class ExercisesRepository : IExercisesRepository
         ArgumentException.ThrowIfNullOrWhiteSpace(exercise.Name);
         ArgumentNullException.ThrowIfNull(exercise.Group);
         
-        if (exercise.Id == Guid.Empty) throw new ArgumentException("ExerciseId was empty id");
-        
         var exerciseEntity = new ExerciseEntity { Id = exercise.Id, Name = exercise.Name, GroupId = exercise.Group.Id, About = exercise.About };
         try
         {
@@ -45,16 +43,15 @@ public class ExercisesRepository : IExercisesRepository
         catch (AlreadyExistsException alreadyExistsException)
         {
             _logger.LogInformation(alreadyExistsException, "Exercise with name '{exerciseName}' already exist in database", exercise.Name);
-            return new DefaultOperationResult(false, alreadyExistsException, new []{alreadyExistsException.Message});
+            return DefaultOperationResult.FromException(alreadyExistsException);
         }
         catch (Exception e)
         {
             _logger.LogError(e, "Exception was thrown while adding new exercise '{exerciseName}' to database", exerciseEntity.Name);
-            var ex = new DataBaseException("Error while adding exercise to database", e);
-            return new DefaultOperationResult(false, ex, new[] { ex.Message });
+            return DefaultOperationResult.FromException(new DataBaseException("Error while adding exercise to database", e));
         }
 
-        return new DefaultOperationResult(true, exercise);
+        return new DefaultOperationResult(exercise);
     }
 
     public async Task<IEnumerable<Exercise>> GetAll(FilterModel? filterModel = null)
@@ -136,21 +133,20 @@ public class ExercisesRepository : IExercisesRepository
         catch (NotFoundException e)
         {
             _logger.LogWarning(e, "NotFoundException was thrown for when exercise updating");
-            return new DefaultOperationResult(false, e, new[] { e.Message });
+            return DefaultOperationResult.FromException(e);
         }
         catch (AlreadyExistsException alreadyExistsException)
         {
             _logger.LogInformation(alreadyExistsException, "Exercise with name '{exerciseName}' already exist in database", exercise.Name);
-            return new DefaultOperationResult(false, alreadyExistsException, new []{alreadyExistsException.Message});
+            return DefaultOperationResult.FromException(alreadyExistsException);
         }
         catch (Exception e)
         {
             _logger.LogError(e, "Exception was thrown while updating exercise with id '{exerciseId}'", exercise.Id);
-            var ex = new DataBaseException("Error while updating exercise in database", e);
-            return new DefaultOperationResult(false, ex, new[] { ex.Message });
+            return DefaultOperationResult.FromException(new DataBaseException("Error while updating exercise in database", e));
         }
 
-        return new DefaultOperationResult(true, exercise);
+        return new DefaultOperationResult(exercise);
     }
 
     public async Task<OperationResult> DeleteExercise(Guid id)
@@ -175,18 +171,17 @@ public class ExercisesRepository : IExercisesRepository
             _dbContext.Exercises.Remove(exerciseEntity);
             await _dbContext.SaveChangesAsync();
         }
-        catch (NotFoundException e)
+        catch (NotFoundException notFoundException)
         {
-            _logger.LogWarning(e, "NotFoundException was thrown for {entity} with id '{entityId}'", "Exercise", id);
-            return new DefaultOperationResult(false, e, new[] { e.Message });
+            _logger.LogWarning(notFoundException, "NotFoundException was thrown for {entity} with id '{entityId}'", "Exercise", id);
+            return DefaultOperationResult.FromException(notFoundException);
         }
         catch (Exception e)
         {
             _logger.LogError(e, "Exception was thrown while deleting exercise with id '{exerciseId}'", id);
-            var ex = new DataBaseException("Error while deleting exercise from database", e);
-            return new DefaultOperationResult(false, ex, new[] { ex.Message });
+            return DefaultOperationResult.FromException(new DataBaseException("Error while deleting exercise from database", e));
         }
 
-        return new DefaultOperationResult(true, exercise);
+        return new DefaultOperationResult(exercise);
     }
 }

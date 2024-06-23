@@ -75,13 +75,12 @@ public class GroupsRepository : IGroupsRepository
     {
         ArgumentNullException.ThrowIfNull(group);
         ArgumentException.ThrowIfNullOrWhiteSpace(group.Name);
-        if (group.Id == Guid.Empty) throw new ArgumentException("GroupId was empty id");
         
         var groupEntity = new GroupEntity { Id = group.Id, Name = group.Name };
         try
         {
-            var sameName = await _dbContext.Groups.AsNoTracking().FirstOrDefaultAsync(g => g.Name == group.Name);
-            if (sameName != null)
+            var groupWithSameName = await _dbContext.Groups.AsNoTracking().FirstOrDefaultAsync(g => g.Name == group.Name);
+            if (groupWithSameName != null)
                 throw new AlreadyExistsException($"Group with name '{group.Name}' already exist in database");
             
             await _dbContext.Groups.AddAsync(groupEntity);
@@ -90,16 +89,15 @@ public class GroupsRepository : IGroupsRepository
         catch (AlreadyExistsException alreadyExistsException)
         {
             _logger.LogInformation(alreadyExistsException, "Group with name '{groupName}' already exist in database", group.Name);
-            return new DefaultOperationResult(false, alreadyExistsException, new []{alreadyExistsException.Message});
+            return DefaultOperationResult.FromException(alreadyExistsException);
         }
         catch (Exception e)
         {
             _logger.LogError(e, "Exception was thrown while adding new group '{groupName}' to database", group.Name);
-            var ex = new DataBaseException("Error while adding group to database", e);
-            return new DefaultOperationResult(false, ex, new[] { ex.Message });
+            return DefaultOperationResult.FromException(new DataBaseException("Error while adding group to database", e));
         }
 
-        return new DefaultOperationResult(true, group);
+        return new DefaultOperationResult(group);
     }
 
     public async Task<OperationResult> UpdateGroup(Group? group)
@@ -114,35 +112,34 @@ public class GroupsRepository : IGroupsRepository
             if (groupEntity == null)
                 throw new NotFoundException($"Group with id '{group.Id}' was not found");
 
-            if (groupEntity.Name == group.Name)
-                return new DefaultOperationResult(true, group);
+            if (groupEntity.Name != group.Name)
+            {
+                var groupWithSameName = await _dbContext.Groups.AsNoTracking().FirstOrDefaultAsync(g => g.Name == group.Name);
+                if (groupWithSameName != null)
+                    throw new AlreadyExistsException($"Group with name '{group.Name}' already exist in database");
+            }
             
-            var sameName = await _dbContext.Groups.AsNoTracking().FirstOrDefaultAsync(g => g.Name == group.Name);
-            if (sameName != null)
-                throw new AlreadyExistsException($"Group with name '{group.Name}' already exist in database");
-
             groupEntity.Name = group.Name;
 
             await _dbContext.SaveChangesAsync();
         }
-        catch (NotFoundException e)
+        catch (NotFoundException notFoundException)
         {
-            _logger.LogWarning(e, "NotFoundException was thrown for {entity} with id '{entityId}'", "Group", group.Id);
-            return new DefaultOperationResult(false, e, new[] { e.Message });
+            _logger.LogWarning(notFoundException, "NotFoundException was thrown for {entity} with id '{entityId}'", "Group", group.Id);
+            return DefaultOperationResult.FromException(notFoundException);
         }
         catch (AlreadyExistsException alreadyExistsException)
         {
             _logger.LogInformation(alreadyExistsException, "Group with name '{groupName}' already exist in database", group.Name);
-            return new DefaultOperationResult(false, alreadyExistsException, new []{alreadyExistsException.Message});
+            return DefaultOperationResult.FromException(alreadyExistsException);
         }
         catch (Exception e)
         {
             _logger.LogError(e, "Exception was thrown while updating group with id '{groupId}'", group.Id);
-            var ex = new DataBaseException("Error while updating group in database", e);
-            return new DefaultOperationResult(false, ex, new[] { ex.Message });
+            return DefaultOperationResult.FromException(new DataBaseException("Error while updating group in database", e));
         }
 
-        return new DefaultOperationResult(true, group);
+        return new DefaultOperationResult(group);
     }
 
     public async Task<OperationResult> DeleteGroup(Guid id)
@@ -164,18 +161,18 @@ public class GroupsRepository : IGroupsRepository
             _dbContext.Groups.Remove(groupEntity);
             await _dbContext.SaveChangesAsync();
         }
-        catch (NotFoundException e)
+        catch (NotFoundException notFoundException)
         {
-            _logger.LogWarning(e, "NotFoundException was thrown for {entity} with id '{entityId}'", "Group", id);
-            return new DefaultOperationResult(false, e, new[] { e.Message });
+            _logger.LogWarning(notFoundException, "NotFoundException was thrown for {entity} with id '{entityId}'", "Group", id);
+            return DefaultOperationResult.FromException(notFoundException);
         }
         catch (Exception e)
         {
             _logger.LogError(e, "Exception was thrown while deleting group with id '{groupId}'", id);
-            var ex = new DataBaseException("Error while deleting group from database", e);
-            return new DefaultOperationResult(false, ex, new[] { ex.Message });
+            return DefaultOperationResult.FromException(
+                new DataBaseException("Error while deleting group from database", e));
         }
 
-        return new DefaultOperationResult(true, group);
+        return new DefaultOperationResult(group);
     }
 }

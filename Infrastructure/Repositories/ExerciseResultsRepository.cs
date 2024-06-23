@@ -49,11 +49,10 @@ public class ExerciseResultsRepository : IExerciseResultsRepository
         catch (Exception e)
         {
             _logger.LogError(e, "Exception was thrown while adding new exercise result '{exerciseResult}' to database", exerciseResultEntity);
-            var ex = new DataBaseException("Error while adding exercise result to database", e);
-            return new DefaultOperationResult(false, ex, new[] { ex.Message });
+            return DefaultOperationResult.FromException(new DataBaseException("Error while adding exercise result to database", e));
         }
 
-        return new DefaultOperationResult(true, result);
+        return new DefaultOperationResult(result);
     }
 
     public async Task<OperationResult> UpdateResult(ExerciseResult result)
@@ -68,15 +67,15 @@ public class ExerciseResultsRepository : IExerciseResultsRepository
             
             if (resultEntity is null)
             {
-                var ex = new NotFoundException("Exercise result was not found");
-                return new DefaultOperationResult(false, ex, new []{ ex.Message });
+                return DefaultOperationResult.FromException(new NotFoundException("Exercise result was not found"));
             }
         }
         catch (Exception e)
         {
             _logger.LogError(e, "Exception was thrown while updating exercise result with ownerId: '{ownerId}' and exerciseId: {exerciseId}", result.Owner.Id, result.Exercise.Id);
-            var ex = new DataBaseException("Error while updating exercise result in database", e);
-            return new DefaultOperationResult(false, ex, new[] { ex.Message });
+
+            return DefaultOperationResult.FromException(
+                new DataBaseException("Error while updating exercise result in database", e));
         }
         
         try
@@ -90,47 +89,43 @@ public class ExerciseResultsRepository : IExerciseResultsRepository
         catch (Exception e)
         {
             _logger.LogError(e, "Exception was thrown while updating exercise result with ownerId: '{ownerId}' and exerciseId: {exerciseId}", result.Owner.Id, result.Exercise.Id);
-            var ex = new DataBaseException("Error while updating exercise result in database", e);
-            return new DefaultOperationResult(false, ex, new[] { ex.Message });
+            return DefaultOperationResult.FromException(new DataBaseException("Error while updating exercise result in database", e));
         }
 
-        return new DefaultOperationResult(true, result);
+        return new DefaultOperationResult(result);
     }
 
     public async Task<OperationResult> DeleteResult(Guid ownerId, Guid exerciseId)
     {
-        ExerciseResultEntity? resultEntity;
+        ExerciseResultEntity? result;
         try
         {
-            resultEntity = await _dbContext.ExerciseResults.FirstOrDefaultAsync(r =>
+            result = await _dbContext.ExerciseResults.FirstOrDefaultAsync(r =>
                 r.ExerciseId == exerciseId && r.OwnerId == ownerId);
             
-            if (resultEntity is null)
+            if (result is null)
             {
-                var ex = new NotFoundException("Exercise result was not found");
-                return new DefaultOperationResult(false, ex, new []{ ex.Message });
+                return DefaultOperationResult.FromException(new NotFoundException("Exercise result was not found"));
             }
         }
         catch (Exception e)
         {
             _logger.LogError(e, "Exception was thrown while deleting exercise result with ownerId: '{ownerId}' and exerciseId: {exerciseId}", ownerId, exerciseId);
-            var ex = new DataBaseException("Error while deleting exercise result from database", e);
-            return new DefaultOperationResult(false, ex, new[] { ex.Message });
+            return DefaultOperationResult.FromException(new DataBaseException("Error while deleting exercise result from database", e));
         }
         
         try
         {
-            _dbContext.ExerciseResults.Remove(resultEntity);
+            _dbContext.ExerciseResults.Remove(result);
             await _dbContext.SaveChangesAsync();
         }
         catch (Exception e)
         {
             _logger.LogError(e, "Exception was thrown while deleting exercise result with ownerId: '{ownerId}' and exerciseId: {exerciseId}", ownerId, exerciseId);
-            var ex = new DataBaseException("Error while deleting exercise result from database", e);
-            return new DefaultOperationResult(false, ex, new[] { ex.Message });
+            return DefaultOperationResult.FromException(new DataBaseException("Error while deleting exercise result from database", e));
         }
 
-        return new DefaultOperationResult(true);
+        return new DefaultOperationResult(result);
     }
 
     public async Task<ExerciseResult?> Get(Guid ownerId, Guid exerciseId)

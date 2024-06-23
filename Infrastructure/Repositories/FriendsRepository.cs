@@ -48,8 +48,8 @@ public class FriendsRepository : IFriendsRepository
         {
             _logger.LogError(
                 "Users '{invitor}' and '{target}' already are friends. Impossible to create new Invitation", friendInvitation.Invitor.Id, friendInvitation.Target.Id);
-            var exception = new NotFoundException($"Users '{friendInvitation.Invitor.UserName}' and '{friendInvitation.Target.UserName}' already are friends");
-            return new DefaultOperationResult(false, exception,new []{exception.Message});
+            return DefaultOperationResult.FromException(
+                new NotFoundException($"Users '{friendInvitation.Invitor.UserName}' and '{friendInvitation.Target.UserName}' already are friends"));
         }
 
         FriendInvitationEntity? existFriendInvitation;
@@ -70,9 +70,10 @@ public class FriendsRepository : IFriendsRepository
         if (existFriendInvitation != null)
         {
             _logger.LogError(
-                "'{Invitor}' has already invited '{Target}'. Impossible to create new Invitation", existFriendInvitation.Invitor.UserName, existFriendInvitation.Target.UserName);
-            var exception = new NotFoundException($"'{existFriendInvitation.Invitor.UserName}' has already invited '{existFriendInvitation.Target.UserName}'");
-            return new DefaultOperationResult(false, exception,new []{exception.Message});
+                "'{Invitor}' has already invited '{Target}'. Impossible to create new Invitation",
+                existFriendInvitation.Invitor.UserName, existFriendInvitation.Target.UserName);
+            return DefaultOperationResult.FromException(
+                new NotFoundException($"'{existFriendInvitation.Invitor.UserName}' has already invited '{existFriendInvitation.Target.UserName}'"));
         }
 
         var invitation = new FriendInvitationEntity { Invitor = friendInvitation.Invitor, Target = friendInvitation.Target, InvitationTime = friendInvitation.InvitationTime };
@@ -87,13 +88,12 @@ public class FriendsRepository : IFriendsRepository
             return DataBaseExceptionResult(e);
         }
 
-        return new DefaultOperationResult(true, invitation);
+        return new DefaultOperationResult(true);
 
         DefaultOperationResult DataBaseExceptionResult(Exception e)
         {
             _logger.LogError(e, "Exception was thrown while adding new friend invitation (Invitor:'{invitor}' Target:{target}) to database", friendInvitation.Invitor.Id, friendInvitation.Target.Id);
-            var ex = new DataBaseException("Error while adding new friend invitation", e);
-            return new DefaultOperationResult(false, ex, new[] { ex.Message });
+            return DefaultOperationResult.FromException(new DataBaseException("Error while adding new friend invitation", e));
         }
     }
 
@@ -107,15 +107,13 @@ public class FriendsRepository : IFriendsRepository
         catch (Exception e)
         {
             _logger.LogError(e, "Exception was thrown while accepting friend invitation (Invitor:'{invitor}' Target:{target}) to database", friendInvitation.Invitor.Id, friendInvitation.Target.Id);
-            var ex = new DataBaseException("Error while accepting friend invitation", e);
-            return new DefaultOperationResult(false, ex, new[] { ex.Message });
+            return DefaultOperationResult.FromException(new DataBaseException("Error while accepting friend invitation", e));
         }
         
         if (invitation == null)
         {
             _logger.LogError("Invitation ({invitor}; {target}) was not found", friendInvitation.Invitor.Id, friendInvitation.Target.Id);
-            var exception = new NotFoundException("Invitation was not found");
-            return new DefaultOperationResult(false, exception,new []{ exception.Message});
+            return DefaultOperationResult.FromException(new NotFoundException("Invitation was not found"));
         }
         
         try
@@ -129,8 +127,7 @@ public class FriendsRepository : IFriendsRepository
         catch (Exception e)
         {
             _logger.LogError(e, "Exception was thrown while accepting friend invitation (Invitor:'{invitor}' Target:{target}) to database", friendInvitation.Invitor.Id, friendInvitation.Target.Id);
-            var ex = new DataBaseException("Error while accepting friend invitation", e);
-            return new DefaultOperationResult(false, ex, new[] { ex.Message });
+            return DefaultOperationResult.FromException(new DataBaseException("Error while accepting friend invitation", e));
         }
 
         return new DefaultOperationResult(true);
@@ -146,16 +143,14 @@ public class FriendsRepository : IFriendsRepository
         catch (Exception e)
         {
             _logger.LogError(e, "Exception was thrown while removing friend invitation (Invitor:'{invitor}' Target:{target}) to database", friendInvitation.Invitor.Id, friendInvitation.Target.Id);
-            var ex = new DataBaseException("Error while adding new friend invitation", e);
-            return new DefaultOperationResult(false, ex, new[] { ex.Message });
+            return DefaultOperationResult.FromException(new DataBaseException("Error while adding new friend invitation", e));
         }
 
         if (invitation == null)
         {
             _logger.LogError(
                 "Invitation ({invitor}; {target}) was not found", friendInvitation.Invitor.Id, friendInvitation.Target.Id);
-            var exception = new NotFoundException("Invitation was not found");
-            return new DefaultOperationResult(false, exception,new []{ exception.Message});
+            return DefaultOperationResult.FromException(new NotFoundException("Invitation was not found"));
         }
 
         try
@@ -166,8 +161,7 @@ public class FriendsRepository : IFriendsRepository
         catch (Exception e)
         {
             _logger.LogError(e, "Exception was thrown while removing invitation ({invitor}; {target}) from database", friendInvitation.Invitor.Id, friendInvitation.Target.Id);
-            var ex = new DataBaseException("Error while removing invitation", e);
-            return new DefaultOperationResult(false, ex, new[] { ex.Message });
+            return DefaultOperationResult.FromException(new DataBaseException("Error while removing invitation", e));
         }
 
         return new DefaultOperationResult(true);
@@ -263,8 +257,7 @@ public class FriendsRepository : IFriendsRepository
         {
             _logger.LogError(
                 "Users '{user1}' and '{user2}' are not friends. Impossible to delete friendship", user1Id, user2Id);
-            var exception = new NotFoundException($"Users '{user1Id}' and '{user2Id}' are not friends");
-            return new DefaultOperationResult(false, exception, new []{exception.Message});
+            return DefaultOperationResult.FromException(new NotFoundException($"Users '{user1Id}' and '{user2Id}' are not friends"));
         }
 
         try
@@ -275,8 +268,7 @@ public class FriendsRepository : IFriendsRepository
         catch (Exception e)
         {
             _logger.LogError(e, "Exception was thrown while removing friendship of '{firstFriend}' Target:{secondFriend}) from database", user1Id, user2Id);
-            var ex = new DataBaseException("Error while adding removing friendship", e);
-            return new DefaultOperationResult(false, ex, new[] { ex.Message });
+            return DefaultOperationResult.FromException(new DataBaseException("Error while adding removing friendship", e));
         }
 
         return new DefaultOperationResult(true);

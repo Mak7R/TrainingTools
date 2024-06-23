@@ -303,12 +303,11 @@ public class UsersService : IUsersService
             }
             else
             {
-                return new DefaultOperationResult(false, errors: result.Errors.Select(err => err.Description));
+                return new DefaultOperationResult(result.Errors.Select(err => err.Description));
             }
         }
         
-        return new DefaultOperationResult(false, new OperationNotAllowedException("User is not admin or root"),
-            new[] { "User is not admin or root" });
+        return DefaultOperationResult.FromException(new OperationNotAllowedException("User is not admin or root"));
     }
 
     public async Task<OperationResult> UpdateUser(ApplicationUser? currentUser, UpdateUserDto updateUserDto)
@@ -321,7 +320,7 @@ public class UsersService : IUsersService
         if (currentUserRoles.Contains(nameof(Role.Admin)) || currentUserRoles.Contains(nameof(Role.Root)))
         {
             var updatingUser = await _userManager.FindByNameAsync(updateUserDto.CurrentUserName);
-            if (updatingUser == null) return new DefaultOperationResult(false, new NotFoundException("User was not found"), new []{"User was not found"}) ;
+            if (updatingUser == null) return DefaultOperationResult.FromException(new NotFoundException("User was not found"));
 
             if (await _userManager.IsInRoleAsync(updatingUser, nameof(Role.Root)))
             {
@@ -365,15 +364,14 @@ public class UsersService : IUsersService
                 }
                 else
                 {
-                    return new DefaultOperationResult(false, errors: result.Errors.Select(err => err.Description));
+                    return new DefaultOperationResult(result.Errors.Select(err => err.Description));
                 }
             }
 
-            return new DefaultOperationResult(false, new OperationNotAllowedException("Only root can edit admins"));
+            return DefaultOperationResult.FromException(new OperationNotAllowedException("Only root can edit admins"));
         }
-        
-        return new DefaultOperationResult(false, new OperationNotAllowedException("User is not admin or root"),
-            new[] { "User is not admin or root" });
+
+        return DefaultOperationResult.FromException(new OperationNotAllowedException("User is not admin or root"));
     }
 
     public async Task<OperationResult> DeleteUser(ApplicationUser? currentUser, string userName)
@@ -389,15 +387,12 @@ public class UsersService : IUsersService
             if (user == null)
             {
                 var message = $"User with name '{userName}' was not found";
-                return new DefaultOperationResult(false, 
-                    new NotFoundException(message),
-                    new[] { message });
+                return DefaultOperationResult.FromException(new NotFoundException(message));
             }
 
             if (await _userManager.IsInRoleAsync(user, nameof(Role.Root)))
             {
-                return new DefaultOperationResult(false, new OperationNotAllowedException("Impossible to delete root user"),
-                    new[] { "Impossible to delete root user" });
+                return DefaultOperationResult.FromException(new OperationNotAllowedException("Impossible to delete root user"));
             }
 
             var isUserAdmin = await _userManager.IsInRoleAsync(user, nameof(Role.Admin));
@@ -411,15 +406,13 @@ public class UsersService : IUsersService
                 }
                 else
                 {
-                    return new DefaultOperationResult(false, errors: result.Errors.Select(err => err.Description));
+                    return new DefaultOperationResult(result.Errors.Select(err => err.Description));
                 }
             }
             
-            return new DefaultOperationResult(false, new OperationNotAllowedException("Only Root can delete admins"),
-                new[] { "Only Root can delete admins" });
+            return DefaultOperationResult.FromException(new OperationNotAllowedException("Only Root can delete admins"));
         }
-        return new DefaultOperationResult(false, new OperationNotAllowedException("User is not admin or root"),
-            new[] { "User is not admin or root" });
+        return DefaultOperationResult.FromException(new OperationNotAllowedException("User is not admin or root"));
     }
     
     private async Task<UserInfo> CreateUserInfo(Dictionary<Guid, ApplicationUser> friends,

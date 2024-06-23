@@ -37,14 +37,12 @@ public class ExerciseResultsService : IExerciseResultsService
         ArgumentNullException.ThrowIfNull(result);
         if (result.ApproachInfos.Select(ai => ai.Weight).Any(w => w < 0) || result.ApproachInfos.Select(ai => ai.Count).Any(c => c < 0))
         {
-            var exception = new InvalidOperationException("Weight and count cannot be less than 0");
-            return new DefaultOperationResult(false, exception, new[] { exception.Message });
+            return DefaultOperationResult.FromException(new InvalidOperationException("Weight and count cannot be less than 0"));
         }
         
         if (result.ApproachInfos.Select(ai => ai.Comment).Any(comment => comment?.Contains(SpecialConstants.DefaultSeparator) ?? false))
         {
-            var exception = new InvalidOperationException($"Comments cannot contain symbol {SpecialConstants.DefaultSeparator}");
-            return new DefaultOperationResult(false, exception, new[] { exception.Message });
+            return DefaultOperationResult.FromException(new InvalidOperationException($"Comments cannot contain symbol {SpecialConstants.DefaultSeparator}"));
         }
         
         return await _exerciseResultsRepository.UpdateResult(result);
