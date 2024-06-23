@@ -4,21 +4,21 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{90403DB0-2FF
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{37FDFAE9-AD6D-44DA-9176-33D14FAFCC1B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Domain", "Domain\Domain.csproj", "{801772B4-C55D-4139-9DE3-BEC5D34E9650}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Domain", "src\Domain\Domain.csproj", "{801772B4-C55D-4139-9DE3-BEC5D34E9650}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Application", "Application\Application.csproj", "{568AA24A-3BD7-4F1D-9BD0-9A23B1B15DD5}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Application", "src\Application\Application.csproj", "{568AA24A-3BD7-4F1D-9BD0-9A23B1B15DD5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Infrastructure", "Infrastructure\Infrastructure.csproj", "{4B8CBAD3-9C00-4D06-9332-A7B62F77FA29}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Infrastructure", "src\Infrastructure\Infrastructure.csproj", "{4B8CBAD3-9C00-4D06-9332-A7B62F77FA29}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebUI", "WebUI\WebUI.csproj", "{BC6779A6-FDB1-4EAA-848B-7E51DEB5D1A4}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebUI", "src\WebUI\WebUI.csproj", "{BC6779A6-FDB1-4EAA-848B-7E51DEB5D1A4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ApplicationTests", "ApplicationTests\ApplicationTests.csproj", "{D19855E3-129B-4D90-A3FC-D400B19AF5BC}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ApplicationTests", "tests\ApplicationTests\ApplicationTests.csproj", "{D19855E3-129B-4D90-A3FC-D400B19AF5BC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DomainTests", "DomainTests\DomainTests.csproj", "{B245DCDD-18E0-4291-A469-F5C7C162FE86}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DomainTests", "tests\DomainTests\DomainTests.csproj", "{B245DCDD-18E0-4291-A469-F5C7C162FE86}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InfrastructureTests", "InfrastructureTests\InfrastructureTests.csproj", "{89B8520D-DA02-40EF-BACE-8E625B88F76A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InfrastructureTests", "tests\InfrastructureTests\InfrastructureTests.csproj", "{89B8520D-DA02-40EF-BACE-8E625B88F76A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebUITests", "WebUITests\WebUITests.csproj", "{A926303F-8725-46A1-B129-D6638EF9BF4C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebUITests", "tests\WebUITests\WebUITests.csproj", "{A926303F-8725-46A1-B129-D6638EF9BF4C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -210,7 +210,7 @@ public class AccountsController(
             await signInManager.SignOutAsync();
             return RedirectToAction("Index", "Home");
         }
-        return this.BadRequestView(new []{"Server error"}); // todo server error
+        return this.ServerErrorView(500, result.Errors.Select(err => err.Description));
     }
     
     [AllowAnonymous]
