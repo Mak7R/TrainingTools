@@ -22,7 +22,7 @@ jobs:
       - name: Build
         run: dotnet build --no-restore
 
-  test-and-report-coverage:
+  test:
     runs-on: windows-latest
     needs: build
     steps:
@@ -34,14 +34,8 @@ jobs:
           dotnet-version: 8.0.x
       - name: Restore dependencies
         run: dotnet restore
-      - name: Test with coverage
-        run: |
-          dotnet test --no-build --verbosity normal /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
-      - name: Upload coverage report
-        uses: coverallsapp/github-action@v2
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          path-to-lcov: ./coverage.opencover.xml
+      - name: Test
+        run: dotnet test --no-build --verbosity normal
 
   deploy-to-somee:
     runs-on: windows-latest
@@ -56,7 +50,7 @@ jobs:
       - name: Restore dependencies
         run: dotnet restore
       - name: Deploy to somee.com via FTP
-        uses: SamKirkland/FTP-Deploy-Action@4.1.1
+        uses: SamKirkland/FTP-Deploy-Action@v4
         with:
           server: ftp://trainingtools.somee.com/www.trainingtools.somee.com
           username: ${{ secrets.FTP_USERNAME }}
