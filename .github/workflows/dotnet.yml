@@ -41,7 +41,6 @@ jobs:
         uses: coverallsapp/github-action@v2
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          path-to-lcov: ./coverage.opencover.xml
 
   deploy:
     runs-on: ubuntu-latest
@@ -58,8 +57,8 @@ jobs:
       - name: Deploy to somee.com via FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
-          server: ftp://trainingtools.somee.com/www.trainingtools.somee.com
+          server: ftp.trainingtools.somee.com
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           local-dir: ./
-          remote-dir: /
+          remote-dir: /www.trainingtools.somee.com
