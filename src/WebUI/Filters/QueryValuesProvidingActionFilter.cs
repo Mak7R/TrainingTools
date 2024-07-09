@@ -33,7 +33,7 @@ public class QueryValuesProvidingActionFilter : IActionFilter
                 var key = queryValues.Key;
                 var value = queryValues.Value.First();
 
-                if (key.Equals(nameof(OrderModel.Order), StringComparison.CurrentCultureIgnoreCase))
+                if (key.Equals(nameof(OrderModel.OrderOption), StringComparison.CurrentCultureIgnoreCase))
                 {
                     controller.ViewData["current_order"] = _orderOptions.Set(value).Current;
                     controller.ViewData[key] = _orderOptions.MoveNext().Current;

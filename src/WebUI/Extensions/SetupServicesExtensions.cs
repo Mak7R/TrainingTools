@@ -21,7 +21,9 @@ public static class SetupServicesExtensions
         services.AddScoped<IExercisesService, ExercisesService>();
         services.AddScoped<IExerciseResultsRepository, ExerciseResultsRepository>();
         services.AddScoped<IExerciseResultsService, ExerciseResultsService>();
-
+        services.AddScoped<ITrainingPlansRepository, TrainingPlansRepository>();
+        services.AddScoped<ITrainingPlansService, TrainingPlansService>();
+        
         services.AddScoped<IReferencedContentProvider, ImagesAndVideosReferencedContentProvider>();
         services.AddTransient<IExerciseResultsToExсelExporter, ExerciseResultsToExcelExporter>();
     }

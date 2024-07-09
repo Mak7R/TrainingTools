@@ -48,7 +48,7 @@ public class GroupsServiceTests
         var orderModel = new OrderModel
         {
             OrderBy = OrderOptionNames.Group.Name,
-            Order = OrderOptionNames.Shared.Ascending
+            OrderOption = OrderOptionNames.Shared.Ascending
         };
 
         _groupsRepositoryMock.Setup(repo => repo.GetAll(null)).ReturnsAsync(groups);
@@ -68,7 +68,7 @@ public class GroupsServiceTests
         var orderModel = new OrderModel
         {
             OrderBy = OrderOptionNames.Group.Name,
-            Order = OrderOptionNames.Shared.Descending
+            OrderOption = OrderOptionNames.Shared.Descending
         };
 
         _groupsRepositoryMock.Setup(repo => repo.GetAll(null)).ReturnsAsync(groups);
@@ -171,10 +171,10 @@ public class GroupsServiceTests
         // Arrange
         var group = _fixture.Create<Group>();
         var operationResult = new DefaultOperationResult(true);
-        _groupsRepositoryMock.Setup(repo => repo.CreateGroup(It.IsAny<Group>())).ReturnsAsync(operationResult);
+        _groupsRepositoryMock.Setup(repo => repo.Create(It.IsAny<Group>())).ReturnsAsync(operationResult);
 
         // Act
-        var result = await _groupsService.CreateGroup(group);
+        var result = await _groupsService.Create(group);
 
         // Assert
         result.Should().BeEquivalentTo(operationResult);
@@ -184,7 +184,7 @@ public class GroupsServiceTests
     public async Task CreateGroup_ShouldThrowArgumentNullException_WhenGroupIsNull()
     {
         // Act
-        Func<Task> action = async () => await _groupsService.CreateGroup(null);
+        Func<Task> action = async () => await _groupsService.Create(null);
 
         // Assert
         await action.Should().ThrowAsync<ArgumentNullException>();
@@ -200,10 +200,10 @@ public class GroupsServiceTests
         // Arrange
         var group = _fixture.Create<Group>();
         var operationResult = new DefaultOperationResult(true);
-        _groupsRepositoryMock.Setup(repo => repo.UpdateGroup(It.IsAny<Group>())).ReturnsAsync(operationResult);
+        _groupsRepositoryMock.Setup(repo => repo.Update(It.IsAny<Group>())).ReturnsAsync(operationResult);
 
         // Act
-        var result = await _groupsService.UpdateGroup(group);
+        var result = await _groupsService.Update(group);
 
         // Assert
         result.Should().BeEquivalentTo(operationResult);
@@ -213,7 +213,7 @@ public class GroupsServiceTests
     public async Task UpdateGroup_ShouldThrowArgumentNullException_WhenGroupIsNull()
     {
         // Act
-        Func<Task> action = async () => await _groupsService.UpdateGroup(null);
+        Func<Task> action = async () => await _groupsService.Update(null);
 
         // Assert
         await action.Should().ThrowAsync<ArgumentNullException>();
@@ -229,10 +229,10 @@ public class GroupsServiceTests
         // Arrange
         var groupId = Guid.NewGuid();
         var operationResult = new DefaultOperationResult(true);
-        _groupsRepositoryMock.Setup(repo => repo.DeleteGroup(groupId)).ReturnsAsync(operationResult);
+        _groupsRepositoryMock.Setup(repo => repo.Delete(groupId)).ReturnsAsync(operationResult);
 
         // Act
-        var result = await _groupsService.DeleteGroup(groupId);
+        var result = await _groupsService.Delete(groupId);
 
         // Assert
         result.Should().BeEquivalentTo(operationResult);
@@ -244,10 +244,10 @@ public class GroupsServiceTests
         // Arrange
         var groupId = Guid.NewGuid();
         var operationResult = new DefaultOperationResult(true);
-        _groupsRepositoryMock.Setup(repo => repo.DeleteGroup(groupId)).ReturnsAsync(operationResult);
+        _groupsRepositoryMock.Setup(repo => repo.Delete(groupId)).ReturnsAsync(operationResult);
 
         // Act
-        var result = await _groupsService.DeleteGroup(groupId);
+        var result = await _groupsService.Delete(groupId);
 
         // Assert
         result.Should().BeEquivalentTo(operationResult);

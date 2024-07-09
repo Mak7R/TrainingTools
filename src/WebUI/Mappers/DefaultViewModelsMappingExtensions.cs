@@ -2,11 +2,13 @@ using Application.Dtos;
 using Application.Models;
 using Domain.Identity;
 using Domain.Models;
+using Domain.Models.TrainingPlan;
 using WebUI.Models.AccountModels;
 using WebUI.Models.ExerciseModels;
 using WebUI.Models.ExerciseResultModels;
 using WebUI.Models.FriendModels;
 using WebUI.Models.GroupModels;
+using WebUI.Models.TrainingPlanModels;
 using WebUI.Models.UserModels;
 
 namespace WebUI.Mappers;
@@ -81,7 +83,7 @@ public static class DefaultViewModelsMappingExtensions
     public static FriendRelationshipsInfoViewModel ToFriendRelationshipsInfoViewModel(this IEnumerable<ApplicationUser> friends,
         IEnumerable<FriendInvitation> invitationsFor, IEnumerable<FriendInvitation> invitationsOf)
     {
-        return new FriendRelationshipsInfoViewModel()
+        return new FriendRelationshipsInfoViewModel
         {
             InvitationsFor = invitationsFor.Select(i => i.ToFriendInvitationViewModel()),
             Friends = friends.Select(f => f.ToUserViewModel()),
@@ -97,6 +99,39 @@ public static class DefaultViewModelsMappingExtensions
             Exercise = exerciseResult.Exercise.ToExerciseViewMode(),
             ApproachInfos = exerciseResult.ApproachInfos
                 .Select(ai => new ApproachViewModel(ai.Weight, ai.Count, ai.Comment)).ToList()
+        };
+    }
+
+    public static TrainingPlanViewModel ToTrainingPlanViewModel(this TrainingPlan trainingPlan)
+    {
+        return new TrainingPlanViewModel
+        {
+            Name = trainingPlan.Name,
+            Author = trainingPlan.Author.ToUserViewModel(),
+            IsPublic = trainingPlan.IsPublic,
+            TrainingPlanBlocks = trainingPlan.TrainingPlanBlocks
+                .Select(b => b.ToTrainingPlanBlockViewModel())
+                .ToList()
+        };
+    }
+
+    public static TrainingPlanBlockViewModel ToTrainingPlanBlockViewModel(this TrainingPlanBlock block)
+    {
+        return new TrainingPlanBlockViewModel
+        {
+            Name = block.Name,
+            TrainingPlanBlockEntries = block.TrainingPlanBlockEntries
+                .Select(e => e.ToTrainingPlanBlockEntryViewModel())
+                .ToList()
+        };
+    }
+    
+    public static TrainingPlanBlockEntryViewModel ToTrainingPlanBlockEntryViewModel(this TrainingPlanBlockEntry entry)
+    {
+        return new TrainingPlanBlockEntryViewModel
+        {
+            Group = entry.Group.ToGroupViewModel(),
+            Description = entry.Description
         };
     }
 }

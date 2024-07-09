@@ -270,7 +270,7 @@ public class ExercisesRepositoryTests
             .Create();
         
         // Act
-        var result = await _exercisesRepository.CreateExercise(exercise);
+        var result = await _exercisesRepository.Create(exercise);
 
         // Assert
         result.IsSuccessful.Should().BeTrue();
@@ -285,7 +285,7 @@ public class ExercisesRepositoryTests
     public async Task CreateExercise_ShouldThrowArgumentNullException_WhenExerciseIsNull()
     {
         // Act
-        Func<Task> action = async () => await _exercisesRepository.CreateExercise(null);
+        Func<Task> action = async () => await _exercisesRepository.Create(null);
 
         // Assert
         await action.Should().ThrowAsync<ArgumentNullException>();
@@ -301,7 +301,7 @@ public class ExercisesRepositoryTests
             .Create();
 
         // Act
-        Func<Task> action = async () => await _exercisesRepository.CreateExercise(exercise);
+        Func<Task> action = async () => await _exercisesRepository.Create(exercise);
 
         // Assert
         await action.Should().ThrowAsync<ArgumentException>();
@@ -314,7 +314,7 @@ public class ExercisesRepositoryTests
         var exercise = _fixture.Build<Exercise>().Without(e => e.Group).Create();
 
         // Act
-        Func<Task> action = async () => await _exercisesRepository.CreateExercise(exercise);
+        Func<Task> action = async () => await _exercisesRepository.Create(exercise);
 
         // Assert
         await action.Should().ThrowAsync<ArgumentNullException>();
@@ -343,7 +343,7 @@ public class ExercisesRepositoryTests
             .Create();
 
         // Act
-        var result = await _exercisesRepository.CreateExercise(newExercise);
+        var result = await _exercisesRepository.Create(newExercise);
 
         // Assert
         result.IsSuccessful.Should().BeFalse();
@@ -360,7 +360,7 @@ public class ExercisesRepositoryTests
         _dbContextMock.Setup(db => db.SaveChangesAsync(default)).Throws(new Exception("Database error"));
 
         // Act
-        var result = await _exercisesRepository.CreateExercise(exercise);
+        var result = await _exercisesRepository.Create(exercise);
 
         // Assert
         result.IsSuccessful.Should().BeFalse();
@@ -395,7 +395,7 @@ public class ExercisesRepositoryTests
         };
 
         // Act
-        var result = await _exercisesRepository.UpdateExercise(updatedExercise);
+        var result = await _exercisesRepository.Update(updatedExercise);
 
         // Assert
         result.IsSuccessful.Should().BeTrue();
@@ -411,7 +411,7 @@ public class ExercisesRepositoryTests
     public async Task UpdateExercise_ShouldThrowArgumentNullException_WhenExerciseIsNull()
     {
         // Act
-        Func<Task> action = async () => await _exercisesRepository.UpdateExercise(null);
+        Func<Task> action = async () => await _exercisesRepository.Update(null);
 
         // Assert
         await action.Should().ThrowAsync<ArgumentNullException>();
@@ -427,7 +427,7 @@ public class ExercisesRepositoryTests
             .Create();
 
         // Act
-        Func<Task> action = async () => await _exercisesRepository.UpdateExercise(exercise);
+        Func<Task> action = async () => await _exercisesRepository.Update(exercise);
 
         // Assert
         await action.Should().ThrowAsync<ArgumentException>();
@@ -442,7 +442,7 @@ public class ExercisesRepositoryTests
             .Create();
 
         // Act
-        Func<Task> action = async () => await _exercisesRepository.UpdateExercise(exercise);
+        Func<Task> action = async () => await _exercisesRepository.Update(exercise);
 
         // Assert
         await action.Should().ThrowAsync<ArgumentNullException>();
@@ -476,7 +476,7 @@ public class ExercisesRepositoryTests
         };
 
         // Act
-        var result = await _exercisesRepository.UpdateExercise(updatedExercise);
+        var result = await _exercisesRepository.Update(updatedExercise);
 
         // Assert
         result.IsSuccessful.Should().BeFalse();
@@ -493,7 +493,7 @@ public class ExercisesRepositoryTests
         exercise.Group = _fixture.Create<Group>();
 
         // Act
-        var result = await _exercisesRepository.UpdateExercise(exercise);
+        var result = await _exercisesRepository.Update(exercise);
 
         // Assert
         result.IsSuccessful.Should().BeFalse();
@@ -521,7 +521,7 @@ public class ExercisesRepositoryTests
         _dbContextMock.Setup(db => db.SaveChangesAsync(default)).Throws(new Exception("Database error"));
 
         // Act
-        var result = await _exercisesRepository.UpdateExercise(exercise);
+        var result = await _exercisesRepository.Update(exercise);
 
         // Assert
         result.IsSuccessful.Should().BeFalse();
@@ -543,7 +543,7 @@ public class ExercisesRepositoryTests
         await _dbContext.SaveChangesAsync();
 
         // Act
-        var result = await _exercisesRepository.DeleteExercise(exercise.Id);
+        var result = await _exercisesRepository.Delete(exercise.Id);
 
         // Assert
         result.IsSuccessful.Should().BeTrue();
@@ -559,7 +559,7 @@ public class ExercisesRepositoryTests
     public async Task DeleteExercise_ShouldReturnFailure_WhenExerciseDoesNotExist()
     {
         // Act
-        var result = await _exercisesRepository.DeleteExercise(Guid.NewGuid());
+        var result = await _exercisesRepository.Delete(Guid.NewGuid());
 
         // Assert
         result.IsSuccessful.Should().BeFalse();
@@ -579,7 +579,7 @@ public class ExercisesRepositoryTests
         _dbContextMock.Setup(db => db.Exercises).Throws(new Exception("Database error"));
 
         // Act
-        var result = await _exercisesRepository.DeleteExercise(exercise.Id);
+        var result = await _exercisesRepository.Delete(exercise.Id);
 
         // Assert
         result.IsSuccessful.Should().BeFalse();

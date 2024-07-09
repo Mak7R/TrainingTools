@@ -1,4 +1,5 @@
-﻿using System.Linq.Expressions;
+﻿using System.Collections.ObjectModel;
+using System.Linq.Expressions;
 using Application.Constants;
 using Application.Interfaces.RepositoryInterfaces;
 using Application.Models.Shared;
@@ -24,20 +25,24 @@ public class ExercisesRepository : IExercisesRepository
         _logger = logger;
     }
     
+    private static readonly ReadOnlyDictionary<string, Func<string, Expression<Func<ExerciseEntity, bool>>>> ExerciseFilters =
+        new(new Dictionary<string, Func<string, Expression<Func<ExerciseEntity, bool>>>>
+        {
+            { FilterOptionNames.Exercise.Group, value =>
+            {
+                Guid.TryParse(value, out var groupId);
+                return e => e.GroupId == groupId;
+            }},
+            { FilterOptionNames.Exercise.Name, value => e => e.Name.Contains(value) }
+        });
     public async Task<IEnumerable<Exercise>> GetAll(FilterModel? filterModel = null)
     {
         try
         {
             var query = _dbContext.Exercises.Include(exerciseEntity => exerciseEntity.Group).AsNoTracking();
 
-            if ((filterModel?.TryGetValue(FilterOptionNames.Exercise.Group, out var group) ?? false) && Guid.TryParse(group, out var groupId))
-            {
-                query = query.Where(e => e.GroupId == groupId);
-            }
-            if ((filterModel?.TryGetValue(FilterOptionNames.Exercise.Name, out var namePart) ?? false) && !string.IsNullOrWhiteSpace(namePart))
-            {
-                query = query.Where(e => e.Name.Contains(namePart));
-            }
+            if (filterModel is not null)
+                query = filterModel.FilterBy(query, ExerciseFilters);
             
             return await query.Select(e => e.ToExercise()).ToListAsync();
         }
@@ -76,7 +81,7 @@ public class ExercisesRepository : IExercisesRepository
         return await GetBy(e => e.Id == id);
     }
     
-    public async Task<OperationResult> CreateExercise(Exercise? exercise)
+    public async Task<OperationResult> Create(Exercise? exercise)
     {
         ArgumentNullException.ThrowIfNull(exercise);
         ArgumentException.ThrowIfNullOrWhiteSpace(exercise.Name);
@@ -106,7 +111,7 @@ public class ExercisesRepository : IExercisesRepository
         return new DefaultOperationResult(exercise);
     }
 
-    public async Task<OperationResult> UpdateExercise(Exercise? exercise)
+    public async Task<OperationResult> Update(Exercise? exercise)
     {
         ArgumentNullException.ThrowIfNull(exercise);
         ArgumentException.ThrowIfNullOrWhiteSpace(exercise.Name);
@@ -149,7 +154,7 @@ public class ExercisesRepository : IExercisesRepository
         return new DefaultOperationResult(exercise);
     }
 
-    public async Task<OperationResult> DeleteExercise(Guid id)
+    public async Task<OperationResult> Delete(Guid id)
     {
         Exercise? exercise;
         try

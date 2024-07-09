@@ -10,7 +10,7 @@ public interface IExerciseResultsService
     Task<IEnumerable<ExerciseResult>> GetForExercise(Guid exerciseId, OrderModel? orderModel = null, FilterModel? filterModel = null);
     Task<IEnumerable<ExerciseResult>> GetOnlyUserAndFriendsResultForExercise(Guid userId, Guid exerciseId, OrderModel? orderModel = null, FilterModel? filterModel = null);
     
-    Task<OperationResult> CreateResult(ExerciseResult result);
-    Task<OperationResult> UpdateResult(ExerciseResult result);
-    Task<OperationResult> DeleteResult(Guid ownerId, Guid exerciseId);
+    Task<OperationResult> Create(ExerciseResult result);
+    Task<OperationResult> Update(ExerciseResult result);
+    Task<OperationResult> Delete(Guid ownerId, Guid exerciseId);
 }

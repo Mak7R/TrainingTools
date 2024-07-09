@@ -23,7 +23,7 @@ public class ExercisesService : IExercisesService
         
         if (orderModel.OrderBy.Equals(OrderOptionNames.Exercise.Name, StringComparison.CurrentCultureIgnoreCase))
         {
-            if (orderModel.Order?.Equals(OrderOptionNames.Shared.Descending, StringComparison.CurrentCultureIgnoreCase) ?? false)
+            if (orderModel.OrderOption?.Equals(OrderOptionNames.Shared.Descending, StringComparison.CurrentCultureIgnoreCase) ?? false)
             {
                 exercises = exercises.OrderByDescending(e => e.Name);
             }
@@ -34,7 +34,7 @@ public class ExercisesService : IExercisesService
         }
         else if (orderModel.OrderBy.Equals(OrderOptionNames.Exercise.GroupName, StringComparison.CurrentCultureIgnoreCase))
         {
-            if (orderModel.Order?.Equals(OrderOptionNames.Shared.Descending, StringComparison.CurrentCultureIgnoreCase) ?? false)
+            if (orderModel.OrderOption?.Equals(OrderOptionNames.Shared.Descending, StringComparison.CurrentCultureIgnoreCase) ?? false)
             {
                 exercises = exercises.OrderByDescending(e => e.Group.Name)
                     .ThenByDescending(e => e.Name);
@@ -59,25 +59,25 @@ public class ExercisesService : IExercisesService
         return await _exercisesRepository.GetById(id);
     }
     
-    public async Task<OperationResult> CreateExercise(Exercise? exercise)
+    public async Task<OperationResult> Create(Exercise? exercise)
     {
         ArgumentNullException.ThrowIfNull(exercise);
         exercise.Id = Guid.NewGuid();
         exercise.Name = exercise.Name?.Trim();
-        return await _exercisesRepository.CreateExercise(exercise);
+        return await _exercisesRepository.Create(exercise);
     }
 
-    public async Task<OperationResult> UpdateExercise(Exercise? exercise)
+    public async Task<OperationResult> Update(Exercise? exercise)
     {
         ArgumentNullException.ThrowIfNull(exercise);
         ArgumentNullException.ThrowIfNull(exercise.Group);
         
         exercise.Name = exercise.Name?.Trim();
-        return await _exercisesRepository.UpdateExercise(exercise);
+        return await _exercisesRepository.Update(exercise);
     }
 
-    public async Task<OperationResult> DeleteExercise(Guid id)
+    public async Task<OperationResult> Delete(Guid id)
     {
-        return await _exercisesRepository.DeleteExercise(id);
+        return await _exercisesRepository.Delete(id);
     }
 }

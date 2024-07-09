@@ -43,7 +43,7 @@ public class UsersServiceTests
         ApplicationUser currentUser = null;
 
         // Act
-        Func<Task> action = async () => await _usersService.GetAllUsers(currentUser);
+        Func<Task> action = async () => await _usersService.GetAll(currentUser);
 
         // Assert
         await action.Should().ThrowAsync<ArgumentNullException>();
@@ -73,7 +73,7 @@ public class UsersServiceTests
         };
 
         // Act
-        var result = await _usersService.GetAllUsers(currentUser, filterModel: filterModel);
+        var result = await _usersService.GetAll(currentUser, filterModel: filterModel);
 
         // Assert
         result.Should().HaveCount(2); // user1 and user3
@@ -141,7 +141,7 @@ public class UsersServiceTests
         var createUserDto = new CreateUserDto();
 
         // Act
-        Func<Task> action = async () => await _usersService.CreateUser(currentUser, createUserDto);
+        Func<Task> action = async () => await _usersService.Create(currentUser, createUserDto);
 
         // Assert
         await action.Should().ThrowAsync<ArgumentNullException>();
@@ -164,7 +164,7 @@ public class UsersServiceTests
             .ReturnsAsync(IdentityResult.Success);
 
         // Act
-        var result = await _usersService.CreateUser(currentUser, createUserDto);
+        var result = await _usersService.Create(currentUser, createUserDto);
 
         // Assert
         result.IsSuccessful.Should().BeTrue();
@@ -184,7 +184,7 @@ public class UsersServiceTests
         var updateUserDto = new UpdateUserDto();
 
         // Act
-        Func<Task> action = async () => await _usersService.UpdateUser(currentUser, updateUserDto);
+        Func<Task> action = async () => await _usersService.Update(currentUser, updateUserDto);
 
         // Assert
         await action.Should().ThrowAsync<ArgumentNullException>();
@@ -208,7 +208,7 @@ public class UsersServiceTests
             .ReturnsAsync(IdentityResult.Success);
 
         // Act
-        var result = await _usersService.UpdateUser(currentUser, updateUserDto);
+        var result = await _usersService.Update(currentUser, updateUserDto);
 
         // Assert
         result.IsSuccessful.Should().BeTrue();
@@ -228,7 +228,7 @@ public class UsersServiceTests
         var userName = "testUser";
 
         // Act
-        Func<Task> action = async () => await _usersService.DeleteUser(currentUser, userName);
+        Func<Task> action = async () => await _usersService.Delete(currentUser, userName);
 
         // Assert
         await action.Should().ThrowAsync<ArgumentNullException>();
@@ -252,7 +252,7 @@ public class UsersServiceTests
             .ReturnsAsync(IdentityResult.Success);
 
         // Act
-        var result = await _usersService.DeleteUser(currentUser, userName);
+        var result = await _usersService.Delete(currentUser, userName);
 
         // Assert
         result.IsSuccessful.Should().BeTrue();

@@ -37,7 +37,7 @@ public class UsersController : Controller
         var user = await _userManager.GetUserAsync(User);
         if (user is null) return RedirectToAction("Login", "Accounts", new {ReturnUrl = "/users"});
         
-        var userInfos = await _usersService.GetAllUsers(user, orderModel, filterModel);
+        var userInfos = await _usersService.GetAll(user, orderModel, filterModel);
         
         return View(userInfos.Select(userInfo => userInfo.ToUserInfoViewModel()));
     }
@@ -96,7 +96,7 @@ public class UsersController : Controller
             Password = createUserDto.Password
         };
         
-        var result = await _usersService.CreateUser(user, appCreateUserDto);
+        var result = await _usersService.Create(user, appCreateUserDto);
 
         if (!result.IsSuccessful)
         {
@@ -154,7 +154,7 @@ public class UsersController : Controller
             IsTrainer = updateUserDto.IsTrainer  
         };
         
-        var result = await _usersService.UpdateUser(user, appUpdateUserDto);
+        var result = await _usersService.Update(user, appUpdateUserDto);
         
         if (!result.IsSuccessful)
         {
@@ -174,7 +174,7 @@ public class UsersController : Controller
         var user = await _userManager.GetUserAsync(User);
         if (user is null) return RedirectToAction("Login", "Accounts", new {ReturnUrl = "/users"});
         
-        var result = await _usersService.DeleteUser(user, userName);
+        var result = await _usersService.Delete(user, userName);
         if (!result.IsSuccessful) return this.BadRequestView(result.Errors);
         return RedirectToAction("GetAllUsers");
     }

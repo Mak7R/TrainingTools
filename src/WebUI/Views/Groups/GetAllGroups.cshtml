@@ -125,11 +125,11 @@
         function submitEditForm(id){
             const nameInput = document.getElementById(`edit-group-name-${id}-input`);
             const nameValue = nameInput.value.trim();
-            const minLength = @Domain.Rules.DataSizes.Group.MinNameSize;
-            const maxLength = @Domain.Rules.DataSizes.Group.MaxNameSize;
+            const minLength = @Domain.Rules.DataSizes.GroupDataSizes.MinNameSize;
+            const maxLength = @Domain.Rules.DataSizes.GroupDataSizes.MaxNameSize;
 
             if (nameValue.length < minLength || nameValue.length > maxLength) {
-                document.getElementById(`edit-group-name-${id}-errors`).innerText = "Name length must be from @Domain.Rules.DataSizes.Group.MinNameSize to @Domain.Rules.DataSizes.Group.MaxNameSize characters";
+                document.getElementById(`edit-group-name-${id}-errors`).innerText = "Name length must be from @Domain.Rules.DataSizes.GroupDataSizes.MinNameSize to @Domain.Rules.DataSizes.GroupDataSizes.MaxNameSize characters";
             }
             else{
                 document.getElementById(`edit-group-form-${id}`).submit();
@@ -138,11 +138,11 @@
         function submitForm() {
             const nameInput = document.getElementById("add-group-name-input");
             const nameValue = nameInput.value.trim();
-            const minLength = @Domain.Rules.DataSizes.Group.MinNameSize;
-            const maxLength = @Domain.Rules.DataSizes.Group.MaxNameSize;
+            const minLength = @Domain.Rules.DataSizes.GroupDataSizes.MinNameSize;
+            const maxLength = @Domain.Rules.DataSizes.GroupDataSizes.MaxNameSize;
 
             if (nameValue.length < minLength || nameValue.length > maxLength) {
-                document.getElementById('add-group-name-errors').innerText = "Name length must be from @Domain.Rules.DataSizes.Group.MinNameSize to @Domain.Rules.DataSizes.Group.MaxNameSize characters";
+                document.getElementById('add-group-name-errors').innerText = "Name length must be from @Domain.Rules.DataSizes.GroupDataSizes.MinNameSize to @Domain.Rules.DataSizes.GroupDataSizes.MaxNameSize characters";
             }
             else{
                 document.getElementById('add-group-form').submit();

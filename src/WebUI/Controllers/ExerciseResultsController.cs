@@ -121,7 +121,7 @@ public class ExerciseResultsController : Controller
         var user = await _userManager.GetUserAsync(HttpContext.User);
         if (user is null) return RedirectToAction("Login", "Accounts", new {returnUrl = "/exercises/results"});
         
-        var result = await _exerciseResultsService.CreateResult(new ExerciseResult
+        var result = await _exerciseResultsService.Create(new ExerciseResult
             { Owner = user, Exercise = new Exercise { Id = exerciseId } });
         
         if (!result.IsSuccessful) return this.BadRequestView(result.Errors);
@@ -136,7 +136,7 @@ public class ExerciseResultsController : Controller
         var user = await _userManager.GetUserAsync(HttpContext.User);
         if (user is null) return RedirectToAction("Login", "Accounts", new {returnUrl = "/exercises/results"});
         
-        var result = await _exerciseResultsService.DeleteResult(user.Id, exerciseId);
+        var result = await _exerciseResultsService.Delete(user.Id, exerciseId);
 
         return result.IsSuccessful ? RedirectToAction("GetUserResults") : this.BadRequestView(result.Errors);
     }
@@ -187,7 +187,7 @@ public class ExerciseResultsController : Controller
             ApproachInfos = updateResultsModel.ApproachInfos.Select(ai => new Approach(ai.Weight, ai.Count, ai.Comment)).ToList()
         };
         
-        var operationResult = await _exerciseResultsService.UpdateResult(result);
+        var operationResult = await _exerciseResultsService.Update(result);
 
         if (operationResult.IsSuccessful)
         {
@@ -195,7 +195,7 @@ public class ExerciseResultsController : Controller
         }
         else
         {
-            return this.ServerErrorView(StatusCodes.Status500InternalServerError, operationResult.Errors);
+            return this.ErrorView(StatusCodes.Status500InternalServerError, operationResult.Errors);
         }
     }
 }

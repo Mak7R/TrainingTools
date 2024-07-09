@@ -32,4 +32,13 @@ public static class FilterOptionNames
             public const string OwnerName = "owner";
         }
     }
+    
+    public static class TrainingPlan
+    {
+        public const string Name = "name";
+        public const string NameEquals = "name-equals";
+        public const string AuthorId = "author-id";
+        public const string Author = "author";
+        public const string PublicOnly = "public";
+    }
 }

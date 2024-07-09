@@ -22,9 +22,9 @@ public static class DefaultResponseExtensions
         return controller.View(@"ErrorViews\NotFound", errors);
     }
     
-    public static IActionResult ServerErrorView(this Controller controller, int statusCode, IEnumerable<string> errors)
+    public static IActionResult ErrorView(this Controller controller, int statusCode, IEnumerable<string> errors)
     {
         controller.Response.StatusCode = statusCode;
-        return controller.View(@"ErrorViews\ServerError", errors);
+        return controller.View(@"ErrorViews\Error", errors);
     }
 }

@@ -23,7 +23,7 @@ public class GroupsService : IGroupsService
         
         if (orderModel.OrderBy.Equals(OrderOptionNames.Group.Name, StringComparison.CurrentCultureIgnoreCase))
         {
-            if (orderModel.Order?.Equals(OrderOptionNames.Shared.Descending, StringComparison.CurrentCultureIgnoreCase) ?? false)
+            if (orderModel.OrderOption?.Equals(OrderOptionNames.Shared.Descending, StringComparison.CurrentCultureIgnoreCase) ?? false)
             {
                 groups = groups.OrderByDescending(g => g.Name);
             }
@@ -46,23 +46,23 @@ public class GroupsService : IGroupsService
         return await _groupsRepository.GetById(id);
     }
     
-    public async Task<OperationResult> CreateGroup(Group? group)
+    public async Task<OperationResult> Create(Group? group)
     {
         ArgumentNullException.ThrowIfNull(group);
         group.Id = Guid.NewGuid();
         group.Name = group.Name?.Trim();
-        return await _groupsRepository.CreateGroup(group);
+        return await _groupsRepository.Create(group);
     }
 
-    public async Task<OperationResult> UpdateGroup(Group? group)
+    public async Task<OperationResult> Update(Group? group)
     {
         ArgumentNullException.ThrowIfNull(group);
         group.Name = group.Name?.Trim();
-        return await _groupsRepository.UpdateGroup(group);
+        return await _groupsRepository.Update(group);
     }
 
-    public async Task<OperationResult> DeleteGroup(Guid id)
+    public async Task<OperationResult> Delete(Guid id)
     {
-        return await _groupsRepository.DeleteGroup(id);
+        return await _groupsRepository.Delete(id);
     }
 }

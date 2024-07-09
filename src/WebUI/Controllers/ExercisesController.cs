@@ -37,7 +37,7 @@ public class ExercisesController : Controller
         [FromServices] IExerciseResultsService resultsService, 
         [FromServices] UserManager<ApplicationUser> userManager)
     {
-        ViewBag.AvailableGroups = (await _groupsService.GetAll(new OrderModel{Order = "ASC", OrderBy = "name"}))
+        ViewBag.AvailableGroups = (await _groupsService.GetAll(new OrderModel{OrderOption = "ASC", OrderBy = "name"}))
             .Select(g => g.ToGroupViewModel());
         
         var exercises = await _exercisesService.GetAll(orderModel, filterModel);
@@ -71,7 +71,7 @@ public class ExercisesController : Controller
     [Authorize(Roles = "Admin,Root")]
     public async Task<IActionResult> AddExercise()
     {
-        ViewBag.AvailableGroups = (await _groupsService.GetAll(new OrderModel{Order = "ASC", OrderBy = "name"}))
+        ViewBag.AvailableGroups = (await _groupsService.GetAll(new OrderModel{OrderOption = "ASC", OrderBy = "name"}))
             .Select(g => g.ToGroupViewModel());
         return View();
     }
@@ -84,7 +84,7 @@ public class ExercisesController : Controller
             return View(addExerciseModel);
         
         var exercise = addExerciseModel.ToExercise();
-        var result = await _exercisesService.CreateExercise(exercise);
+        var result = await _exercisesService.Create(exercise);
         
         if (result.IsSuccessful) 
             return RedirectToAction("GetAllExercises", "Exercises");
@@ -106,7 +106,7 @@ public class ExercisesController : Controller
         var exercise = await _exercisesService.GetById(exerciseId);
         if (exercise is null) return this.NotFoundView("Exercise was not found");
         
-        ViewBag.AvailableGroups = (await _groupsService.GetAll(new OrderModel{Order = "ASC", OrderBy = "name"}))
+        ViewBag.AvailableGroups = (await _groupsService.GetAll(new OrderModel{OrderOption = "ASC", OrderBy = "name"}))
                 .Select(g => g.ToGroupViewModel());
         return View(new UpdateExerciseModel{Name = exercise.Name, GroupId = exercise.Group.Id, About = exercise.About});
     }
@@ -117,7 +117,7 @@ public class ExercisesController : Controller
     {
         if (!ModelState.IsValid)
         {
-            ViewBag.AvailableGroups = (await _groupsService.GetAll(new OrderModel{Order = "ASC", OrderBy = "name"}))
+            ViewBag.AvailableGroups = (await _groupsService.GetAll(new OrderModel{OrderOption = "ASC", OrderBy = "name"}))
                 .Select(g => g.ToGroupViewModel());
             return View(updateExerciseModel);
         }
@@ -125,7 +125,7 @@ public class ExercisesController : Controller
         
         var exercise = updateExerciseModel.ToExercise();
         exercise.Id = exerciseId;
-        var result = await _exercisesService.UpdateExercise(exercise);
+        var result = await _exercisesService.Update(exercise);
         
         if (result.IsSuccessful) return RedirectToAction("GetExercise", "Exercises", new {exerciseId});
         else
@@ -135,7 +135,7 @@ public class ExercisesController : Controller
                 ModelState.AddModelError(nameof(UpdateExerciseModel), error);
             }
             
-            ViewBag.AvailableGroups = (await _groupsService.GetAll(new OrderModel{Order = "ASC", OrderBy = "name"}))
+            ViewBag.AvailableGroups = (await _groupsService.GetAll(new OrderModel{OrderOption = "ASC", OrderBy = "name"}))
                 .Select(g => g.ToGroupViewModel());
             return View(updateExerciseModel);
         }
@@ -145,7 +145,7 @@ public class ExercisesController : Controller
     [HttpGet("delete-exercise")]
     public async Task<IActionResult> DeleteExercise([FromQuery] Guid exerciseId)
     {
-        var result = await _exercisesService.DeleteExercise(exerciseId);
+        var result = await _exercisesService.Delete(exerciseId);
 
         if (result.IsSuccessful) return RedirectToAction("GetAllExercises", "Exercises");
 
@@ -155,7 +155,7 @@ public class ExercisesController : Controller
         }
         else
         {
-            return this.ServerErrorView(500, result.Errors);
+            return this.ErrorView(500, result.Errors);
         }
     }
 }

@@ -9,7 +9,7 @@ public interface IExercisesRepository
     Task<Exercise?> GetByName(string? name);
     Task<Exercise?> GetById(Guid id);
     
-    Task<OperationResult> CreateExercise(Exercise? exercise);
-    Task<OperationResult> UpdateExercise(Exercise? exercise);
-    Task<OperationResult> DeleteExercise(Guid id);
+    Task<OperationResult> Create(Exercise? exercise);
+    Task<OperationResult> Update(Exercise? exercise);
+    Task<OperationResult> Delete(Guid id);
 }

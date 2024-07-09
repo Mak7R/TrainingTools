@@ -7,5 +7,5 @@ public class GroupEntity
 {
     [Key] public Guid Id { get; set; }
     
-    [StringLength(DataSizes.Group.MaxNameSize, MinimumLength = DataSizes.Group.MinNameSize)] public string Name { get; set; }
+    [StringLength(DataSizes.GroupDataSizes.MaxNameSize, MinimumLength = DataSizes.GroupDataSizes.MinNameSize)] public string Name { get; set; }
 }

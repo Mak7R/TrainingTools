@@ -31,7 +31,7 @@ public class UsersService : IUsersService
         _logger = logger;
     }
 
-    public async Task<IEnumerable<UserInfo>> GetAllUsers(ApplicationUser? currentUser, OrderModel? orderModel = null, FilterModel? filterModel = null)
+    public async Task<IEnumerable<UserInfo>> GetAll(ApplicationUser? currentUser, OrderModel? orderModel = null, FilterModel? filterModel = null)
     {
         ArgumentNullException.ThrowIfNull(currentUser);
         
@@ -91,7 +91,7 @@ public class UsersService : IUsersService
         if (orderModel is null || string.IsNullOrWhiteSpace(orderModel.OrderBy)) return userInfosAsEnumerable;
         if (orderModel.OrderBy.Equals(OrderOptionNames.User.Name, StringComparison.CurrentCultureIgnoreCase))
         {
-            if (orderModel.Order?.Equals(OrderOptionNames.Shared.Descending, StringComparison.CurrentCultureIgnoreCase) ?? false)
+            if (orderModel.OrderOption?.Equals(OrderOptionNames.Shared.Descending, StringComparison.CurrentCultureIgnoreCase) ?? false)
             {
                 userInfosAsEnumerable = userInfosAsEnumerable.OrderByDescending(i => i.User.UserName);
             }
@@ -102,7 +102,7 @@ public class UsersService : IUsersService
         }
         else if (orderModel.OrderBy.Equals(OrderOptionNames.User.Role, StringComparison.CurrentCultureIgnoreCase))
         {
-            if (orderModel.Order?.Equals(OrderOptionNames.Shared.Descending, StringComparison.CurrentCultureIgnoreCase) ?? false)
+            if (orderModel.OrderOption?.Equals(OrderOptionNames.Shared.Descending, StringComparison.CurrentCultureIgnoreCase) ?? false)
             {
                 userInfosAsEnumerable = userInfosAsEnumerable.OrderByDescending(i => i.Roles, new RolesComparer());
             }
@@ -113,7 +113,7 @@ public class UsersService : IUsersService
         }
         else if (orderModel.OrderBy.Equals(OrderOptionNames.User.FriendshipState, StringComparison.CurrentCultureIgnoreCase))
         {
-            if (orderModel.Order?.Equals(OrderOptionNames.Shared.Descending, StringComparison.CurrentCultureIgnoreCase) ?? false)
+            if (orderModel.OrderOption?.Equals(OrderOptionNames.Shared.Descending, StringComparison.CurrentCultureIgnoreCase) ?? false)
             {
                 userInfosAsEnumerable = userInfosAsEnumerable.OrderByDescending(i => i.RelationshipState, new RelationshipStateComparer());
             }
@@ -264,7 +264,7 @@ public class UsersService : IUsersService
         return await GetBy(currentUser, u => u.Email == email);
     }
 
-    public async Task<OperationResult> CreateUser(ApplicationUser? currentUser, CreateUserDto createUserDto)
+    public async Task<OperationResult> Create(ApplicationUser? currentUser, CreateUserDto createUserDto)
     {
         ArgumentNullException.ThrowIfNull(currentUser);
         ArgumentNullException.ThrowIfNull(createUserDto);
@@ -310,7 +310,7 @@ public class UsersService : IUsersService
         return DefaultOperationResult.FromException(new OperationNotAllowedException("User is not admin or root"));
     }
 
-    public async Task<OperationResult> UpdateUser(ApplicationUser? currentUser, UpdateUserDto updateUserDto)
+    public async Task<OperationResult> Update(ApplicationUser? currentUser, UpdateUserDto updateUserDto)
     {
         ArgumentNullException.ThrowIfNull(currentUser);
         ArgumentNullException.ThrowIfNull(updateUserDto);
@@ -374,7 +374,7 @@ public class UsersService : IUsersService
         return DefaultOperationResult.FromException(new OperationNotAllowedException("User is not admin or root"));
     }
 
-    public async Task<OperationResult> DeleteUser(ApplicationUser? currentUser, string userName)
+    public async Task<OperationResult> Delete(ApplicationUser? currentUser, string userName)
     {
         ArgumentNullException.ThrowIfNull(currentUser);
         ArgumentException.ThrowIfNullOrWhiteSpace(userName);

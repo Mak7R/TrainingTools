@@ -1,5 +1,6 @@
 ﻿using Domain.Identity;
 using Infrastructure.Entities;
+using Infrastructure.Entities.TrainingPlanEntities;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
@@ -14,6 +15,12 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, Applicati
     public virtual DbSet<FriendRelationshipEntity> FriendRelationships { get; set; }
     
     
+    public virtual DbSet<TrainingPlanEntity> TrainingPlans { get; set; }
+    public virtual DbSet<TrainingPlanBlockEntity> TrainingPlanBlocks { get; set; }
+    public virtual DbSet<TrainingPlanBlockEntryEntity> TrainingPlanBlockEntries { get; set; }
+    
+    
+    
     public ApplicationDbContext(DbContextOptions options) : base(options)
     {
         
@@ -22,7 +29,8 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, Applicati
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
-
+        
+        // -------------------- Basic Entities -------------------- //
         builder.Entity<GroupEntity>()
             .ToTable("Group")
             .HasIndex(g => g.Name)
@@ -40,9 +48,13 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, Applicati
             .ToTable("ExerciseResult")
             .HasKey(er => new { UserId = er.OwnerId, er.ExerciseId });
 
+        
+        // -------------------- Friendship -------------------- //
+        
         builder.Entity<FriendInvitationEntity>()
             .ToTable("FriendInvitation")
             .HasKey(fi => new { fi.InvitorId, fi.TargetId });
+        
 
         builder.Entity<FriendInvitationEntity>()
             .HasOne(fi => fi.Invitor)
@@ -71,5 +83,36 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, Applicati
             .WithMany()
             .HasForeignKey(fr => fr.SecondFriendId)
             .OnDelete(DeleteBehavior.NoAction);
+
+        
+        // -------------------- Training Plan -------------------- //
+        
+        builder.Entity<TrainingPlanEntity>()
+            .ToTable("TrainingPlan")
+            .HasKey(plan => plan.Id);
+
+        builder.Entity<TrainingPlanEntity>()
+            .HasIndex(plan => new { plan.AuthorId, plan.Name })
+            .IsUnique();
+
+        builder.Entity<TrainingPlanEntity>()
+            .HasIndex(plan => plan.Name);
+        
+        builder.Entity<TrainingPlanEntity>()
+            .HasMany(p => p.TrainingPlanBlocks)
+            .WithOne();
+
+
+        builder.Entity<TrainingPlanBlockEntity>()
+            .ToTable("TrainingPlanBlock");
+        
+
+        builder.Entity<TrainingPlanBlockEntity>()
+            .HasMany(block => block.TrainingPlanBlockEntries)
+            .WithOne();
+
+
+        builder.Entity<TrainingPlanBlockEntryEntity>()
+            .ToTable("TrainingPlanBlockEntry");
     }
 }

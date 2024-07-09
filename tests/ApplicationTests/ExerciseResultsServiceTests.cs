@@ -51,7 +51,7 @@ public class ExerciseResultsServiceTests
         var orderModel = new OrderModel
         {
             OrderBy = OrderOptionNames.ExerciseResults.ForUser.GroupName,
-            Order = OrderOptionNames.Shared.Ascending
+            OrderOption = OrderOptionNames.Shared.Ascending
         };
 
         _exerciseResultsRepositoryMock.Setup(repo => repo.GetForUser(ownerId, null)).ReturnsAsync(results);
@@ -91,7 +91,7 @@ public class ExerciseResultsServiceTests
         var orderModel = new OrderModel
         {
             OrderBy = OrderOptionNames.ExerciseResults.ForExercise.OwnerName,
-            Order = OrderOptionNames.Shared.Ascending
+            OrderOption = OrderOptionNames.Shared.Ascending
         };
 
         _exerciseResultsRepositoryMock.Setup(repo => repo.GetForExercise(exerciseId, null)).ReturnsAsync(results);
@@ -133,7 +133,7 @@ public class ExerciseResultsServiceTests
         var orderModel = new OrderModel
         {
             OrderBy = OrderOptionNames.ExerciseResults.ForExercise.OwnerName,
-            Order = OrderOptionNames.Shared.Ascending
+            OrderOption = OrderOptionNames.Shared.Ascending
         };
 
         _exerciseResultsRepositoryMock.Setup(repo => repo.GetOnlyUserAndFriendsResultForExercise(userId, exerciseId, null)).ReturnsAsync(results);
@@ -155,10 +155,10 @@ public class ExerciseResultsServiceTests
         // Arrange
         var exerciseResult = _fixture.Create<ExerciseResult>();
         var operationResult = new DefaultOperationResult(true);
-        _exerciseResultsRepositoryMock.Setup(repo => repo.CreateResult(It.IsAny<ExerciseResult>())).ReturnsAsync(operationResult);
+        _exerciseResultsRepositoryMock.Setup(repo => repo.Create(It.IsAny<ExerciseResult>())).ReturnsAsync(operationResult);
 
         // Act
-        var result = await _exerciseResultsService.CreateResult(exerciseResult);
+        var result = await _exerciseResultsService.Create(exerciseResult);
 
         // Assert
         result.Should().BeEquivalentTo(operationResult);
@@ -168,7 +168,7 @@ public class ExerciseResultsServiceTests
     public async Task CreateResult_ShouldThrowArgumentNullException_WhenResultIsNull()
     {
         // Act
-        Func<Task> action = async () => await _exerciseResultsService.CreateResult(null);
+        Func<Task> action = async () => await _exerciseResultsService.Create(null);
 
         // Assert
         await action.Should().ThrowAsync<ArgumentNullException>();
@@ -184,10 +184,10 @@ public class ExerciseResultsServiceTests
         // Arrange
         var exerciseResult = _fixture.Create<ExerciseResult>();
         var operationResult = new DefaultOperationResult(true);
-        _exerciseResultsRepositoryMock.Setup(repo => repo.UpdateResult(It.IsAny<ExerciseResult>())).ReturnsAsync(operationResult);
+        _exerciseResultsRepositoryMock.Setup(repo => repo.Update(It.IsAny<ExerciseResult>())).ReturnsAsync(operationResult);
 
         // Act
-        var result = await _exerciseResultsService.UpdateResult(exerciseResult);
+        var result = await _exerciseResultsService.Update(exerciseResult);
 
         // Assert
         result.Should().BeEquivalentTo(operationResult);
@@ -197,7 +197,7 @@ public class ExerciseResultsServiceTests
     public async Task UpdateResult_ShouldThrowArgumentNullException_WhenResultIsNull()
     {
         // Act
-        Func<Task> action = async () => await _exerciseResultsService.UpdateResult(null);
+        Func<Task> action = async () => await _exerciseResultsService.Update(null);
 
         // Assert
         await action.Should().ThrowAsync<ArgumentNullException>();
@@ -213,7 +213,7 @@ public class ExerciseResultsServiceTests
         var operationResult = DefaultOperationResult.FromException(new InvalidOperationException("Weight and count cannot be less than 0"));
         
         // Act
-        var result = await _exerciseResultsService.UpdateResult(exerciseResult);
+        var result = await _exerciseResultsService.Update(exerciseResult);
 
         // Assert
         result.Should().BeEquivalentTo(operationResult);
@@ -229,7 +229,7 @@ public class ExerciseResultsServiceTests
         var operationResult = DefaultOperationResult.FromException(new InvalidOperationException($"Comments cannot contain symbol {SpecialConstants.DefaultSeparator}"));
         
         // Act
-        var result = await _exerciseResultsService.UpdateResult(exerciseResult);
+        var result = await _exerciseResultsService.Update(exerciseResult);
 
         // Assert
         result.Should().BeEquivalentTo(operationResult);
@@ -246,10 +246,10 @@ public class ExerciseResultsServiceTests
         var ownerId = Guid.NewGuid();
         var exerciseId = Guid.NewGuid();
         var operationResult = new DefaultOperationResult(true);
-        _exerciseResultsRepositoryMock.Setup(repo => repo.DeleteResult(ownerId, exerciseId)).ReturnsAsync(operationResult);
+        _exerciseResultsRepositoryMock.Setup(repo => repo.Delete(ownerId, exerciseId)).ReturnsAsync(operationResult);
 
         // Act
-        var result = await _exerciseResultsService.DeleteResult(ownerId, exerciseId);
+        var result = await _exerciseResultsService.Delete(ownerId, exerciseId);
 
         // Assert
         result.Should().BeEquivalentTo(operationResult);
@@ -262,10 +262,10 @@ public class ExerciseResultsServiceTests
         var ownerId = Guid.NewGuid();
         var exerciseId = Guid.NewGuid();
         var operationResult = new DefaultOperationResult(true);
-        _exerciseResultsRepositoryMock.Setup(repo => repo.DeleteResult(ownerId, exerciseId)).ReturnsAsync(operationResult);
+        _exerciseResultsRepositoryMock.Setup(repo => repo.Delete(ownerId, exerciseId)).ReturnsAsync(operationResult);
 
         // Act
-        var result = await _exerciseResultsService.DeleteResult(ownerId, exerciseId);
+        var result = await _exerciseResultsService.Delete(ownerId, exerciseId);
 
         // Assert
         result.Should().BeEquivalentTo(operationResult);

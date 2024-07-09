@@ -9,7 +9,7 @@ public interface IExercisesService
     Task<Exercise?> GetByName(string? name);
     Task<Exercise?> GetById(Guid id);
     
-    Task<OperationResult> CreateExercise(Exercise? exercise);
-    Task<OperationResult> UpdateExercise(Exercise? group);
-    Task<OperationResult> DeleteExercise(Guid id);
+    Task<OperationResult> Create(Exercise? exercise);
+    Task<OperationResult> Update(Exercise? group);
+    Task<OperationResult> Delete(Guid id);
 }

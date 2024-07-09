@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-using static Domain.Rules.DataSizes.ApplicationUser;
+using static Domain.Rules.DataSizes.ApplicationUserDataSizes;
 
 namespace WebUI.Models.AccountModels;
 

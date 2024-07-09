@@ -1,4 +1,5 @@
-﻿using System.Linq.Expressions;
+﻿using System.Collections.ObjectModel;
+using System.Linq.Expressions;
 using Application.Constants;
 using Application.Interfaces.RepositoryInterfaces;
 using Application.Models.Shared;
@@ -25,16 +26,19 @@ public class GroupsRepository : IGroupsRepository
         _logger = logger;
     }
     
+    private static readonly ReadOnlyDictionary<string, Func<string, Expression<Func<GroupEntity, bool>>>> GroupFilters =
+        new(new Dictionary<string, Func<string, Expression<Func<GroupEntity, bool>>>>
+        {
+            { FilterOptionNames.Group.Name, value => p => p.Name.Contains(value) },
+        });
     public async Task<IEnumerable<Group>> GetAll(FilterModel? filterModel = null)
     {
         try
         {
             var query = _dbContext.Groups.AsNoTracking();
 
-            if ((filterModel?.TryGetValue(FilterOptionNames.Group.Name, out var value) ?? false) && !string.IsNullOrWhiteSpace(value))
-            {
-                query = query.Where(g => g.Name.Contains(value));
-            }
+            if (filterModel is not null)
+                query = filterModel.FilterBy(query, GroupFilters);
             
             return await query.Select(g => g.ToGroup()).ToListAsync();
         }
@@ -60,7 +64,7 @@ public class GroupsRepository : IGroupsRepository
         }
     }
     
-    public async Task<Group?> GetByName(string? name)
+    public async Task<Group?> GetByName(string name)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
         return await GetBy(g => g.Name == name);
@@ -71,7 +75,7 @@ public class GroupsRepository : IGroupsRepository
         return await GetBy(g => g.Id == id);
     }
     
-    public async Task<OperationResult> CreateGroup(Group? group)
+    public async Task<OperationResult> Create(Group group)
     {
         ArgumentNullException.ThrowIfNull(group);
         ArgumentException.ThrowIfNullOrWhiteSpace(group.Name);
@@ -100,7 +104,7 @@ public class GroupsRepository : IGroupsRepository
         return new DefaultOperationResult(group);
     }
 
-    public async Task<OperationResult> UpdateGroup(Group? group)
+    public async Task<OperationResult> Update(Group group)
     {
         ArgumentNullException.ThrowIfNull(group);
         ArgumentException.ThrowIfNullOrWhiteSpace(group.Name);
@@ -142,7 +146,7 @@ public class GroupsRepository : IGroupsRepository
         return new DefaultOperationResult(group);
     }
 
-    public async Task<OperationResult> DeleteGroup(Guid id)
+    public async Task<OperationResult> Delete(Guid id)
     {
         Group? group;
         try

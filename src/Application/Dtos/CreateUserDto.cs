@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc;
-using static Domain.Rules.DataSizes.ApplicationUser;
+using static Domain.Rules.DataSizes.ApplicationUserDataSizes;
 
 namespace Application.Dtos;
 

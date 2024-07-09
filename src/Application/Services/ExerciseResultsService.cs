@@ -26,7 +26,7 @@ public class ExerciseResultsService : IExerciseResultsService
         
         if (orderModel.OrderBy.Equals(OrderOptionNames.ExerciseResults.ForUser.GroupName, StringComparison.CurrentCultureIgnoreCase))
         {
-            if (orderModel.Order?.Equals(OrderOptionNames.Shared.Descending, StringComparison.CurrentCultureIgnoreCase) ?? false)
+            if (orderModel.OrderOption?.Equals(OrderOptionNames.Shared.Descending, StringComparison.CurrentCultureIgnoreCase) ?? false)
             {
                 results = results
                     .OrderByDescending(e => e.Exercise.Group.Name)
@@ -50,7 +50,7 @@ public class ExerciseResultsService : IExerciseResultsService
         
         if (orderModel.OrderBy.Equals(OrderOptionNames.ExerciseResults.ForExercise.OwnerName, StringComparison.CurrentCultureIgnoreCase))
         {
-            if (orderModel.Order?.Equals(OrderOptionNames.Shared.Descending, StringComparison.CurrentCultureIgnoreCase) ?? false)
+            if (orderModel.OrderOption?.Equals(OrderOptionNames.Shared.Descending, StringComparison.CurrentCultureIgnoreCase) ?? false)
             {
                 results = results.OrderByDescending(e => e.Owner.UserName);
             }
@@ -71,7 +71,7 @@ public class ExerciseResultsService : IExerciseResultsService
         
         if (orderModel.OrderBy.Equals(OrderOptionNames.ExerciseResults.ForExercise.OwnerName, StringComparison.CurrentCultureIgnoreCase))
         {
-            if (orderModel.Order?.Equals(OrderOptionNames.Shared.Descending, StringComparison.CurrentCultureIgnoreCase) ?? false)
+            if (orderModel.OrderOption?.Equals(OrderOptionNames.Shared.Descending, StringComparison.CurrentCultureIgnoreCase) ?? false)
             {
                 results = results.OrderByDescending(e => e.Owner.UserName);
             }
@@ -84,7 +84,7 @@ public class ExerciseResultsService : IExerciseResultsService
         return results;
     }
     
-    public async Task<OperationResult> CreateResult(ExerciseResult result)
+    public async Task<OperationResult> Create(ExerciseResult result)
     {
         ArgumentNullException.ThrowIfNull(result);
 
@@ -95,10 +95,10 @@ public class ExerciseResultsService : IExerciseResultsService
             new Approach(0, 0, "")
         };
 
-        return await _exerciseResultsRepository.CreateResult(result);
+        return await _exerciseResultsRepository.Create(result);
     }
 
-    public async Task<OperationResult> UpdateResult(ExerciseResult result)
+    public async Task<OperationResult> Update(ExerciseResult result)
     {
         ArgumentNullException.ThrowIfNull(result);
         if (result.ApproachInfos.Select(ai => ai.Weight).Any(w => w < 0) || result.ApproachInfos.Select(ai => ai.Count).Any(c => c < 0))
@@ -111,12 +111,12 @@ public class ExerciseResultsService : IExerciseResultsService
             return DefaultOperationResult.FromException(new InvalidOperationException($"Comments cannot contain symbol {SpecialConstants.DefaultSeparator}"));
         }
         
-        return await _exerciseResultsRepository.UpdateResult(result);
+        return await _exerciseResultsRepository.Update(result);
     }
 
-    public async Task<OperationResult> DeleteResult(Guid ownerId, Guid exerciseId)
+    public async Task<OperationResult> Delete(Guid ownerId, Guid exerciseId)
     {
-        return await _exerciseResultsRepository.DeleteResult(ownerId, exerciseId);
+        return await _exerciseResultsRepository.Delete(ownerId, exerciseId);
     }
 
     public async Task<ExerciseResult?> Get(Guid ownerId, Guid exerciseId)

@@ -54,7 +54,8 @@ public class ExerciseResultsRepository : IExerciseResultsRepository
             var results = await _dbContext.ExerciseResults
                 .Include(exerciseResultEntity => exerciseResultEntity.Exercise)
                 .ThenInclude(exerciseEntity => exerciseEntity.Group)
-                .Where(predicate).ToListAsync();
+                .Where(predicate)
+                .ToListAsync();
 
             return results.Select(r => r.ToExerciseResult());
         }
@@ -120,7 +121,7 @@ public class ExerciseResultsRepository : IExerciseResultsRepository
             (r.OwnerId == userId || userIds.Contains(r.OwnerId)));
     }
     
-    public async Task<OperationResult> CreateResult(ExerciseResult result)
+    public async Task<OperationResult> Create(ExerciseResult result)
     {
         ArgumentNullException.ThrowIfNull(result);
         
@@ -147,7 +148,7 @@ public class ExerciseResultsRepository : IExerciseResultsRepository
         return new DefaultOperationResult(result);
     }
 
-    public async Task<OperationResult> UpdateResult(ExerciseResult result)
+    public async Task<OperationResult> Update(ExerciseResult result)
     {
         ArgumentNullException.ThrowIfNull(result);
 
@@ -187,7 +188,7 @@ public class ExerciseResultsRepository : IExerciseResultsRepository
         return new DefaultOperationResult(result);
     }
 
-    public async Task<OperationResult> DeleteResult(Guid ownerId, Guid exerciseId)
+    public async Task<OperationResult> Delete(Guid ownerId, Guid exerciseId)
     {
         ExerciseResultEntity? result;
         try

@@ -11,7 +11,7 @@ public interface IGroupsService
     Task<Group?> GetById(Guid id);
     
     
-    Task<OperationResult> CreateGroup(Group? group);
-    Task<OperationResult> UpdateGroup(Group? group);
-    Task<OperationResult> DeleteGroup(Guid id);
+    Task<OperationResult> Create(Group? group);
+    Task<OperationResult> Update(Group? group);
+    Task<OperationResult> Delete(Guid id);
 }

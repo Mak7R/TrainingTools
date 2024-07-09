@@ -44,7 +44,7 @@ public class GroupsController : Controller
         }
         
         var group = new Group{Name = addGroupModel.Name};
-        var result = await _groupsService.CreateGroup(group);
+        var result = await _groupsService.Create(group);
         
         if (result.IsSuccessful) return RedirectToAction("GetAllGroups");
         
@@ -54,7 +54,7 @@ public class GroupsController : Controller
         }
         else
         {
-            return this.ServerErrorView(500, result.Errors);
+            return this.ErrorView(500, result.Errors);
         }
     }
 
@@ -66,7 +66,7 @@ public class GroupsController : Controller
             return this.BadRequestView(ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage));
         }
         var group = new Group{Id = editGroupModel.Id, Name = editGroupModel.Name};
-        var result = await _groupsService.UpdateGroup(group);
+        var result = await _groupsService.Update(group);
         
         if (result.IsSuccessful) return RedirectToAction("GetAllGroups", "Groups");
         if (result.Exception is AlreadyExistsException)
@@ -79,14 +79,14 @@ public class GroupsController : Controller
         }
         else
         {
-            return this.ServerErrorView(500, result.Errors);
+            return this.ErrorView(500, result.Errors);
         }
     }
 
     [HttpGet("delete-group")]
     public async Task<IActionResult> DeleteGroup([FromQuery] Guid groupId)
     {
-        var result = await _groupsService.DeleteGroup(groupId);
+        var result = await _groupsService.Delete(groupId);
 
         if (result.IsSuccessful) return RedirectToAction("GetAllGroups");
 
@@ -96,7 +96,7 @@ public class GroupsController : Controller
         }
         else
         {
-            return this.ServerErrorView(500, result.Errors);
+            return this.ErrorView(500, result.Errors);
         }
     }
 }

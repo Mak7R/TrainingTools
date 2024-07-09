@@ -15,10 +15,10 @@ public class ExerciseResultEntity
     public Guid ExerciseId { get; set; }
     public ExerciseEntity Exercise { get; set; }
     
-    [StringLength(DataSizes.ExerciseResults.MaxWeightsSize)]
+    [StringLength(DataSizes.ExerciseResultsSizes.MaxWeightsSize)]
     public string? Weights { get; set; }
-    [StringLength(DataSizes.ExerciseResults.MaxCountsSize)]
+    [StringLength(DataSizes.ExerciseResultsSizes.MaxCountsSize)]
     public string? Counts { get; set; }
-    [StringLength(DataSizes.ExerciseResults.MaxCommentsSize)]
+    [StringLength(DataSizes.ExerciseResultsSizes.MaxCommentsSize)]
     public string? Comments { get; set; }
 }

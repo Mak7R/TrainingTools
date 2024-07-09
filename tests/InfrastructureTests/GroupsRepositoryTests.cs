@@ -265,7 +265,7 @@ public class GroupsRepositoryTests
         var group = _fixture.Create<Group>();
 
         // Act
-        var result = await _groupsRepository.CreateGroup(group);
+        var result = await _groupsRepository.Create(group);
 
         // Assert
         result.IsSuccessful.Should().BeTrue();
@@ -280,7 +280,7 @@ public class GroupsRepositoryTests
     public async Task CreateGroup_ShouldThrowArgumentNullException_WhenGroupIsNull()
     {
         // Act
-        Func<Task> action = async () => await _groupsRepository.CreateGroup(null);
+        Func<Task> action = async () => await _groupsRepository.Create(null);
 
         // Assert
         await action.Should().ThrowAsync<ArgumentNullException>();
@@ -293,7 +293,7 @@ public class GroupsRepositoryTests
         var group = _fixture.Build<Group>().Without(g => g.Name).Create();
 
         // Act
-        Func<Task> action = async () => await _groupsRepository.CreateGroup(group);
+        Func<Task> action = async () => await _groupsRepository.Create(group);
 
         // Assert
         await action.Should().ThrowAsync<ArgumentException>();
@@ -312,7 +312,7 @@ public class GroupsRepositoryTests
         var newGroup = _fixture.Build<Group>().With(g => g.Name, groupName).Create();
 
         // Act
-        var result = await _groupsRepository.CreateGroup(newGroup);
+        var result = await _groupsRepository.Create(newGroup);
 
         // Assert
         result.IsSuccessful.Should().BeFalse();
@@ -331,7 +331,7 @@ public class GroupsRepositoryTests
         _dbContextMock.Setup(db => db.SaveChangesAsync(default)).Throws(new Exception("Database error"));
 
         // Act
-        var result = await _groupsRepository.CreateGroup(group);
+        var result = await _groupsRepository.Create(group);
 
         // Assert
         result.IsSuccessful.Should().BeFalse();
@@ -354,7 +354,7 @@ public class GroupsRepositoryTests
         var updatedGroup = _fixture.Build<Group>().With(g =>g.Id, existingGroup.Id).Create();
 
         // Act
-        var result = await _groupsRepository.UpdateGroup(updatedGroup);
+        var result = await _groupsRepository.Update(updatedGroup);
 
         // Assert
         result.IsSuccessful.Should().BeTrue();
@@ -370,7 +370,7 @@ public class GroupsRepositoryTests
     public async Task UpdateGroup_ShouldThrowArgumentNullException_WhenGroupIsNull()
     {
         // Act
-        Func<Task> action = async () => await _groupsRepository.UpdateGroup(null);
+        Func<Task> action = async () => await _groupsRepository.Update(null);
 
         // Assert
         await action.Should().ThrowAsync<ArgumentNullException>();
@@ -383,7 +383,7 @@ public class GroupsRepositoryTests
         var group = _fixture.Build<Group>().Without(g => g.Name).Create();
 
         // Act
-        Func<Task> action = async () => await _groupsRepository.UpdateGroup(group);
+        Func<Task> action = async () => await _groupsRepository.Update(group);
 
         // Assert
         await action.Should().ThrowAsync<ArgumentException>();
@@ -406,7 +406,7 @@ public class GroupsRepositoryTests
         };
 
         // Act
-        var result = await _groupsRepository.UpdateGroup(updatedGroup);
+        var result = await _groupsRepository.Update(updatedGroup);
 
         // Assert
         result.IsSuccessful.Should().BeFalse();
@@ -421,7 +421,7 @@ public class GroupsRepositoryTests
         var updatedGroup = _fixture.Create<Group>();
 
         // Act
-        var result = await _groupsRepository.UpdateGroup(updatedGroup);
+        var result = await _groupsRepository.Update(updatedGroup);
 
         // Assert
         result.IsSuccessful.Should().BeFalse();
@@ -446,7 +446,7 @@ public class GroupsRepositoryTests
         _dbContextMock.Setup(db => db.SaveChangesAsync(default)).Throws(new Exception("Database error"));
 
         // Act
-        var result = await _groupsRepository.UpdateGroup(updatedGroup);
+        var result = await _groupsRepository.Update(updatedGroup);
 
         // Assert
         result.IsSuccessful.Should().BeFalse();
@@ -467,7 +467,7 @@ public class GroupsRepositoryTests
         await _dbContext.SaveChangesAsync();
 
         // Act
-        var result = await _groupsRepository.DeleteGroup(existingGroup.Id);
+        var result = await _groupsRepository.Delete(existingGroup.Id);
 
         // Assert
         result.IsSuccessful.Should().BeTrue();
@@ -482,7 +482,7 @@ public class GroupsRepositoryTests
     public async Task DeleteGroup_ShouldThrowNotFoundException_WhenGroupNotFound()
     {
         // Act
-        var result = await _groupsRepository.DeleteGroup(Guid.NewGuid());
+        var result = await _groupsRepository.Delete(Guid.NewGuid());
 
         // Assert
         result.IsSuccessful.Should().BeFalse();
@@ -501,7 +501,7 @@ public class GroupsRepositoryTests
         _dbContextMock.Setup(db => db.SaveChangesAsync(default)).Throws(new Exception("Database error"));
 
         // Act
-        var result = await _groupsRepository.DeleteGroup(existingGroup.Id);
+        var result = await _groupsRepository.Delete(existingGroup.Id);
 
         // Assert
         result.IsSuccessful.Should().BeFalse();
