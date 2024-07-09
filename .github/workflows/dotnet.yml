@@ -35,7 +35,7 @@ jobs:
       - name: Restore dependencies
         run: dotnet restore
       - name: Test
-        run: dotnet test --no-build --verbosity normal
+        run: dotnet test --verbosity normal
 
   deploy:
     runs-on: ubuntu-latest
@@ -55,5 +55,5 @@ jobs:
           server: ftp://trainingtools.somee.com/www.trainingtools.somee.com
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          local-dir: /
+          local-dir: .
           remote-dir: /
