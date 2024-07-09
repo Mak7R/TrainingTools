@@ -9,7 +9,7 @@ on:
 jobs:
   build:
 
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4
@@ -23,7 +23,7 @@ jobs:
         run: dotnet build --no-restore
 
   test:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     needs: build
     steps:
       - name: Checkout code
@@ -37,8 +37,8 @@ jobs:
       - name: Test
         run: dotnet test --no-build --verbosity normal
 
-  deploy-to-somee:
-    runs-on: windows-latest
+  deploy:
+    runs-on: ubuntu-latest
     needs: build
     steps:
       - name: Checkout code
@@ -50,7 +50,7 @@ jobs:
       - name: Restore dependencies
         run: dotnet restore
       - name: Deploy to somee.com via FTP
-        uses: SamKirkland/FTP-Deploy-Action@v4
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server: ftp://trainingtools.somee.com/www.trainingtools.somee.com
           username: ${{ secrets.FTP_USERNAME }}
