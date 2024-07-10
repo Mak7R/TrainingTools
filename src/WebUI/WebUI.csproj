@@ -5,6 +5,7 @@
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
         <UserSecretsId>aspnet-WebUI-95BDE846-74DE-42B9-9E17-9B7FD591D701</UserSecretsId>
+        <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
     </PropertyGroup>
 
     <ItemGroup>
@@ -26,6 +27,7 @@
 
     <ItemGroup>
       <Folder Include="Areas\" />
+      <Folder Include="logs\" />
     </ItemGroup>
 
     <ItemGroup>
