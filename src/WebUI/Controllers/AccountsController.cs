@@ -11,6 +11,7 @@ namespace WebUI.Controllers;
 
 [Controller]
 [Route("[controller]/[action]")]
+[AllowAnonymous]
 public class AccountsController(
     UserManager<ApplicationUser> userManager,
     SignInManager<ApplicationUser> signInManager)

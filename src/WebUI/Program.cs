@@ -20,12 +20,13 @@ builder.Host.UseSerilog(
             .ReadFrom.Services(services);
     });
 
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ??
-                       throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+var activeConnection = builder.Configuration["ActiveConnection"] ?? "DefaultConnection";
+
+var connectionString = builder.Configuration.GetConnectionString(activeConnection) ?? throw new InvalidOperationException($"Connection string '{activeConnection}' not found.");
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString)
-    );
+);
 
 builder.Services.AddControllersWithViews(options =>
 {
