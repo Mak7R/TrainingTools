@@ -41,7 +41,7 @@ public static class OrderOptionNames
     
     public static class TrainingPlan
     {
-        public const string Name = "name";
+        public const string Title = "title";
         public const string Author = "owner";
     }
 }

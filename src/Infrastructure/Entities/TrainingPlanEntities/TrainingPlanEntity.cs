@@ -11,8 +11,8 @@ public class TrainingPlanEntity
     [Key]
     public Guid Id { get; set; }
     
-    [StringLength(MaxNameSize)]
-    public string Name { get; set; }
+    [StringLength(MaxTitleSize)]
+    public string Title { get; set; }
     
     [ForeignKey(nameof(Author))]
     public Guid AuthorId { get; set; }

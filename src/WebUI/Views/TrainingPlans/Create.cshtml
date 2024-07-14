@@ -1,0 +1,31 @@
+﻿@model CreateTrainingPlanModel
+
+@{
+    ViewBag.Title = "Create training plan";
+}
+
+<div class="container mt-2">
+    <h2 class="text-center mb-2">Create new training plan</h2>
+    
+    <form method="post" asp-controller="TrainingPlans" asp-action="Create">
+        <div class="mb-3">
+            <label asp-for="Title" class="form-label"></label>
+            <input asp-for="Title" class="form-control"/>
+            <span asp-validation-for="Title" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="IsPublic" class="form-label">Make plan public: </label>
+            <input asp-for="IsPublic" class="form-check-input"/>
+            <span asp-validation-for="IsPublic" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <button type="submit" class="btn btn-success">Create</button>
+        </div>
+
+        <div class="mb-3">
+            <div asp-validation-summary="All" class="text-danger"></div>
+        </div>
+    </form>
+</div>

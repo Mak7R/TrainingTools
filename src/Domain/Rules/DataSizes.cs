@@ -39,7 +39,8 @@ public static class DataSizes
     
     public static class TrainingPlanDataSizes
     {
-        public const int MaxNameSize = 64;
+        public const int MinTitleSize = 3;
+        public const int MaxTitleSize = 64;
         public const int MaxBlockNameSize = 32;
         public const int MaxBlockEntryDescriptionSize = 128;
     }

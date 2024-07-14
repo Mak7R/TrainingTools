@@ -25,19 +25,19 @@ public class TrainingPlansService : ITrainingPlansService
                 {
                     new OrderModel
                     {
-                        OrderBy = OrderOptionNames.Name,
+                        OrderBy = OrderOptionNames.Title,
                         OrderOption = Constants.OrderOptionNames.Shared.Ascending
                     },
-                    enumerable => enumerable.OrderBy(p => p.Name)
+                    enumerable => enumerable.OrderBy(p => p.Title)
                         .ThenBy(p => p.Author.UserName)
                 },
                 {
                     new OrderModel
                     {
-                        OrderBy = OrderOptionNames.Name,
+                        OrderBy = OrderOptionNames.Title,
                         OrderOption = Constants.OrderOptionNames.Shared.Descending
                     },
-                    enumerable => enumerable.OrderByDescending(p => p.Name)
+                    enumerable => enumerable.OrderByDescending(p => p.Title)
                         .ThenByDescending(p => p.Author.UserName)
                 },
                 {
@@ -47,7 +47,7 @@ public class TrainingPlansService : ITrainingPlansService
                         OrderOption = Constants.OrderOptionNames.Shared.Ascending
                     },
                     enumerable => enumerable.OrderBy(p => p.Author.UserName)
-                        .ThenBy(p => p.Name)
+                        .ThenBy(p => p.Title)
                 },
                 {
                     new OrderModel
@@ -56,7 +56,7 @@ public class TrainingPlansService : ITrainingPlansService
                         OrderOption = Constants.OrderOptionNames.Shared.Descending
                     },
                     enumerable => enumerable.OrderByDescending(p => p.Author.UserName)
-                        .ThenByDescending(p => p.Name)
+                        .ThenByDescending(p => p.Title)
                 }
             });
 

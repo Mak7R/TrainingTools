@@ -7,7 +7,7 @@ namespace WebUI.Filters;
 
 public class QueryValuesProvidingActionFilter : IActionFilter
 {
-    private IOrderOptions _orderOptions;
+    private readonly IOrderOptions _orderOptions;
 
     public QueryValuesProvidingActionFilter(Type orderOptionsType)
     {

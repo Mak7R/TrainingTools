@@ -1,13 +1,21 @@
 ﻿using Application.Constants;
 using Application.Interfaces.ServiceInterfaces;
 using Application.Models.Shared;
+using Domain.Exceptions;
 using Domain.Identity;
+using Domain.Models;
+using Domain.Models.TrainingPlan;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Rotativa.AspNetCore;
+using Rotativa.AspNetCore.Options;
 using WebUI.Extensions;
+using WebUI.Filters;
 using WebUI.Mappers;
 using WebUI.ModelBinding.CustomModelBinders;
+using WebUI.Models.ResponseModels;
+using WebUI.Models.TrainingPlanModels;
 
 namespace WebUI.Controllers;
 
@@ -58,10 +66,10 @@ public class TrainingPlansController : Controller
         return View(plans.Select(p => p.ToTrainingPlanViewModel()));
     }
 
-    [HttpGet("{author}/{name}")]
-    public async Task<IActionResult> GetTrainingPlan(string author, string name)
+    [HttpGet("{author}/{title}")]
+    public async Task<IActionResult> GetTrainingPlan(string author, string title)
     {
-        var plan = await _trainingPlansService.GetByName(author, name);
+        var plan = await _trainingPlansService.GetByName(author, title);
 
         if (plan is null)
             return this.NotFoundView(new []{"Training plan was not found"});
@@ -69,6 +77,21 @@ public class TrainingPlansController : Controller
         return View(plan.ToTrainingPlanViewModel());
     }
 
+    [HttpGet("{author}/{title}/as-pdf")]
+    public async Task<IActionResult> GetTrainingPlanAsPdf(string author, string title)
+    {
+        var plan = await _trainingPlansService.GetByName(author, title);
+
+        if (plan is null)
+            return this.NotFoundView(new []{"Training plan was not found"});
+
+        return new ViewAsPdf("GetTrainingPlanAsPDF", plan.ToTrainingPlanViewModel(), ViewData)
+        {
+            PageMargins = new Margins(10, 5, 20, 5),
+            PageSize = Size.A4,
+            IsLowQuality = false,
+        };
+    }
 
     [HttpGet("create")]
     public async Task<IActionResult> Create()
@@ -81,7 +104,7 @@ public class TrainingPlansController : Controller
     }
     
     [HttpPost("create")]
-    public async Task<IActionResult> Create(string creationModel)
+    public async Task<IActionResult> Create([FromForm] CreateTrainingPlanModel creationModel)
     {
         var user = await _userManager.GetUserAsync(User);
         if (user is null)
@@ -92,7 +115,15 @@ public class TrainingPlansController : Controller
             return View(creationModel);
         }
 
-        var result = await _trainingPlansService.Create(null!); // todo
+        var trainingPlan = new TrainingPlan
+        {
+            Title = creationModel.Title,
+            Author = user,
+            IsPublic = creationModel.IsPublic,
+            TrainingPlanBlocks = []
+        };
+        
+        var result = await _trainingPlansService.Create(trainingPlan);
 
         if (!result.IsSuccessful)
         {
@@ -102,45 +133,101 @@ public class TrainingPlansController : Controller
         return RedirectToAction("GetUserTrainingPlans", "TrainingPlans");
     }
 
-    [HttpGet("{author}/{name}/update")]
-    public async Task<IActionResult> Update(string author, string name)
+    [HttpGet("{author}/{title}/update")]
+    [TypeFilter(typeof(AddAvailableGroupsActionFilter))]
+    public async Task<IActionResult> Update(string author, string title, [FromServices] IGroupsService groupsService)
     {
         var user = await _userManager.GetUserAsync(User);
         if (user is null)
-            return RedirectToAction("Login", "Accounts", new { returnUrl = $"/training-plans/{author}/{name}/update" });
-
-        var trainingPlan = await _trainingPlansService.GetByName(author, name);
+            return RedirectToAction("Login", "Accounts",
+                new { returnUrl = $"/training-plans/{author}/{title}/update" });
         
-        // trainingPlan.ToViewModel();
+        var trainingPlan = await _trainingPlansService.GetByName(author, title);
 
-        return View();
+        if (trainingPlan is null)
+            return this.NotFoundView(new[] { "Training plan was not found" });
+
+        return View(new UpdateTrainingPlanModel
+        {
+            Id = trainingPlan.Id,
+            NewTitle = trainingPlan.Title,
+            IsPublic = trainingPlan.IsPublic,
+            Blocks = trainingPlan.TrainingPlanBlocks.Select(b => new UpdateTrainingPlanBlockModel
+            {
+                Name = b.Name,
+                Entries = b.TrainingPlanBlockEntries.Select(e => new UpdateTrainingPlanBlockEntryModel
+                {
+                    Description = e.Description,
+                    GroupId = e.Group.Id
+                }).ToList()
+            }).ToList()
+        });
     }
-    
-    [HttpPost("{author}/{name}/update")]
-    public async Task<IActionResult> Update(string author, string name, string updateModel)
+
+    [HttpPost("{author}/{title}/update")]
+    public async Task<IActionResult> Update(string author, string title, [ModelBinder(typeof(UpdateTrainingPlanModelBinder))] UpdateTrainingPlanModel updateTrainingPlanModel)
     {
         var user = await _userManager.GetUserAsync(User);
         if (user is null)
-            return RedirectToAction("Login", "Accounts", new { returnUrl = $"/training-plans/{author}/{name}/update" });
+            return RedirectToAction("Login", "Accounts", new { returnUrl = $"/training-plans/{author}/{title}/update" });
 
-        var result = await _trainingPlansService.Update(null!); // todo
+        var trainingPlan = await _trainingPlansService.GetByName(author, title);
 
-        if (!result.IsSuccessful)
+        if (trainingPlan is null)
+            return NotFound(ResponseModel.BadResponse(new[] { "Training plan was not found" }));
+        
+        if (user.Id != trainingPlan.Author.Id)
+            return this.ErrorView(StatusCodes.Status403Forbidden, new[] { "Only author can edit training plan" });
+
+        if (!ModelState.IsValid)
         {
-            return this.ErrorView(500, new []{result.Exception?.Message ?? string.Empty });
+            return Json(ResponseModel.BadResponse(ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage)));
+        }
+
+        var newTrainingPlan = new TrainingPlan
+        {
+            Id = trainingPlan.Id,
+            Title = updateTrainingPlanModel.NewTitle,
+            Author = user,
+            IsPublic = updateTrainingPlanModel.IsPublic,
+            TrainingPlanBlocks = updateTrainingPlanModel.Blocks.Select(b => new TrainingPlanBlock
+            {
+                Name = b.Name,
+                TrainingPlanBlockEntries = b.Entries.Select(e => new TrainingPlanBlockEntry
+                {
+                    Description = e.Description,
+                    Group = new Group{Id = e.GroupId}
+                }).ToList()
+            }).ToList()
+        };
+        var result = await _trainingPlansService.Update(newTrainingPlan);
+
+        if (result.IsSuccessful)
+        {
+            return Ok(ResponseModel.GoodResponse(null));
         }
         
-        return RedirectToAction("GetTrainingPlan", "TrainingPlans", new { author, name });
-    }
+        if (result.Exception is AlreadyExistsException)
+        {
+            return BadRequest(ResponseModel.BadResponse(result.Errors));
+        }
+        
+        if (result.Exception is NotFoundException)
+        {
+            return NotFound(ResponseModel.BadResponse(result.Errors));
+        }
 
-    [HttpPost("{author}/{name}/delete")]
-    public async Task<IActionResult> Delete(string author, string name)
+        return StatusCode(StatusCodes.Status500InternalServerError, ResponseModel.BadResponse(result.Errors));
+    }
+    
+    [HttpGet("{author}/{title}/delete")]
+    public async Task<IActionResult> Delete(string author, string title)
     {
         var user = await _userManager.GetUserAsync(User);
         if (user is null)
-            return RedirectToAction("Login", "Accounts", new { returnUrl = $"/training-plans/{author}/{name}/update" });
+            return RedirectToAction("Login", "Accounts", new { returnUrl = $"/training-plans/{author}/{title}/update" });
 
-        var plan = await _trainingPlansService.GetByName(author, name);
+        var plan = await _trainingPlansService.GetByName(author, title);
 
         if (plan is null)
             return this.NotFoundView(new[] { "Plan was not found" });
@@ -157,21 +244,5 @@ public class TrainingPlansController : Controller
         }
 
         return RedirectToAction("GetUserTrainingPlans");
-    }
-    
-    [HttpGet("is-name-free")]
-    public async Task<IActionResult> IsNameFree(string name)
-    {
-        var user = await _userManager.GetUserAsync(User);
-        if (user is null)
-            return Json(false);
-
-        var plans = await _trainingPlansService.GetAll(filterModel: new FilterModel
-        {
-            { FilterOptionNames.TrainingPlan.AuthorId, user.Id.ToString() },
-            { FilterOptionNames.TrainingPlan.NameEquals, name }
-        });
-
-        return Json(!plans.Any());
     }
 }

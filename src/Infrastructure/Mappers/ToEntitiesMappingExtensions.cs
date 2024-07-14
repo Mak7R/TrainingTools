@@ -12,9 +12,9 @@ public static class ToEntitiesMappingExtensions
         {
             Id = trainingPlan.Id,
             Author = trainingPlan.Author,
-            Name = trainingPlan.Name,
+            Title = trainingPlan.Title,
             IsPublic = trainingPlan.IsPublic,
-            TrainingPlanBlocks = trainingPlan.TrainingPlanBlocks.Select(b => b.ToTrainingPlanBlockEntity(i++, generateId))
+            TrainingPlanBlocks = trainingPlan.TrainingPlanBlocks.Select(b => b.ToTrainingPlanBlockEntity(i++, generateId)).ToList()
         };
     }
 
@@ -24,9 +24,9 @@ public static class ToEntitiesMappingExtensions
         return new TrainingPlanBlockEntity
         {
             Id = generateId ? Guid.NewGuid() : Guid.Empty,
-            Name = trainingPlanBlock.Name,
+            Title = trainingPlanBlock.Name,
             Position = position,
-            TrainingPlanBlockEntries = trainingPlanBlock.TrainingPlanBlockEntries.Select(e => e.ToTrainingPlanBlockEntryEntity(i++, generateId))
+            TrainingPlanBlockEntries = trainingPlanBlock.TrainingPlanBlockEntries.Select(e => e.ToTrainingPlanBlockEntryEntity(i++, generateId)).ToList()
         };
     }
 

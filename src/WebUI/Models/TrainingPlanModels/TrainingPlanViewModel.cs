@@ -5,7 +5,7 @@ namespace WebUI.Models.TrainingPlanModels;
 
 public class TrainingPlanViewModel
 {
-    public string Name { get; set; }
+    public string Title { get; set; }
     public UserViewModel Author { get; set; }
     public bool IsPublic { get; set; }
     
