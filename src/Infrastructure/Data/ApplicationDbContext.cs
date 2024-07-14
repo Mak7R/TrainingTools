@@ -92,11 +92,11 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, Applicati
             .HasKey(plan => plan.Id);
 
         builder.Entity<TrainingPlanEntity>()
-            .HasIndex(plan => new { plan.AuthorId, plan.Name })
+            .HasIndex(plan => new { plan.AuthorId, Name = plan.Title })
             .IsUnique();
 
         builder.Entity<TrainingPlanEntity>()
-            .HasIndex(plan => plan.Name);
+            .HasIndex(plan => plan.Title);
         
         builder.Entity<TrainingPlanEntity>()
             .HasMany(p => p.TrainingPlanBlocks)

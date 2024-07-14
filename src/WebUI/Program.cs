@@ -31,6 +31,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 builder.Services.AddControllersWithViews(options =>
 {
     options.ModelBinderProviders.Insert(0, new FilterModelBinderProvider());
+    options.ModelBinderProviders.Insert(0, new UpdateTrainingPlanModelBinderProvider());
 }).AddRazorRuntimeCompilation();
 builder.Services.AddHttpContextAccessor();
 
@@ -88,6 +89,8 @@ else
 }
 
 app.UseExceptionHandlingMiddleware();
+
+Rotativa.AspNetCore.RotativaConfiguration.Setup("wwwroot");
 
 app.UseSerilogRequestLogging();
 app.UseHttpLogging();

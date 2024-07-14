@@ -30,8 +30,8 @@ public class TrainingPlansRepository : ITrainingPlansRepository
     private static readonly ReadOnlyDictionary<string, Func<string, Expression<Func<TrainingPlanEntity, bool>>>> TrainingPlanFilters =
         new(new Dictionary<string, Func<string, Expression<Func<TrainingPlanEntity, bool>>>>
         {
-            { FilterOptionNames.TrainingPlan.Name, value => p => p.Name.Contains(value) },
-            { FilterOptionNames.TrainingPlan.NameEquals, value => p => p.Name == value},
+            { FilterOptionNames.TrainingPlan.Title, value => p => p.Title.Contains(value) },
+            { FilterOptionNames.TrainingPlan.TitleEquals, value => p => p.Title == value},
             {
                 FilterOptionNames.TrainingPlan.Author,
                 value => p => p.Author.UserName != null && p.Author.UserName.Contains(value)
@@ -47,6 +47,7 @@ public class TrainingPlansRepository : ITrainingPlansRepository
                 .Include(plan => plan.Author)
                 .Include(plan => plan.TrainingPlanBlocks)
                 .ThenInclude(block => block.TrainingPlanBlockEntries)
+                .ThenInclude(e => e.Group)
                 .AsNoTracking();
 
             if (filterModel is not null)
@@ -69,6 +70,7 @@ public class TrainingPlansRepository : ITrainingPlansRepository
                 .Include(plan => plan.Author)
                 .Include(plan => plan.TrainingPlanBlocks)
                 .ThenInclude(block => block.TrainingPlanBlockEntries)
+                .ThenInclude(e => e.Group)
                 .AsNoTracking()
                 .FirstOrDefaultAsync(predicate);
             return trainingPlanEntity?.ToTrainingPlan();
@@ -88,7 +90,7 @@ public class TrainingPlansRepository : ITrainingPlansRepository
     public Task<TrainingPlan?> GetByName(string? authorName, string? name)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
-        return GetBy(plan => plan.Name == name && plan.Author.UserName == authorName);
+        return GetBy(plan => plan.Title == name && plan.Author.UserName == authorName);
     }
 
     public async Task<OperationResult> Create(TrainingPlan plan)
@@ -101,7 +103,7 @@ public class TrainingPlansRepository : ITrainingPlansRepository
         {
             var existsPlan = await _dbContext.TrainingPlans
                 .AsNoTracking()
-                .FirstOrDefaultAsync(e => e.Name == plan.Name && e.Author.Id == plan.Author.Id);
+                .FirstOrDefaultAsync(e => e.Title == plan.Title && e.Author.Id == plan.Author.Id);
 
             if (existsPlan is not null)
                 throw new AlreadyExistsException("Plan with this name already exists");
@@ -111,12 +113,12 @@ public class TrainingPlansRepository : ITrainingPlansRepository
         }
         catch (AlreadyExistsException alreadyExistsException)
         {
-            _logger.LogInformation(alreadyExistsException, "Training plan with name '{trainingPlanName}' already exist in database", plan.Name);
+            _logger.LogInformation(alreadyExistsException, "Training plan with name '{trainingPlanName}' already exist in database", plan.Title);
             return DefaultOperationResult.FromException(alreadyExistsException);
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Exception was thrown while adding new training plan '{plan}' to database", plan.Name);
+            _logger.LogError(e, "Exception was thrown while adding new training plan '{plan}' to database", plan.Title);
             return DefaultOperationResult.FromException(new DataBaseException("Error while adding training plan to database", e));
         }
 
@@ -141,17 +143,15 @@ public class TrainingPlansRepository : ITrainingPlansRepository
             
             var planWithSameName = await _dbContext.TrainingPlans
                 .AsNoTracking()
-                .FirstOrDefaultAsync(p => p.Id != existEntity.Id && p.AuthorId == updatedPlan.Author.Id && p.Name == updatedPlan.Name);
+                .FirstOrDefaultAsync(p => p.Id != existEntity.Id && p.AuthorId == updatedPlan.Author.Id && p.Title == updatedPlan.Title);
 
             if (planWithSameName is not null)
                 throw new AlreadyExistsException("Plan with this name already exists");
 
-            existEntity.Name = updatedPlan.Name;
-            existEntity.IsPublic = updatedPlan.IsPublic;
-            existEntity.TrainingPlanBlocks = updatedPlanEntity.TrainingPlanBlocks;
+            _dbContext.TrainingPlans.Remove(existEntity);
+            await _dbContext.TrainingPlans.AddAsync(updatedPlanEntity);
 
             await _dbContext.SaveChangesAsync();
-
         }
         catch (NotFoundException notFoundException)
         {
@@ -160,13 +160,13 @@ public class TrainingPlansRepository : ITrainingPlansRepository
         }
         catch (AlreadyExistsException alreadyExistsException)
         {
-            _logger.LogInformation(alreadyExistsException, "Training plan with name '{trainingPlan}' already exist in database", updatedPlan.Name);
+            _logger.LogInformation(alreadyExistsException, "Training plan with name '{trainingPlan}' already exist in database", updatedPlan.Title);
             return DefaultOperationResult.FromException(alreadyExistsException);
         }
         catch (Exception e)
         {
             _logger.LogError(e, "Exception was thrown while adding new training plan '{trainingPlanId}' to database", updatedPlan.Id);
-            return DefaultOperationResult.FromException(new DataBaseException("Error while adding group to database", e));
+            return DefaultOperationResult.FromException(new DataBaseException("Error while updating training plan in database", e));
         }
 
         return new DefaultOperationResult(true, updatedPlan);

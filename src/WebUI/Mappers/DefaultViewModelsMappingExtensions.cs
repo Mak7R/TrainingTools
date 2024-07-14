@@ -106,7 +106,7 @@ public static class DefaultViewModelsMappingExtensions
     {
         return new TrainingPlanViewModel
         {
-            Name = trainingPlan.Name,
+            Title = trainingPlan.Title,
             Author = trainingPlan.Author.ToUserViewModel(),
             IsPublic = trainingPlan.IsPublic,
             TrainingPlanBlocks = trainingPlan.TrainingPlanBlocks

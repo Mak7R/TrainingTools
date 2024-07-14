@@ -12,7 +12,7 @@ public class TrainingPlanBlockEntity
     public int Position { get; set; }
     
     [StringLength(MaxBlockNameSize)]
-    public string Name { get; set; }
+    public string Title { get; set; }
     
     public IEnumerable<TrainingPlanBlockEntryEntity> TrainingPlanBlockEntries { get; set; }
 }

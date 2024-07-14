@@ -1,0 +1,280 @@
+﻿@model UpdateTrainingPlanModel
+
+@{
+    ViewBag.Title = $"Update training plan {Model.NewTitle}";
+}
+
+<div class="container">
+    <div class="form-horizontal">
+        <div class="form-group">
+            <input asp-for="Id" value="@Model.Id" hidden/>
+        </div>
+        
+        <div class="form-group">
+            <label asp-for="NewTitle" class="control-label col-md-2">Title</label>
+            <div class="col-md-10">
+                <input asp-for="NewTitle" class="form-control" oninput="trainingPlan.editTrainingPlan(this.value, null)"/>
+                <span asp-validation-for="NewTitle" class="text-danger"></span>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="IsPublic" class="control-label col-md-2">Public: </label>
+            <input asp-for="IsPublic" type="checkbox" class="form-check-input" onclick="trainingPlan.editTrainingPlan(null, this.checked)"/>
+        </div>
+
+        <div class="form-group">
+            <table id="training-plan-table" class="table table-bordered">
+                
+            </table>
+        </div>
+
+        <div class="form-group">
+            <div class="col-md-offset-2 col-md-10">
+                <button onclick="trainingPlan.submit()" class="btn btn-primary">Update</button>
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <ul class="text-danger" id="update-errors">
+                
+            </ul>
+        </div>
+        
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial"/>
+
+    <script>
+        class TrainingPlan {
+            constructor(id = '', newTitle = '', isPublic = false, blocks = [], availableGroups = []) {
+                this.id = id;
+                this.newTitle = newTitle;
+                this.isPublic = isPublic;
+                this.blocks = blocks;
+                this.__availableGroups = availableGroups;
+            }
+            
+            editTrainingPlan(newTitle, isPublic){
+                if (newTitle !== null) {this.newTitle = newTitle;}
+                if (isPublic !== null) {this.isPublic = isPublic;}
+            }
+
+            addBlock(blockName = '') {
+                const newBlock = {
+                    name: blockName,
+                    entries: []
+                };
+                this.blocks.push(newBlock);
+            }
+
+            editBlockName(blockIndex, newName) {
+                if (blockIndex >= 0 && blockIndex < this.blocks.length) {
+                    this.blocks[blockIndex].name = newName;
+                }
+            }
+
+            removeBlock(index) {
+                if (index >= 0 && index < this.blocks.length) {
+                    this.blocks.splice(index, 1);
+                }
+            }
+
+            addEntry(blockIndex) {
+                if (blockIndex >= 0 && blockIndex < this.blocks.length && this.__availableGroups.length > 0) {
+                    const newEntry = {
+                        groupId: this.__availableGroups[0].id, // Assigning the first available group ID
+                        description: ''
+                    };
+                    this.blocks[blockIndex].entries.push(newEntry);
+                }
+            }
+
+            editEntry(blockIndex, entryIndex, groupId, description) {
+                if (blockIndex >= 0 && blockIndex < this.blocks.length && entryIndex >= 0 && entryIndex < this.blocks[blockIndex].entries.length) {
+                    if (groupId !== null) {this.blocks[blockIndex].entries[entryIndex].groupId = groupId;}
+                    if (description !== null) {this.blocks[blockIndex].entries[entryIndex].description = description;}
+                }
+            }
+
+            removeEntry(blockIndex, entryIndex) {
+                if (blockIndex >= 0 && blockIndex < this.blocks.length && entryIndex >= 0 && entryIndex < this.blocks[blockIndex].entries.length) {
+                    this.blocks[blockIndex].entries.splice(entryIndex, 1);
+                }
+            }
+
+            renderTable() {
+                const table = document.getElementById('training-plan-table');
+
+                // Clear current table contents
+                table.innerHTML = '';
+
+                // Table header row for blocks
+                const headerRow = document.createElement('tr');
+                
+                this.blocks.forEach((block, blockIndex) => {
+                    const blockHeaderCell = document.createElement('th');
+                    blockHeaderCell.innerHTML = `
+                            <div class="input-group">
+                                <input class="form-control" id="input-block-name-${blockIndex}" value="${block.name}" placeholder="Block Name" oninput="trainingPlan.editBlockName(${blockIndex}, this.value);"/>
+                                <div class="input-group-append">
+                                    <button type="button" class="btn btn-danger btn-sm" onclick="trainingPlan.removeBlock(${blockIndex});trainingPlan.renderTable()">
+                                        <img src="/img/icons/bin.svg" style="width: 2em; height: 2em" alt="remove"/>
+                                    </button>
+                                </div>
+                            </div>`;
+                    headerRow.appendChild(blockHeaderCell);
+                });
+                
+                const addBlockButton = document.createElement('th');
+                addBlockButton.innerHTML = `
+                    <button type="button" class="btn btn-success btn-sm" onclick="trainingPlan.addBlock();trainingPlan.renderTable()">
+                        Add Block
+                    </button>
+                `
+                
+                headerRow.appendChild(addBlockButton)
+                
+                const thead = document.createElement('thead');
+                thead.appendChild(headerRow);
+                table.appendChild(thead);
+
+                // Table body for entries
+                const tbody = document.createElement('tbody');
+                
+                const blocksCount = this.blocks.length;
+                const maxEntries = this.blocks.length === 0 ? 0: Math.max(...this.blocks.map(block => block.entries.length));
+
+                for (let i = 0; i <= maxEntries; i++) {
+                    const entryRow = document.createElement('tr');
+
+                    // Add block entry cells
+                    this.blocks.forEach((block, blockIndex) => {
+                        const entryCell = document.createElement('td');
+                        if (i < block.entries.length) {
+                            const entry = block.entries[i];
+                            
+                            entryCell.innerHTML = `
+                                <div class="form-group">
+                                    <div class="input-group">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text">Group</span>
+                                        </div>
+                                        <select class="form-control" onchange="trainingPlan.editEntry(${blockIndex}, ${i}, this.value, null)">
+                                            ${AvailableGroups.map(group => `<option value='${group.id}' ${group.id === entry.groupId ? 'selected' : ''}>${group.name}</option>`).join('')}
+                                        </select>
+                                        <div class="input-group-append">
+                                            <button type="button" class="btn btn-danger btn-sm" onclick="trainingPlan.removeEntry(${blockIndex}, ${i});trainingPlan.renderTable()">
+                                                <img src="/img/icons/bin.svg" style="width: 2em; height: 2em" alt="remove"/>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label>Description</label>
+                                    <textarea class="form-control" rows="2" oninput="trainingPlan.editEntry(${blockIndex}, ${i}, null, this.value)"></textarea>
+                                </div>
+                            `;
+                        } else if (i === block.entries.length){
+                            entryCell.innerHTML = `
+                                <button type="button" class="btn btn-success btn-sm" onclick="trainingPlan.addEntry(${blockIndex}); trainingPlan.renderTable()">Add Entry</button>
+                            `;
+                        } else {
+                            // ignore
+                        }
+                        entryRow.appendChild(entryCell);
+                    });
+                    
+                    tbody.appendChild(entryRow);
+                }
+
+                // Append tbody to the table
+                table.appendChild(tbody);
+            }
+
+            submit() {
+                const data = {
+                    id: this.id,
+                    newTitle: this.newTitle,
+                    isPublic: this.isPublic,
+                    blocks: this.blocks.map(block => ({
+                        name: block.name,
+                        entries: block.entries.map(entry => ({
+                            groupId: entry.groupId,
+                            description: entry.description
+                        }))
+                    }))
+                };
+
+                // Example of sending data using fetch API
+                fetch(window.location.href, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        return response.json().then(errorData => {
+                            const errors = errorData.Errors || [];
+                            const errorList = errors.map(error => `<li>${error}</li>`).join('');
+                            document.getElementById('update-errors').innerHTML = errorList;
+                            throw new Error('Network response was not ok');
+                        });
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    const currentUrl = window.location.href;
+                    const baseUrl = currentUrl.split('/update')[0];
+                    window.location.href = baseUrl.substring(0, baseUrl.lastIndexOf("/") + 1) + this.newTitle;
+                })
+                .catch(error => {
+                    console.error('Error submitting data:', error);
+                    const errorElement = document.getElementById('update-errors');
+                    if (errorElement) {
+                        errorElement.innerHTML = `<li>Failed to submit the update.</li>`;
+                    }
+                });
+            }
+        }
+
+        
+        const AvailableGroups = [
+            @foreach (GroupViewModel group in ViewBag.AvailableGroups)
+            {
+                @:{id: '@group.Id', name: '@Html.Raw(group.Name)'},
+            }
+        ];
+
+        let currentBlocks = [
+            @foreach (var block in Model.Blocks)
+            {
+                @:{ name: '@Html.Raw(block.Name)', entries: [
+                @foreach (var entry in block.Entries)
+                {
+                    @: { description: '@Html.Raw(entry.Description)', groupId: '@entry.GroupId' },
+                }
+
+                @:]},
+            }
+        ]
+
+        @if (Model.IsPublic)
+        {
+            @: let isPublic = true;
+        }
+        else
+        {
+            @: let isPublic = false;
+        }
+
+        
+        const trainingPlan = new TrainingPlan('@Model.Id', '@Html.Raw(Model.NewTitle)', isPublic, currentBlocks, AvailableGroups);
+        
+        trainingPlan.renderTable();
+    </script>
+}

@@ -49,7 +49,7 @@ public static class ToDomainModelsMappingExtensions
         return new TrainingPlan
         {
             Id = trainingPlanEntity.Id,
-            Name = trainingPlanEntity.Name,
+            Title = trainingPlanEntity.Title,
             IsPublic = trainingPlanEntity.IsPublic,
             Author = trainingPlanEntity.Author,
             TrainingPlanBlocks = trainingPlanEntity.TrainingPlanBlocks
@@ -63,7 +63,7 @@ public static class ToDomainModelsMappingExtensions
     {
         return new TrainingPlanBlock
         {
-            Name = trainingPlanBlockEntity.Name,
+            Name = trainingPlanBlockEntity.Title,
             TrainingPlanBlockEntries = trainingPlanBlockEntity.TrainingPlanBlockEntries
                 .OrderBy(e => e.Position)
                 .Select(e => e.ToTrainingPlanBlock())

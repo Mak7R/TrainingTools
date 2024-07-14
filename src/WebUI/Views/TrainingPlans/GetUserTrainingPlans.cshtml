@@ -4,3 +4,51 @@
     ViewBag.Title = "My Training Plans";
 }
 
+<div class="container">
+    <table class="table table-striped table-hover">
+        <thead>
+        <tr>
+            <th class="col-2 fs-5">
+                Author
+            </th>
+            <th class="col-3 fs-5">
+                Name
+            </th>
+            <th class="col-1 fs-5">
+                State
+            </th>
+            <th class="col-1 fs-5">
+                Actions
+            </th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var plan in Model)
+        {
+            <tr>
+                <td>
+                    <a asp-controller="Users" asp-action="GetUser" asp-route-userName="@plan.Author.Username">@plan.Author.Username</a>
+                </td>
+                <td>
+                    <a asp-controller="TrainingPlans" asp-action="GetTrainingPlan" asp-route-author="@plan.Author.Username" asp-route-title="@plan.Title">@plan.Title</a>
+                </td>
+                <td>
+                    @if (plan.IsPublic)
+                    {
+                        <span class="badge rounded-pill text-bg-primary">public</span>
+                    }
+                    else
+                    {
+                        <span class="badge rounded-pill text-bg-secondary">private</span>
+                    }
+                </td>
+                <td>
+                    
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+    
+    <a class="btn btn-success d-block w-100" asp-controller="TrainingPlans" asp-action="Create">Create Training Plan</a>
+</div>

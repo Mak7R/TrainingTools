@@ -17,7 +17,7 @@ namespace Infrastructure.Data.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.6")
+                .HasAnnotation("ProductVersion", "8.0.7")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -241,34 +241,29 @@ namespace Infrastructure.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("Name")
+                    b.Property<int>("Position")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Title")
                         .IsRequired()
                         .HasMaxLength(32)
                         .HasColumnType("nvarchar(32)");
 
-                    b.Property<int>("Position")
-                        .HasColumnType("int");
-
-                    b.Property<Guid>("TrainingPlanId")
+                    b.Property<Guid?>("TrainingPlanEntityId")
                         .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("TrainingPlanId");
-
-                    b.HasIndex("TrainingPlanId", "Position")
-                        .IsUnique();
+                    b.HasIndex("TrainingPlanEntityId");
 
                     b.ToTable("TrainingPlanBlock", (string)null);
                 });
 
             modelBuilder.Entity("Infrastructure.Entities.TrainingPlanEntities.TrainingPlanBlockEntryEntity", b =>
                 {
-                    b.Property<Guid>("TrainingPlanBlockId")
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
-
-                    b.Property<int>("Position")
-                        .HasColumnType("int");
 
                     b.Property<string>("Desctiption")
                         .IsRequired()
@@ -278,11 +273,17 @@ namespace Infrastructure.Data.Migrations
                     b.Property<Guid>("GroupId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.HasKey("TrainingPlanBlockId", "Position");
+                    b.Property<int>("Position")
+                        .HasColumnType("int");
+
+                    b.Property<Guid?>("TrainingPlanBlockEntityId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
 
                     b.HasIndex("GroupId");
 
-                    b.HasIndex("TrainingPlanBlockId");
+                    b.HasIndex("TrainingPlanBlockEntityId");
 
                     b.ToTable("TrainingPlanBlockEntry", (string)null);
                 });
@@ -299,16 +300,16 @@ namespace Infrastructure.Data.Migrations
                     b.Property<bool>("IsPublic")
                         .HasColumnType("bit");
 
-                    b.Property<string>("Name")
+                    b.Property<string>("Title")
                         .IsRequired()
                         .HasMaxLength(64)
                         .HasColumnType("nvarchar(64)");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Name");
+                    b.HasIndex("Title");
 
-                    b.HasIndex("AuthorId", "Name")
+                    b.HasIndex("AuthorId", "Title")
                         .IsUnique();
 
                     b.ToTable("TrainingPlan", (string)null);
@@ -487,13 +488,9 @@ namespace Infrastructure.Data.Migrations
 
             modelBuilder.Entity("Infrastructure.Entities.TrainingPlanEntities.TrainingPlanBlockEntity", b =>
                 {
-                    b.HasOne("Infrastructure.Entities.TrainingPlanEntities.TrainingPlanEntity", "TrainingPlan")
+                    b.HasOne("Infrastructure.Entities.TrainingPlanEntities.TrainingPlanEntity", null)
                         .WithMany("TrainingPlanBlocks")
-                        .HasForeignKey("TrainingPlanId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("TrainingPlan");
+                        .HasForeignKey("TrainingPlanEntityId");
                 });
 
             modelBuilder.Entity("Infrastructure.Entities.TrainingPlanEntities.TrainingPlanBlockEntryEntity", b =>
@@ -504,15 +501,11 @@ namespace Infrastructure.Data.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Infrastructure.Entities.TrainingPlanEntities.TrainingPlanBlockEntity", "TrainingPlanBlock")
+                    b.HasOne("Infrastructure.Entities.TrainingPlanEntities.TrainingPlanBlockEntity", null)
                         .WithMany("TrainingPlanBlockEntries")
-                        .HasForeignKey("TrainingPlanBlockId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("TrainingPlanBlockEntityId");
 
                     b.Navigation("Group");
-
-                    b.Navigation("TrainingPlanBlock");
                 });
 
             modelBuilder.Entity("Infrastructure.Entities.TrainingPlanEntities.TrainingPlanEntity", b =>
