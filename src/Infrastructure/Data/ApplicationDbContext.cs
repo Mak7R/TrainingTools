@@ -100,7 +100,8 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, Applicati
         
         builder.Entity<TrainingPlanEntity>()
             .HasMany(p => p.TrainingPlanBlocks)
-            .WithOne();
+            .WithOne()
+            .OnDelete(DeleteBehavior.Cascade);
 
 
         builder.Entity<TrainingPlanBlockEntity>()
@@ -109,7 +110,8 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, Applicati
 
         builder.Entity<TrainingPlanBlockEntity>()
             .HasMany(block => block.TrainingPlanBlockEntries)
-            .WithOne();
+            .WithOne()
+            .OnDelete(DeleteBehavior.Cascade);
 
 
         builder.Entity<TrainingPlanBlockEntryEntity>()

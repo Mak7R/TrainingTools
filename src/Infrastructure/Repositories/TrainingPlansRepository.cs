@@ -37,7 +37,7 @@ public class TrainingPlansRepository : ITrainingPlansRepository
                 value => p => p.Author.UserName != null && p.Author.UserName.Contains(value)
             },
             { FilterOptionNames.TrainingPlan.AuthorId, value => Guid.TryParse(value, out var authorId) ? _ => false : p => p.AuthorId == authorId },
-            { FilterOptionNames.TrainingPlan.PublicOnly, value => value == "true" ? p => true : p => p.IsPublic }
+            { FilterOptionNames.TrainingPlan.PublicOnly, value => value == "true" ? p => p.IsPublic : p => true }
         });
     public async Task<IEnumerable<TrainingPlan>> GetAll(FilterModel? filterModel = null)
     {
@@ -67,11 +67,12 @@ public class TrainingPlansRepository : ITrainingPlansRepository
         try
         {
             var trainingPlanEntity = await _dbContext.TrainingPlans
+                .AsNoTracking()
                 .Include(plan => plan.Author)
                 .Include(plan => plan.TrainingPlanBlocks)
                 .ThenInclude(block => block.TrainingPlanBlockEntries)
                 .ThenInclude(e => e.Group)
-                .AsNoTracking()
+                
                 .FirstOrDefaultAsync(predicate);
             return trainingPlanEntity?.ToTrainingPlan();
         }
