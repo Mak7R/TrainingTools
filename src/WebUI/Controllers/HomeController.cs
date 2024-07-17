@@ -1,7 +1,9 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc;
-using WebUI.Models;
+using WebUI.Extensions;
+using WebUI.Models.Shared;
 
 namespace WebUI.Controllers;
 
@@ -26,6 +28,27 @@ public class HomeController : Controller
     public IActionResult Privacy()
     {
         return View();
+    }
+    
+    [HttpGet("/set-lang")]
+    public IActionResult SetLanguage(string culture, string returnUrl)
+    {
+        try
+        {
+            Response.Cookies.Append(
+                CookieRequestCultureProvider.DefaultCookieName,
+                CookieRequestCultureProvider.MakeCookieValue(new RequestCulture(culture)),
+                new CookieOptions { Expires = DateTimeOffset.UtcNow.AddYears(1) }
+            );
+        }
+        catch (Exception e)
+        {
+            return this.BadRequestView(new []{e.Message});
+        }
+        
+        if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl)) 
+            return LocalRedirect(returnUrl);
+        return RedirectToAction("Index", "Home");
     }
 
     [Route("/error")]

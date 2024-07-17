@@ -10,12 +10,13 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WebUI.Extensions;
 using WebUI.Filters;
-using WebUI.Mappers;
+using WebUI.Mapping.Mappers;
 using WebUI.ModelBinding.CustomModelBinders;
-using WebUI.Models.ExerciseModels;
-using WebUI.Models.ExerciseResultModels;
-using WebUI.Models.GroupModels;
-using WebUI.Models.SharedModels;
+using WebUI.Models.Exercise;
+using WebUI.Models.ExerciseResult;
+using WebUI.Models.Group;
+using WebUI.Models.Shared;
+
 namespace WebUI.Controllers;
 
 [Controller]

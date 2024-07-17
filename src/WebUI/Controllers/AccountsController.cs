@@ -1,22 +1,30 @@
-﻿using Domain.Enums;
+﻿using AutoMapper;
+using Domain.Enums;
 using Domain.Identity;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using WebUI.Extensions;
-using WebUI.Mappers;
-using WebUI.Models.AccountModels;
+using WebUI.Models.Account;
 
 namespace WebUI.Controllers;
 
 [Controller]
 [Route("[controller]/[action]")]
 [AllowAnonymous]
-public class AccountsController(
-    UserManager<ApplicationUser> userManager,
-    SignInManager<ApplicationUser> signInManager)
-    : Controller
+public class AccountsController : Controller
 {
+    private readonly UserManager<ApplicationUser> _userManager;
+    private readonly SignInManager<ApplicationUser> _signInManager;
+    private readonly IMapper _mapper;
+
+    public AccountsController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, IMapper mapper)
+    {
+        _userManager = userManager;
+        _signInManager = signInManager;
+        _mapper = mapper;
+    }
+    
     [AllowAnonymous]
     [HttpGet("/register")]
     public IActionResult Register()
@@ -30,20 +38,13 @@ public class AccountsController(
     {
         if (!ModelState.IsValid) return View(registerDto);
 
-        var newUser = new ApplicationUser
-        {
-            UserName = registerDto.Username,
-            Email = registerDto.Email,
-            PhoneNumber = registerDto.Phone,
-            About = registerDto.About,
-            IsPublic = registerDto.IsPublic
-        };
+        var newUser = _mapper.Map<ApplicationUser>(registerDto);
 
-        var result = await userManager.CreateAsync(newUser, registerDto.Password);
+        var result = await _userManager.CreateAsync(newUser, registerDto.Password);
         if (result.Succeeded)
         {
-            await userManager.AddToRoleAsync(newUser, nameof(Role.User));
-            await signInManager.SignInAsync(newUser, isPersistent: true);
+            await _userManager.AddToRoleAsync(newUser, nameof(Role.User));
+            await _signInManager.SignInAsync(newUser, isPersistent: true);
         }
         else
         {
@@ -75,11 +76,11 @@ public class AccountsController(
 
         if (loginDto.EmailOrUsername!.Contains('@'))
         {
-            user = await userManager.FindByEmailAsync(loginDto.EmailOrUsername!);
+            user = await _userManager.FindByEmailAsync(loginDto.EmailOrUsername!);
         }
         else
         {
-            user = await userManager.FindByNameAsync(loginDto.EmailOrUsername);
+            user = await _userManager.FindByNameAsync(loginDto.EmailOrUsername);
         }
         
         if (user is null)
@@ -88,7 +89,7 @@ public class AccountsController(
             return View(loginDto);
         }
         
-        var result = await signInManager.PasswordSignInAsync(user.UserName!, loginDto.Password!, isPersistent: true, lockoutOnFailure: false);
+        var result = await _signInManager.PasswordSignInAsync(user.UserName!, loginDto.Password!, isPersistent: true, lockoutOnFailure: false);
         
         if (result.Succeeded)
         {
@@ -105,7 +106,7 @@ public class AccountsController(
     [Route("/logout")]
     public async Task<IActionResult> Logout()
     {
-        await signInManager.SignOutAsync();
+        await _signInManager.SignOutAsync();
         return LocalRedirect("/");
     }
 
@@ -113,30 +114,23 @@ public class AccountsController(
     [HttpGet("/profile")]
     public async Task<IActionResult> Profile()
     {
-        var user = await userManager.GetUserAsync(User);
+        var user = await _userManager.GetUserAsync(User);
         if (user == null) return RedirectToAction("Login","Accounts", new {ReturnUrl = "/profile"});
-        
-        return View(user.ToProfileViewModel(await userManager.GetRolesAsync(user)));
+
+        var profile = _mapper.Map<ProfileViewModel>(user);
+        profile.Roles = await _userManager.GetRolesAsync(user);
+        return View(profile);
     }
     
     [Authorize]
     [HttpGet("/profile/update")]
     public async Task<IActionResult> UpdateProfile()
     {
-        var user = await userManager.GetUserAsync(HttpContext.User);
+        var user = await _userManager.GetUserAsync(HttpContext.User);
         if (user == null)
-        {
             return RedirectToAction("Login","Accounts", new {ReturnUrl = "/profile"});
-        }
 
-        var updateProfileDto = new UpdateProfileDto
-        {
-            Username = user.UserName,
-            Email = user.Email,
-            Phone = user.PhoneNumber,
-            About = user.About,
-            IsPublic = user.IsPublic
-        };
+        var updateProfileDto = _mapper.Map<UpdateProfileDto>(user);
         
         return View(updateProfileDto);
     }
@@ -150,7 +144,7 @@ public class AccountsController(
         if (!ModelState.IsValid)
             return View(updateProfileDto);
         
-        var user = await userManager.GetUserAsync(HttpContext.User);
+        var user = await _userManager.GetUserAsync(HttpContext.User);
         if (user == null) return this.NotFoundView("User was not found");
 
         user.UserName = updateProfileDto.Username;
@@ -159,28 +153,28 @@ public class AccountsController(
         user.IsPublic = updateProfileDto.IsPublic;
         user.About = updateProfileDto.About;
 
-        if (await userManager.CheckPasswordAsync(user, updateProfileDto.CurrentPassword!))
+        if (await _userManager.CheckPasswordAsync(user, updateProfileDto.CurrentPassword!))
         {
-            var result = await userManager.UpdateAsync(user);
+            var result = await _userManager.UpdateAsync(user);
             if (!result.Succeeded) return this.BadRequestView(result.Errors.Select(err=>err.Description));
             
             if (!string.IsNullOrWhiteSpace(updateProfileDto.NewPassword))
             {
-                var updatePasswordResult = await userManager.ChangePasswordAsync(user, updateProfileDto.CurrentPassword!, updateProfileDto.NewPassword);
+                var updatePasswordResult = await _userManager.ChangePasswordAsync(user, updateProfileDto.CurrentPassword!, updateProfileDto.NewPassword);
                 if (!updatePasswordResult.Succeeded) return this.BadRequestView(updatePasswordResult.Errors.Select(err=>err.Description));
             }
             
-            var roles = await userManager.GetRolesAsync(user);
+            var roles = await _userManager.GetRolesAsync(user);
             if (roles.Contains(nameof(Role.Admin)) || roles.Contains(nameof(Role.Root)))
             {
                 var isTrainer = roles.Contains(nameof(Role.Trainer));
                 if (!isTrainer && updateProfileDto.IsTrainer)
                 {
-                    await userManager.AddToRoleAsync(user, nameof(Role.Trainer));
+                    await _userManager.AddToRoleAsync(user, nameof(Role.Trainer));
                 }
                 else if (isTrainer && !updateProfileDto.IsTrainer)
                 {
-                    await userManager.RemoveFromRoleAsync(user, nameof(Role.Trainer));
+                    await _userManager.RemoveFromRoleAsync(user, nameof(Role.Trainer));
                 }
             }
 
@@ -194,21 +188,21 @@ public class AccountsController(
     [HttpPost]
     public async Task<IActionResult> DeleteAccount([FromForm] string? password)
     {
-        var user = await userManager.GetUserAsync(HttpContext.User);
+        var user = await _userManager.GetUserAsync(HttpContext.User);
         if (user == null)
             return RedirectToAction("Login","Accounts");
 
         if (string.IsNullOrWhiteSpace(password)) return this.BadRequestView(new[] { "Invalid password" });
 
-        if (!await userManager.CheckPasswordAsync(user, password))
+        if (!await _userManager.CheckPasswordAsync(user, password))
         {
             return this.BadRequestView(new[] { "Invalid password" });
         }
         
-        var result = await userManager.DeleteAsync(user);
+        var result = await _userManager.DeleteAsync(user);
         if (result.Succeeded)
         {
-            await signInManager.SignOutAsync();
+            await _signInManager.SignOutAsync();
             return RedirectToAction("Index", "Home");
         }
         return this.ErrorView(500, result.Errors.Select(err => err.Description));
@@ -221,7 +215,7 @@ public class AccountsController(
         {
             return Json(false);
         }
-        var user = await userManager.FindByEmailAsync(email);
+        var user = await _userManager.FindByEmailAsync(email);
         return Json(user == null);
     }
     
@@ -232,7 +226,7 @@ public class AccountsController(
         {
             return Json(false);
         }
-        var user = await userManager.FindByNameAsync(userName);
+        var user = await _userManager.FindByNameAsync(userName);
         return Json(user == null);
     }
 

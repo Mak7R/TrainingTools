@@ -8,10 +8,10 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using WebUI.Extensions;
 using WebUI.Filters;
-using WebUI.Mappers;
+using WebUI.Mapping.Mappers;
 using WebUI.ModelBinding.CustomModelBinders;
-using WebUI.Models.SharedModels;
-using WebUI.Models.UserModels;
+using WebUI.Models.Shared;
+using WebUI.Models.User;
 
 namespace WebUI.Controllers;
 
@@ -32,7 +32,7 @@ public class UsersController : Controller
     
     [HttpGet("")]
     [TypeFilter(typeof(QueryValuesProvidingActionFilter), Arguments = new object[] { typeof(DefaultOrderOptions) })]
-    public async Task<IActionResult> GetAllUsers([FromQuery] OrderModel? orderModel, [ModelBinder(typeof(FilterModelBinder))]FilterModel? filterModel)
+    public async Task<IActionResult> GetAll([FromQuery] OrderModel? orderModel, [ModelBinder(typeof(FilterModelBinder))]FilterModel? filterModel)
     {
         var user = await _userManager.GetUserAsync(User);
         if (user is null) return RedirectToAction("Login", "Accounts", new {ReturnUrl = "/users"});
@@ -44,7 +44,7 @@ public class UsersController : Controller
     
     [HttpGet("as-csv")]
     [Authorize(Roles = "Admin,Root")]
-    public async Task<IActionResult> GetAllUsersAsCsv()
+    public async Task<IActionResult> GetAllAsCsv()
     {
         var stream = await _usersService.GetAllUsersAsCsv();
 
@@ -52,7 +52,7 @@ public class UsersController : Controller
     }
 
     [HttpGet("{userName}")]
-    public async Task<IActionResult> GetUser(string? userName)
+    public async Task<IActionResult> Get(string? userName)
     {
         if (string.IsNullOrWhiteSpace(userName))
             return this.BadRequestView(new [] {"UserName was empty"});
@@ -71,44 +71,42 @@ public class UsersController : Controller
     
     [Authorize(Roles = "Admin,Root")]
     [HttpGet("create")]
-    public IActionResult CreateUser()
+    public IActionResult Create()
     {
         return View();
     }
     
     [Authorize(Roles = "Admin,Root")]
     [HttpPost("create")]
-    public async Task<IActionResult> CreateUser(CreateUserDto createUserDto)
+    public async Task<IActionResult> Create(CreateUserModel createUserModel)
     {
         var user = await _userManager.GetUserAsync(User);
         if (user is null) return RedirectToAction("Login", "Accounts", new {ReturnUrl = "/users/create"});
         
         if (!ModelState.IsValid)
-            return View(createUserDto);
+            return View(createUserModel);
 
         var appCreateUserDto = new Application.Dtos.CreateUserDto
         {
-            Username = createUserDto.Username,
-            Email = createUserDto.Email,
-            Phone = createUserDto.Phone,
-            IsPublic = createUserDto.IsPublic,
-            IsAdmin = createUserDto.IsAdmin,
-            Password = createUserDto.Password
+            Username = createUserModel.UserName,
+            Email = createUserModel.Email,
+            Phone = createUserModel.Phone,
+            IsPublic = createUserModel.IsPublic,
+            IsAdmin = createUserModel.IsAdmin,
+            Password = createUserModel.Password
         };
         
         var result = await _usersService.Create(user, appCreateUserDto);
 
         if (!result.IsSuccessful)
-        {
             this.BadRequestView(result.Errors);
-        }
 
-        return RedirectToAction("GetUser", new {userName = createUserDto.Username});
+        return RedirectToAction("Get", new {userName = createUserModel.UserName});
     }
 
     [Authorize(Roles = "Admin,Root")]
     [HttpGet("{userName}/update")]
-    public async Task<IActionResult> UpdateUser(string? userName)
+    public async Task<IActionResult> Update(string? userName)
     {
         if (string.IsNullOrWhiteSpace(userName))
             return this.BadRequestView(new[] { "User name was empty" });
@@ -119,21 +117,21 @@ public class UsersController : Controller
         var user = await _usersService.GetByName(currentUser, userName);
         if (user is null) return this.NotFoundView("User was not found");
         
-        var updateUserDto = new UpdateUserDto
+        var updateUserModel= new UpdateUserModel
         {
-            UpdateUsername = user.User.UserName,
+            UpdateUserName = user.User.UserName,
             IsAdmin = user.Roles.Contains(nameof(Role.Admin)),
             ClearAbout = false,
             SetPrivate = false,
             IsTrainer = user.Roles.Contains(nameof(Role.Trainer))
         };
         
-        return View(updateUserDto);
+        return View(updateUserModel);
     }
     
     [Authorize(Roles = "Admin,Root")]
     [HttpPost("{userName}/update")]
-    public async Task<IActionResult> UpdateUser([FromRoute] string? userName, [FromForm] UpdateUserDto updateUserDto)
+    public async Task<IActionResult> Update([FromRoute] string? userName, [FromForm] UpdateUserModel updateUserModel)
     {
         if (string.IsNullOrWhiteSpace(userName))
             return this.BadRequestView(new[] { "User name was empty" });
@@ -142,31 +140,29 @@ public class UsersController : Controller
         if (user is null) return RedirectToAction("Login", "Accounts", new {ReturnUrl = $"/users/{userName}/update"});
         
         if (!ModelState.IsValid)
-            return View(updateUserDto);
+            return View(updateUserModel);
         
         var appUpdateUserDto = new Application.Dtos.UpdateUserDto
         {
             CurrentUserName = userName,
-            Username = updateUserDto.UpdateUsername,
-            ClearAbout = updateUserDto.ClearAbout,
-            IsAdmin = updateUserDto.IsAdmin,
-            SetPrivate = updateUserDto.SetPrivate,
-            IsTrainer = updateUserDto.IsTrainer  
+            Username = updateUserModel.UpdateUserName,
+            ClearAbout = updateUserModel.ClearAbout,
+            IsAdmin = updateUserModel.IsAdmin,
+            SetPrivate = updateUserModel.SetPrivate,
+            IsTrainer = updateUserModel.IsTrainer  
         };
         
         var result = await _usersService.Update(user, appUpdateUserDto);
         
         if (!result.IsSuccessful)
-        {
             this.BadRequestView(result.Errors);
-        }
 
-        return RedirectToAction("GetUser", new {userName = appUpdateUserDto.Username});
+        return RedirectToAction("Get", new {userName = appUpdateUserDto.Username});
     }
 
     [Authorize(Roles = "Admin,Root")]
     [HttpGet("{userName}/delete")]
-    public async Task<IActionResult> DeleteUser([FromRoute] string? userName)
+    public async Task<IActionResult> Delete([FromRoute] string? userName)
     {
         if (string.IsNullOrWhiteSpace(userName))
             return this.BadRequestView(new[] { "User name was empty" });
@@ -176,6 +172,6 @@ public class UsersController : Controller
         
         var result = await _usersService.Delete(user, userName);
         if (!result.IsSuccessful) return this.BadRequestView(result.Errors);
-        return RedirectToAction("GetAllUsers");
+        return RedirectToAction("GetAll", "Users");
     }
 }

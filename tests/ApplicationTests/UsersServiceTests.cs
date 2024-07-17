@@ -7,6 +7,7 @@ using Domain.Enums;
 using Domain.Identity;
 using FluentAssertions;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using Moq;
 
@@ -18,6 +19,7 @@ public class UsersServiceTests
     private readonly Mock<IFriendsRepository> _friendsRepositoryMock;
     private readonly Mock<ILogger<UsersService>> _loggerMock;
     private readonly UsersService _usersService;
+    private readonly Mock<IStringLocalizer<UsersService>> _localizerMock;
 
     public UsersServiceTests()
     {
@@ -27,11 +29,14 @@ public class UsersServiceTests
 
         _friendsRepositoryMock = new Mock<IFriendsRepository>();
         _loggerMock = new Mock<ILogger<UsersService>>();
-
+        _localizerMock = new Mock<IStringLocalizer<UsersService>>();
+        
         _usersService = new UsersService(
             _userManagerMock.Object,
             _friendsRepositoryMock.Object,
-            _loggerMock.Object);
+            _loggerMock.Object,
+            _localizerMock.Object
+            );
     }
 
     #region GetAllUsers

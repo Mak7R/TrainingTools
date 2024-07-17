@@ -1,102 +1,93 @@
 ﻿using Application.Interfaces.ServiceInterfaces;
 using Application.Models.Shared;
+using AutoMapper;
 using Domain.Exceptions;
 using Domain.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using WebUI.Extensions;
 using WebUI.Filters;
-using WebUI.Mappers;
 using WebUI.ModelBinding.CustomModelBinders;
-using WebUI.Models.GroupModels;
-using WebUI.Models.SharedModels;
+using WebUI.Models.Group;
+using WebUI.Models.Shared;
 
 namespace WebUI.Controllers;
 
 [Controller]
-[Authorize(Roles = "Admin,Root")]
+[AllowAnonymous]
 [Route("groups")]
 public class GroupsController : Controller
 {
     private readonly IGroupsService _groupsService;
-
-    // ReSharper disable once ConvertToPrimaryConstructor
-    public GroupsController(IGroupsService groupsService)
+    private readonly IMapper _mapper;
+    
+    public GroupsController(IGroupsService groupsService, IMapper mapper)
     {
         _groupsService = groupsService;
+        _mapper = mapper;
     }
 
     [HttpGet("")]
     [TypeFilter(typeof(QueryValuesProvidingActionFilter), Arguments = new object[] { typeof(DefaultOrderOptions) })]
-    public async Task<IActionResult> GetAllGroups(OrderModel? orderModel,[ModelBinder(typeof(FilterModelBinder))] FilterModel? filterModel)
+    [AllowAnonymous]
+    public async Task<IActionResult> GetAll(OrderModel? orderModel,[ModelBinder(typeof(FilterModelBinder))] FilterModel? filterModel)
     {
         var groups = await _groupsService.GetAll(orderModel, filterModel);
-        var groupViewModels = groups.Select(g => g.ToGroupViewModel());
-        return View(groupViewModels);
+        
+        return View(_mapper.Map<List<GroupViewModel>>(groups));
     }
 
-    [HttpPost("add-group")]
-    public async Task<IActionResult> AddGroup([FromForm] AddGroupModel addGroupModel)
+    [HttpPost("create")]
+    [Authorize("Root,Admin")]
+    public async Task<IActionResult> Create([FromForm] CreateGroupModel createGroupModel)
     {
         if (!ModelState.IsValid)
-        {
             return this.BadRequestView(ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage));
-        }
         
-        var group = new Group{Name = addGroupModel.Name};
-        var result = await _groupsService.Create(group);
+        var result = await _groupsService.Create(_mapper.Map<Group>(createGroupModel));
         
-        if (result.IsSuccessful) return RedirectToAction("GetAllGroups");
+        if (result.IsSuccessful) 
+            return RedirectToAction("GetAll", "Groups");
         
         if (result.Exception is AlreadyExistsException)
-        {
             return this.BadRequestView(result.Errors);
-        }
-        else
-        {
-            return this.ErrorView(500, result.Errors);
-        }
+        
+        return this.ErrorView(500, result.Errors);
     }
 
-    [HttpPost("edit-group")]
-    public async Task<IActionResult> EditGroup([FromForm] EditGroupModel editGroupModel)
+    [HttpPost("update")]
+    [Authorize("Root,Admin")]
+    public async Task<IActionResult> Update([FromForm] UpdateGroupModel updateGroupModel)
     {
         if (!ModelState.IsValid)
-        {
             return this.BadRequestView(ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage));
-        }
-        var group = new Group{Id = editGroupModel.Id, Name = editGroupModel.Name};
-        var result = await _groupsService.Update(group);
         
-        if (result.IsSuccessful) return RedirectToAction("GetAllGroups", "Groups");
+        var result = await _groupsService.Update(_mapper.Map<Group>(updateGroupModel));
+        
+        if (result.IsSuccessful) 
+            return RedirectToAction("GetAll", "Groups");
+        
         if (result.Exception is AlreadyExistsException)
-        {
             return this.BadRequestView(result.Errors);
-        }
-        else if (result.Exception is NotFoundException)
-        {
+        
+        if (result.Exception is NotFoundException)
             return this.NotFoundView(result.Errors);
-        }
-        else
-        {
-            return this.ErrorView(500, result.Errors);
-        }
+        
+        return this.ErrorView(500, result.Errors);
     }
 
-    [HttpGet("delete-group")]
-    public async Task<IActionResult> DeleteGroup([FromQuery] Guid groupId)
+    [HttpGet("delete")]
+    [Authorize("Root,Admin")]
+    public async Task<IActionResult> Delete([FromQuery] Guid groupId)
     {
         var result = await _groupsService.Delete(groupId);
 
-        if (result.IsSuccessful) return RedirectToAction("GetAllGroups");
+        if (result.IsSuccessful) 
+            return RedirectToAction("GetAll");
 
         if (result.Exception is NotFoundException)
-        {
             return this.NotFoundView(result.Errors);
-        }
-        else
-        {
-            return this.ErrorView(500, result.Errors);
-        }
+        
+        return this.ErrorView(500, result.Errors);
     }
 }

@@ -1,7 +1,7 @@
 using Application.Models.Shared;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
-using WebUI.Models.SharedModels;
+using WebUI.Models.Shared;
 
 namespace WebUI.Filters;
 

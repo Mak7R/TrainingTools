@@ -1,19 +1,25 @@
+using System.Globalization;
 using Domain.Enums;
 using Domain.Identity;
 using Infrastructure.Data;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.AspNetCore.Localization;
+using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Serilog;
 using WebUI.Extensions;
+using WebUI.Mapping.Profiles;
 using WebUI.Middlewares;
 using WebUI.ModelBinding.CustomModelBindingProviders;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Host.UseSerilog(
-    (HostBuilderContext context, IServiceProvider services, LoggerConfiguration loggerConfiguration) =>
+builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
+
+builder.Host.UseSerilog((context, services, loggerConfiguration) =>
     {
         loggerConfiguration
             .ReadFrom.Configuration(context.Configuration)
@@ -32,8 +38,32 @@ builder.Services.AddControllersWithViews(options =>
 {
     options.ModelBinderProviders.Insert(0, new FilterModelBinderProvider());
     options.ModelBinderProviders.Insert(0, new UpdateTrainingPlanModelBinderProvider());
-}).AddRazorRuntimeCompilation();
+})
+    .AddViewLocalization(LanguageViewLocationExpanderFormat.Suffix)
+    .AddDataAnnotationsLocalization()
+    .AddRazorRuntimeCompilation();
 builder.Services.AddHttpContextAccessor();
+
+builder.Services.Configure<RequestLocalizationOptions>(options =>
+{
+    var supportedCultures = new[]
+    {
+        new CultureInfo("en-US"),
+        new CultureInfo("uk-UA")
+    };
+
+    options.DefaultRequestCulture = new RequestCulture("en-US");
+
+    options.SupportedCultures = supportedCultures;
+    options.SupportedUICultures = supportedCultures;
+    
+    options.RequestCultureProviders = new List<IRequestCultureProvider>
+    {
+        new CookieRequestCultureProvider()
+    };
+
+    options.ApplyCurrentCultureToResponseHeaders = true;
+});
 
 builder.Services.AddIdentity<ApplicationUser, ApplicationRole>(options =>
     {
@@ -61,6 +91,8 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.AccessDeniedPath = "/access-denied";
 });
 
+builder.Services.AddAutoMapper(typeof(UiApplicationMappingProfile));
+
 builder.Services.AddDefaultServices();
 
 builder.Services.AddHttpLogging(options =>
@@ -77,6 +109,8 @@ using (var scope = app.Services.GetRequiredService<IServiceScopeFactory>().Creat
     await scope.ServiceProvider.InitializeDataBase<ApplicationDbContext>(Enum.GetNames<Role>());
     await scope.ServiceProvider.InitializeRootAdminFromConfiguration(builder.Configuration);
 }
+
+app.UseRequestLocalization(app.Services.GetRequiredService<IOptions<RequestLocalizationOptions>>().Value);
 
 if (app.Environment.IsDevelopment())
 {

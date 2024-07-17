@@ -12,10 +12,10 @@ using Rotativa.AspNetCore;
 using Rotativa.AspNetCore.Options;
 using WebUI.Extensions;
 using WebUI.Filters;
-using WebUI.Mappers;
+using WebUI.Mapping.Mappers;
 using WebUI.ModelBinding.CustomModelBinders;
-using WebUI.Models.ResponseModels;
-using WebUI.Models.TrainingPlanModels;
+using WebUI.Models.Response;
+using WebUI.Models.TrainingPlan;
 
 namespace WebUI.Controllers;
 

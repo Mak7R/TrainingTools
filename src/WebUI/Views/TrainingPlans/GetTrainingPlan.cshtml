@@ -1,4 +1,4 @@
-﻿@model TrainingPlanViewModel
+﻿@model WebUI.Models.TrainingPlan.TrainingPlanViewModel
 
 @{
     ViewBag.Title = "Training Plan";
@@ -87,7 +87,7 @@
 }
 
 <div class="container">
-    <h2 class="text-center mb-3">@Model.Author.Username/@Model.Title</h2>
+    <h2 class="text-center mb-3">@Model.Author.UserName/@Model.Title</h2>
 
     <div class="mb-3">
         State: 
@@ -103,9 +103,9 @@
     
     <div>
         Actions:
-        @if (Model.Author.Username == User.Identity?.Name)
+        @if (Model.Author.UserName == User.Identity?.Name)
         {
-            <a class="btn btn-primary me-2 mb-1" asp-controller="TrainingPlans" asp-action="Update" asp-route-author="@Model.Author.Username" asp-route-title="@Model.Title">Update</a>
+            <a class="btn btn-primary me-2 mb-1" asp-controller="TrainingPlans" asp-action="Update" asp-route-author="@Model.Author.UserName" asp-route-title="@Model.Title">Update</a>
             <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deletePlanModal">
                 Delete
             </button>
@@ -122,14 +122,14 @@
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Cancel</button>
-                            <a type="button" class="btn btn-danger  me-2 mb-1" asp-controller="TrainingPlans" asp-action="Delete" asp-route-author="@Model.Author.Username" asp-route-title="@Model.Title">Delete</a>
+                            <a type="button" class="btn btn-danger  me-2 mb-1" asp-controller="TrainingPlans" asp-action="Delete" asp-route-author="@Model.Author.UserName" asp-route-title="@Model.Title">Delete</a>
                         </div>
                     </div>
                 </div>
             </div>
         }
         
-        <a class="btn btn-primary me-2 mb-1" asp-controller="TrainingPlans" asp-action="GetTrainingPlanAsPdf" asp-route-author="@Model.Author.Username" asp-route-title="@Model.Title">Download as PDF</a>
+        <a class="btn btn-primary me-2 mb-1" asp-controller="TrainingPlans" asp-action="GetTrainingPlanAsPdf" asp-route-author="@Model.Author.UserName" asp-route-title="@Model.Title">Download as PDF</a>
     </div>
     
 
@@ -157,7 +157,7 @@
                             var entry = block.TrainingPlanBlockEntries[i];
                             var color = GetGroupColor(entry.Group.Id);
                             <td style="background-color: @color">
-                                <div><strong>Group: </strong><a asp-controller="Exercises" asp-action="GetAllExercises" asp-route-f_group="@entry.Group.Id">@entry.Group.Name</a></div>
+                                <div><strong>Group: </strong><a asp-controller="Exercises" asp-action="GetAll" asp-route-f_group="@entry.Group.Id">@entry.Group.Name</a></div>
                                 <div><strong>Description: </strong>@entry.Description</div>
                             </td>
                         }

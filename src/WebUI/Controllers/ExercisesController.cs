@@ -1,16 +1,17 @@
 ﻿using Application.Interfaces.ServiceInterfaces;
 using Application.Models.Shared;
+using AutoMapper;
 using Domain.Exceptions;
 using Domain.Identity;
+using Domain.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using WebUI.Extensions;
 using WebUI.Filters;
-using WebUI.Mappers;
 using WebUI.ModelBinding.CustomModelBinders;
-using WebUI.Models.ExerciseModels;
-using WebUI.Models.SharedModels;
+using WebUI.Models.Exercise;
+using WebUI.Models.Shared;
 
 namespace WebUI.Controllers;
 
@@ -20,45 +21,43 @@ namespace WebUI.Controllers;
 public class ExercisesController : Controller
 {
     private readonly IExercisesService _exercisesService;
-    private readonly IGroupsService _groupsService;
+    private readonly IMapper _mapper;
 
-    public ExercisesController(IExercisesService exercisesService, IGroupsService groupsService)
+    public ExercisesController(IExercisesService exercisesService, IMapper mapper)
     {
         _exercisesService = exercisesService;
-        _groupsService = groupsService;
+        _mapper = mapper;
     }
     
     [HttpGet("")]
     [TypeFilter(typeof(QueryValuesProvidingActionFilter), Arguments = new object[] { typeof(DefaultOrderOptions) })]
-    public async Task<IActionResult> GetAllExercises(
+    [TypeFilter(typeof(AddAvailableGroupsActionFilter))]
+    public async Task<IActionResult> GetAll(
         [FromQuery] OrderModel? orderModel,
-        [ModelBinder(typeof(FilterModelBinder))]FilterModel? filterModel, 
+        [ModelBinder(typeof(FilterModelBinder))] FilterModel? filterModel, 
         
         [FromServices] IExerciseResultsService resultsService, 
         [FromServices] UserManager<ApplicationUser> userManager)
     {
-        ViewBag.AvailableGroups = (await _groupsService.GetAll(new OrderModel{OrderOption = "ASC", OrderBy = "name"}))
-            .Select(g => g.ToGroupViewModel());
-        
         var exercises = await _exercisesService.GetAll(orderModel, filterModel);
-        var exerciseViewModels = exercises.Select(e => e.ToExerciseViewMode());
 
         var user = await userManager.GetUserAsync(User);
 
         if (user is not null)
             ViewBag.UserResults = await resultsService.GetForUser(user.Id);
         
-        return View(exerciseViewModels);
+        return View(_mapper.Map<List<ExerciseViewModel>>(exercises));
     }
 
     [HttpGet("{exerciseId:guid}")]
-    public async Task<IActionResult> GetExercise(Guid exerciseId)
+    public async Task<IActionResult> Get(Guid exerciseId)
     {
         var exercise = await _exercisesService.GetById(exerciseId);
 
-        if (exercise is null) return this.NotFoundView("Exercise was not found");
+        if (exercise is null) 
+            return this.NotFoundView("Exercise was not found");
         
-        return View(exercise.ToExerciseViewMode());
+        return View(_mapper.Map<ExerciseViewModel>(exercise));
     }
 
     [HttpPost("render-about-preview")]
@@ -67,96 +66,79 @@ public class ExercisesController : Controller
         return Content(await referencedContentProvider.ParseContentAsync(about));
     }
 
-    [HttpGet("add-exercise")]
+    [HttpGet("create")]
     [Authorize(Roles = "Admin,Root")]
-    public async Task<IActionResult> AddExercise()
+    [TypeFilter(typeof(AddAvailableGroupsActionFilter))]
+    public IActionResult Create()
     {
-        ViewBag.AvailableGroups = (await _groupsService.GetAll(new OrderModel{OrderOption = "ASC", OrderBy = "name"}))
-            .Select(g => g.ToGroupViewModel());
         return View();
     }
 
     [Authorize(Roles = "Admin,Root")]
-    [HttpPost("add-exercise")]
-    public async Task<IActionResult> AddExercise([FromForm] AddExerciseModel addExerciseModel)
+    [HttpPost("create")]
+    [TypeFilter(typeof(AddAvailableGroupsActionFilter))]
+    public async Task<IActionResult> Create([FromForm] CreateExerciseModel createExerciseModel)
     {
         if (!ModelState.IsValid)
-            return View(addExerciseModel);
+            return View(createExerciseModel);
         
-        var exercise = addExerciseModel.ToExercise();
-        var result = await _exercisesService.Create(exercise);
+        var result = await _exercisesService.Create(_mapper.Map<Exercise>(createExerciseModel));
         
         if (result.IsSuccessful) 
-            return RedirectToAction("GetAllExercises", "Exercises");
-        else
-        {
-            foreach (var error in result.Errors)
-            {
-                ModelState.AddModelError(nameof(UpdateExerciseModel), error);
-            }
+            return RedirectToAction("GetAll", "Exercises");
+        
+        foreach (var error in result.Errors)
+            ModelState.AddModelError(nameof(UpdateExerciseModel), error);
             
-            return View(addExerciseModel);
-        }
+        return View(createExerciseModel);
     }
 
     [Authorize(Roles = "Admin,Root")]
     [HttpGet("{exerciseId:guid}/update")]
-    public async Task<IActionResult> UpdateExercise(Guid exerciseId)
+    [TypeFilter(typeof(AddAvailableGroupsActionFilter))]
+    public async Task<IActionResult> Update(Guid exerciseId)
     {
         var exercise = await _exercisesService.GetById(exerciseId);
-        if (exercise is null) return this.NotFoundView("Exercise was not found");
+        if (exercise is null) 
+            return this.NotFoundView("Exercise was not found");
         
-        ViewBag.AvailableGroups = (await _groupsService.GetAll(new OrderModel{OrderOption = "ASC", OrderBy = "name"}))
-                .Select(g => g.ToGroupViewModel());
-        return View(new UpdateExerciseModel{Name = exercise.Name, GroupId = exercise.Group.Id, About = exercise.About});
+        return View(_mapper.Map<UpdateExerciseModel>(exercise));
     }
 
     [Authorize(Roles = "Admin,Root")]
     [HttpPost("{exerciseId:guid}/update")]
-    public async Task<IActionResult> UpdateExercise(Guid exerciseId, [FromForm] UpdateExerciseModel updateExerciseModel)
+    [TypeFilter(typeof(AddAvailableGroupsActionFilter))]
+    public async Task<IActionResult> Update(Guid exerciseId, [FromForm] UpdateExerciseModel updateExerciseModel)
     {
         if (!ModelState.IsValid)
-        {
-            ViewBag.AvailableGroups = (await _groupsService.GetAll(new OrderModel{OrderOption = "ASC", OrderBy = "name"}))
-                .Select(g => g.ToGroupViewModel());
             return View(updateExerciseModel);
-        }
-            
         
-        var exercise = updateExerciseModel.ToExercise();
+        var exercise = _mapper.Map<Exercise>(updateExerciseModel);
         exercise.Id = exerciseId;
+        
         var result = await _exercisesService.Update(exercise);
         
-        if (result.IsSuccessful) return RedirectToAction("GetExercise", "Exercises", new {exerciseId});
-        else
-        {
-            foreach (var error in result.Errors)
-            {
-                ModelState.AddModelError(nameof(UpdateExerciseModel), error);
-            }
-            
-            ViewBag.AvailableGroups = (await _groupsService.GetAll(new OrderModel{OrderOption = "ASC", OrderBy = "name"}))
-                .Select(g => g.ToGroupViewModel());
-            return View(updateExerciseModel);
-        }
+        if (result.IsSuccessful) 
+            return RedirectToAction("Get", "Exercises", new { exerciseId });
+        
+        foreach (var error in result.Errors)
+            ModelState.AddModelError(nameof(UpdateExerciseModel), error);
+        
+        return View(updateExerciseModel);
     }
 
     [Authorize(Roles = "Admin,Root")]
-    [HttpGet("delete-exercise")]
+    [HttpGet("delete")]
     public async Task<IActionResult> DeleteExercise([FromQuery] Guid exerciseId)
     {
         var result = await _exercisesService.Delete(exerciseId);
 
-        if (result.IsSuccessful) return RedirectToAction("GetAllExercises", "Exercises");
+        if (result.IsSuccessful) return RedirectToAction("GetAll", "Exercises");
 
         if (result.ResultObject is NotFoundException exception)
-        {
             return this.NotFoundView(exception.Message);
-        }
-        else
-        {
-            return this.ErrorView(500, result.Errors);
-        }
+        
+        return this.ErrorView(500, result.Errors);
     }
 }
 

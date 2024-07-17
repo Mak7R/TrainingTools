@@ -1,6 +1,6 @@
 ﻿@using Filters = Application.Constants.FilterOptionNames.ExerciseResults.ForUser
 @using Orders = Application.Constants.OrderOptionNames.ExerciseResults.ForUser
-@model IEnumerable<ExerciseResultViewModel>
+@model IEnumerable<WebUI.Models.ExerciseResult.ExerciseResultViewModel>
 
 @{
     ViewBag.Title = "Results";
@@ -9,7 +9,7 @@
 <div class="container-fluid text-center justify-content-center">
     @if (ViewBag.UserName is not null)
     {
-        <h2>Results for <a asp-controller="Users" asp-action="GetUser" asp-route-userName="@(ViewBag.UserName)">@(ViewBag.UserName)</a></h2>
+        <h2>Results for <a asp-controller="Users" asp-action="Get" asp-route-userName="@(ViewBag.UserName)">@(ViewBag.UserName)</a></h2>
     }
     else
     {
@@ -46,7 +46,7 @@
                         Add More Results
                     </div>
                     <div class="card-body p-1">
-                        <a class="d-block btn btn-success w-100 h-100 justify-content-center align-content-center" asp-controller="Exercises" asp-action="GetAllExercises">
+                        <a class="d-block btn btn-success w-100 h-100 justify-content-center align-content-center" asp-controller="Exercises" asp-action="GetAll">
                             <img src="/img/icons/plus-white.svg" alt="+" style="width: 4em;height: 4em;"/>
                         </a>
                     </div>

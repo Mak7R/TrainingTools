@@ -1,4 +1,6 @@
-﻿<!doctype html>
+﻿@using System.Globalization
+
+<!doctype html>
 <html lang="en">
 <head>
     <meta charset="utf-8"/>
@@ -22,19 +24,16 @@
                     <a class="nav-link" asp-controller="Home" asp-action="Index">Home</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" asp-controller="Exercises" asp-action="GetAllExercises">Exercises</a>
+                    <a class="nav-link" asp-controller="Exercises" asp-action="GetAll">Exercises</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" asp-controller="Groups" asp-action="GetAll">Groups</a>
                 </li>
                 @if (Context.User.Identity?.IsAuthenticated is true)
                 {
                     <li class="nav-item">
-                        <a class="nav-link" asp-controller="Users" asp-action="GetAllUsers">Users</a>
+                        <a class="nav-link" asp-controller="Users" asp-action="GetAll">Users</a>
                     </li>
-                    if (Context.User.IsInRole(nameof(Role.Admin)) || Context.User.IsInRole(nameof(Role.Root)))
-                    {
-                        <li class="nav-item">
-                            <a class="nav-link" asp-controller="Groups" asp-action="GetAllGroups">Groups</a>
-                        </li>
-                    }
                     <li class="nav-item">
                         <a class="nav-link" asp-controller="TrainingPlans" asp-action="GetAll">
                             Training Plans
@@ -75,6 +74,26 @@
                         <a class="nav-link" asp-controller="Accounts" asp-action="Register">Register</a>
                     </li>
                 }
+                <li class="nav-item dropdown">
+                    <button class="btn btn-dark dropdown-toggle" data-bs-toggle="dropdown">
+                        @switch (CultureInfo.CurrentUICulture.Name)
+                        {
+                            case "en-US":
+                                <span>EN</span>
+                                break;
+                            case "uk-UA":
+                                <span>UA</span>
+                                break;
+                            default:
+                                <span>EN</span>
+                                break;
+                        }
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-start" style="max-width: 4em; min-width: 4em; width: 4em;">
+                        <li><a class="dropdown-item" asp-controller="Home" asp-action="SetLanguage" asp-route-culture="uk-UA" asp-route-returnUrl="@Context.Request.Path">UA</a></li>
+                        <li><a class="dropdown-item" asp-controller="Home" asp-action="SetLanguage" asp-route-culture="en-US" asp-route-returnUrl="@Context.Request.Path">EN</a></li>
+                    </ul>
+                </li>
             </ul>
         </div>
     </nav>

@@ -14,6 +14,7 @@ using Domain.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 using CsvHelper;
+using Microsoft.Extensions.Localization;
 
 namespace Application.Services;
 
@@ -22,13 +23,15 @@ public class UsersService : IUsersService
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly IFriendsRepository _friendsRepository;
     private readonly ILogger<UsersService> _logger;
+    private readonly IStringLocalizer<UsersService> _localizer;
 
     // ReSharper disable once ConvertToPrimaryConstructor
-    public UsersService(UserManager<ApplicationUser> userManager, IFriendsRepository friendsRepository, ILogger<UsersService> logger)
+    public UsersService(UserManager<ApplicationUser> userManager, IFriendsRepository friendsRepository, ILogger<UsersService> logger, IStringLocalizer<UsersService> localizer)
     {
         _userManager = userManager;
         _friendsRepository = friendsRepository;
         _logger = logger;
+        _localizer = localizer;
     }
 
     public async Task<IEnumerable<UserInfo>> GetAll(ApplicationUser? currentUser, OrderModel? orderModel = null, FilterModel? filterModel = null)
@@ -412,7 +415,7 @@ public class UsersService : IUsersService
             
             return DefaultOperationResult.FromException(new OperationNotAllowedException("Only Root can delete admins"));
         }
-        return DefaultOperationResult.FromException(new OperationNotAllowedException("User is not admin or root"));
+        return DefaultOperationResult.FromException(new OperationNotAllowedException(_localizer["UserIsNotRootOrAdmin"]));
     }
     
     private async Task<UserInfo> CreateUserInfo(Dictionary<Guid, ApplicationUser> friends,
