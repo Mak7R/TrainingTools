@@ -3,7 +3,7 @@
 namespace WebUI.Controllers.Api;
 
 [ApiController]
-[Route("api")]
+[Route("api/v{version:apiVersion}/[controller]")]
 public class ApiController : ControllerBase
 {
     

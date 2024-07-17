@@ -6,7 +6,9 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.AspNetCore.Localization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Razor;
+using Microsoft.AspNetCore.Mvc.Versioning;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Serilog;
@@ -91,6 +93,26 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.AccessDeniedPath = "/access-denied";
 });
 
+builder.Services.AddApiVersioning(config =>
+{
+    config.ApiVersionReader = new UrlSegmentApiVersionReader();
+    config.DefaultApiVersion = new ApiVersion(1, 0);
+    config.AssumeDefaultVersionWhenUnspecified = true;
+});
+
+// setup swagger
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(options => {
+    options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, "api-docs.xml"));
+    
+    options.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo{ Title = "Training Tools Web API", Version = "1.0" });
+});
+builder.Services.AddVersionedApiExplorer(options => {
+    options.GroupNameFormat = "'v'VVV"; //v1
+    options.SubstituteApiVersionInUrl = true;
+});
+
+
 builder.Services.AddAutoMapper(typeof(UiApplicationMappingProfile));
 
 builder.Services.AddDefaultServices();
@@ -131,6 +153,12 @@ app.UseHttpLogging();
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
+
+app.UseSwagger();
+app.UseSwaggerUI(options  =>
+{
+    options.SwaggerEndpoint("/swagger/v1/swagger.json", "1.0");
+});
 
 app.UseRouting();
 

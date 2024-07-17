@@ -38,7 +38,7 @@ public class GroupsController : Controller
     }
 
     [HttpPost("create")]
-    [Authorize("Root,Admin")]
+    [Authorize(Roles = "Root,Admin")]
     public async Task<IActionResult> Create([FromForm] CreateGroupModel createGroupModel)
     {
         if (!ModelState.IsValid)
@@ -56,7 +56,7 @@ public class GroupsController : Controller
     }
 
     [HttpPost("update")]
-    [Authorize("Root,Admin")]
+    [Authorize(Roles = "Root,Admin")]
     public async Task<IActionResult> Update([FromForm] UpdateGroupModel updateGroupModel)
     {
         if (!ModelState.IsValid)
@@ -77,7 +77,7 @@ public class GroupsController : Controller
     }
 
     [HttpGet("delete")]
-    [Authorize("Root,Admin")]
+    [Authorize(Roles = "Root,Admin")]
     public async Task<IActionResult> Delete([FromQuery] Guid groupId)
     {
         var result = await _groupsService.Delete(groupId);
