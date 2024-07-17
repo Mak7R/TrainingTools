@@ -6,13 +6,18 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <UserSecretsId>aspnet-WebUI-95BDE846-74DE-42B9-9E17-9B7FD591D701</UserSecretsId>
         <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+        <GenerateDocumentationFile>True</GenerateDocumentationFile>
+        <DocumentationFile>api-docs.xml</DocumentationFile>
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.1" />
         <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="8.0.6" />
         <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.6" />
         <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="8.0.6" />
         <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="8.0.6" />
+        <PackageReference Include="Microsoft.AspNetCore.Mvc.Versioning.ApiExplorer" Version="5.1.0" />
+        <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.7" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.6">
           <PrivateAssets>all</PrivateAssets>
           <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -22,6 +27,7 @@
         <PackageReference Include="Serilog.AspNetCore" Version="8.0.1" />
         <PackageReference Include="Serilog.Extensions.Hosting" Version="8.0.0" />
         <PackageReference Include="Serilog.Sinks.Seq" Version="8.0.0" />
+        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
     </ItemGroup>
 
     <ItemGroup>
@@ -39,7 +45,35 @@
     </ItemGroup>
 
     <ItemGroup>
-      <AdditionalFiles Include="Views\Groups\GetAllGroups.cshtml" />
+      <EmbeddedResource Update="Resources\Views\Home\Index.en-US.resx">
+        <Generator>ResXFileCodeGenerator</Generator>
+        <LastGenOutput>Index.en.Designer.cs</LastGenOutput>
+      </EmbeddedResource>
+      <EmbeddedResource Update="Resources\Views\Home\Index.uk-UA.resx">
+        <Generator>ResXFileCodeGenerator</Generator>
+        <LastGenOutput>Index.uk.Designer.cs</LastGenOutput>
+      </EmbeddedResource>
+      <EmbeddedResource Update="Application\Resources\Services\UsersService\UsersService.en-US.resx">
+        <Generator>ResXFileCodeGenerator</Generator>
+        <LastGenOutput>UsersService.en-US.Designer.cs</LastGenOutput>
+      </EmbeddedResource>
+      <EmbeddedResource Update="Application\Resources\Services\UsersService\UsersService.uk-UA.resx">
+        <Generator>ResXFileCodeGenerator</Generator>
+        <LastGenOutput>UsersService.uk-UA.Designer.cs</LastGenOutput>
+      </EmbeddedResource>
+    </ItemGroup>
+
+    <ItemGroup>
+      <Compile Update="Resources\Views\Home\Index.en-US.Designer.cs">
+        <DesignTime>True</DesignTime>
+        <AutoGen>True</AutoGen>
+        <DependentUpon>Index.en-US.resx</DependentUpon>
+      </Compile>
+      <Compile Update="Resources\Views\Home\Index.uk-UA.Designer.cs">
+        <DesignTime>True</DesignTime>
+        <AutoGen>True</AutoGen>
+        <DependentUpon>Index.uk-UA.resx</DependentUpon>
+      </Compile>
     </ItemGroup>
 
 </Project>

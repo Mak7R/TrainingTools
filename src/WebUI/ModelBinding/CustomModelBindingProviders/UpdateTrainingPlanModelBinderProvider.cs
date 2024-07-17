@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
 using WebUI.ModelBinding.CustomModelBinders;
-using WebUI.Models.TrainingPlanModels;
+using WebUI.Models.TrainingPlan;
 
 namespace WebUI.ModelBinding.CustomModelBindingProviders;
 

@@ -1,4 +1,4 @@
-﻿@model IEnumerable<TrainingPlanViewModel>
+﻿@model IEnumerable<WebUI.Models.TrainingPlan.TrainingPlanViewModel>
 
 @{
     ViewBag.Title = "My Training Plans";
@@ -27,10 +27,10 @@
         {
             <tr>
                 <td>
-                    <a asp-controller="Users" asp-action="GetUser" asp-route-userName="@plan.Author.Username">@plan.Author.Username</a>
+                    <a asp-controller="Users" asp-action="Get" asp-route-userName="@plan.Author.UserName">@plan.Author.UserName</a>
                 </td>
                 <td>
-                    <a asp-controller="TrainingPlans" asp-action="GetTrainingPlan" asp-route-author="@plan.Author.Username" asp-route-title="@plan.Title">@plan.Title</a>
+                    <a asp-controller="TrainingPlans" asp-action="GetTrainingPlan" asp-route-author="@plan.Author.UserName" asp-route-title="@plan.Title">@plan.Title</a>
                 </td>
                 <td>
                     @if (plan.IsPublic)

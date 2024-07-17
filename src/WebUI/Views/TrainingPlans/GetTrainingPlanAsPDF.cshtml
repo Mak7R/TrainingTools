@@ -1,4 +1,4 @@
-﻿@model TrainingPlanViewModel
+﻿@model WebUI.Models.TrainingPlan.TrainingPlanViewModel
 
 @{
     Layout = null;
@@ -87,7 +87,7 @@
 }
 
 <div class="container">
-    <h2 class="text-center mb-3 d-block w-100">@Model.Author.Username/@Model.Title</h2>
+    <h2 class="text-center mb-3 d-block w-100">@Model.Author.UserName/@Model.Title</h2>
 
     <div class="table-responsive border border-1 border-black">
         <table class="table table-bordered m-0" style="min-height: 60vh">

@@ -4,8 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using WebUI.Extensions;
-using WebUI.Mappers;
-using WebUI.Models.FriendModels;
+using WebUI.Mapping.Mappers;
 
 namespace WebUI.Controllers;
 

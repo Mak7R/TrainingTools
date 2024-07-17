@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Newtonsoft.Json;
-using WebUI.Models.TrainingPlanModels;
+using WebUI.Models.TrainingPlan;
 
 namespace WebUI.ModelBinding.CustomModelBinders;
 

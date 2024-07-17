@@ -1,0 +1,58 @@
+@inject IReferencedContentProvider ReferencedContentProvider
+@using Application.Interfaces.ServiceInterfaces
+@model WebUI.Models.Exercise.ExerciseViewModel
+
+@{
+    ViewBag.Title = $"Exercise {Model.Name}";
+}
+
+<div class="container mt-3">
+    <h2 class="mb-2">Exercise: @Model.Name</h2>
+
+    <h3 class="mb-2">Group: @Model.Group.Name</h3>
+    
+    <h3 class="mb-2">About:</h3> 
+    <div class="row fs-5">@Html.Raw(await ReferencedContentProvider.ParseContentAsync(Model.About))</div>
+    
+   
+    <div class="mb-2">
+        <h3>Actions</h3>
+        <div class="row">
+            <a class="col-auto btn btn-secondary me-3" asp-controller="Exercises" asp-action="GetAll">To Exercises</a>
+            <a class="col-auto btn btn-primary me-3" asp-controller="ExerciseResults" asp-action="GetFriendsResultsForExercise" asp-route-exerciseId="@Model.Id">
+                To Results From Current Exercise
+            </a>
+            @if (User.IsInRole(nameof(Role.Admin)) || User.IsInRole(nameof(Role.Root)))
+            {
+
+                <a class="col-auto btn btn-primary me-3" asp-controller="Exercises" asp-action="Update" asp-route-exerciseId="@Model.Id">Update</a>
+                <button class="col-auto btn btn-danger" type="button" data-bs-toggle="modal" data-bs-target="#deleteExerciseModal">
+                    Delete
+                </button>
+
+                <div class="modal fade" id="deleteExerciseModal" tabindex="-1" aria-labelledby="deleteExerciseModalLabel" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h1 class="modal-title fs-5" id="deleteExerciseModalLabel">Delete exercise @Model.Name</h1>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body text-danger">
+                                This action will delete exercise from database and it cannot be canceled
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Cancel</button>
+                                <a type="button" class="btn btn-danger" asp-controller="Exercises" asp-action="DeleteExercise" asp-route-exerciseId="@Model.Id">Delete</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts
+{
+    <script async src='https://www.tiktok.com/embed.js'></script>
+}

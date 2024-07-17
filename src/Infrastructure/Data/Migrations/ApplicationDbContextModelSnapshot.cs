@@ -490,7 +490,8 @@ namespace Infrastructure.Data.Migrations
                 {
                     b.HasOne("Infrastructure.Entities.TrainingPlanEntities.TrainingPlanEntity", null)
                         .WithMany("TrainingPlanBlocks")
-                        .HasForeignKey("TrainingPlanEntityId");
+                        .HasForeignKey("TrainingPlanEntityId")
+                        .OnDelete(DeleteBehavior.Cascade);
                 });
 
             modelBuilder.Entity("Infrastructure.Entities.TrainingPlanEntities.TrainingPlanBlockEntryEntity", b =>
@@ -503,7 +504,8 @@ namespace Infrastructure.Data.Migrations
 
                     b.HasOne("Infrastructure.Entities.TrainingPlanEntities.TrainingPlanBlockEntity", null)
                         .WithMany("TrainingPlanBlockEntries")
-                        .HasForeignKey("TrainingPlanBlockEntityId");
+                        .HasForeignKey("TrainingPlanBlockEntityId")
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.Navigation("Group");
                 });

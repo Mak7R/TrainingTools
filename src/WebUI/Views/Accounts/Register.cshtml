@@ -1,4 +1,4 @@
-﻿@model RegisterDto
+﻿@model WebUI.Models.Account.RegisterDto
 
 @{
     ViewBag.Title = "Register";
@@ -8,9 +8,9 @@
     <form method="post" asp-controller="Accounts" asp-action="Register" asp-route-returnUrl="@Context.Request.Query["ReturnUrl"]">
         <div class="col">
             <div class="mb-3">
-                <label asp-for="Username" class="form-label"></label>
-                <input asp-for="Username" class="form-control"/>
-                <span asp-validation-for="Username" class="text-danger"></span>
+                <label asp-for="UserName" class="form-label"></label>
+                <input asp-for="UserName" class="form-control"/>
+                <span asp-validation-for="UserName" class="text-danger"></span>
             </div>
         </div>
 

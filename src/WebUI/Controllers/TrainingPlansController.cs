@@ -12,10 +12,10 @@ using Rotativa.AspNetCore;
 using Rotativa.AspNetCore.Options;
 using WebUI.Extensions;
 using WebUI.Filters;
-using WebUI.Mappers;
+using WebUI.Mapping.Mappers;
 using WebUI.ModelBinding.CustomModelBinders;
-using WebUI.Models.ResponseModels;
-using WebUI.Models.TrainingPlanModels;
+using WebUI.Models.Response;
+using WebUI.Models.TrainingPlan;
 
 namespace WebUI.Controllers;
 
@@ -37,8 +37,10 @@ public class TrainingPlansController : Controller
     [HttpGet("")]
     public async Task<IActionResult> GetAll(
         [FromQuery] OrderModel? orderModel,
-        [ModelBinder(typeof(FilterModelBinder))]FilterModel? filterModel)
+        [ModelBinder(typeof(FilterModelBinder))] FilterModel? filterModel)
     {
+        filterModel ??= new FilterModel();
+        filterModel[FilterOptionNames.TrainingPlan.PublicOnly] = "true";
         var plans = await _trainingPlansService.GetAll(orderModel, filterModel);
         return View(plans.Select(p => p.ToTrainingPlanViewModel()));
     }
@@ -69,23 +71,31 @@ public class TrainingPlansController : Controller
     [HttpGet("{author}/{title}")]
     public async Task<IActionResult> GetTrainingPlan(string author, string title)
     {
-        var plan = await _trainingPlansService.GetByName(author, title);
+        var user = await _userManager.GetUserAsync(User);
+        if (user is null)
+            return RedirectToAction("Login", "Accounts", new { returnUrl = $"/training-plans/{author}/{title}" });
+        
+        var trainingPlan = await _trainingPlansService.GetByName(author, title);
 
-        if (plan is null)
+        if (trainingPlan is null  || (!trainingPlan.IsPublic && trainingPlan.Author.Id != user.Id))
             return this.NotFoundView(new []{"Training plan was not found"});
         
-        return View(plan.ToTrainingPlanViewModel());
+        return View(trainingPlan.ToTrainingPlanViewModel());
     }
 
     [HttpGet("{author}/{title}/as-pdf")]
     public async Task<IActionResult> GetTrainingPlanAsPdf(string author, string title)
     {
-        var plan = await _trainingPlansService.GetByName(author, title);
+        var user = await _userManager.GetUserAsync(User);
+        if (user is null)
+            return RedirectToAction("Login", "Accounts", new { returnUrl = $"/training-plans/{author}/{title}" });
+        
+        var trainingPlan = await _trainingPlansService.GetByName(author, title);
 
-        if (plan is null)
+        if (trainingPlan is null  || (!trainingPlan.IsPublic && trainingPlan.Author.Id != user.Id))
             return this.NotFoundView(new []{"Training plan was not found"});
 
-        return new ViewAsPdf("GetTrainingPlanAsPDF", plan.ToTrainingPlanViewModel(), ViewData)
+        return new ViewAsPdf("GetTrainingPlanAsPDF", trainingPlan.ToTrainingPlanViewModel(), ViewData)
         {
             PageMargins = new Margins(10, 5, 20, 5),
             PageSize = Size.A4,
@@ -143,10 +153,14 @@ public class TrainingPlansController : Controller
                 new { returnUrl = $"/training-plans/{author}/{title}/update" });
         
         var trainingPlan = await _trainingPlansService.GetByName(author, title);
-
+        
         if (trainingPlan is null)
             return this.NotFoundView(new[] { "Training plan was not found" });
 
+        if (trainingPlan.Author.Id != user.Id)
+            return this.ErrorView(StatusCodes.Status403Forbidden,
+                new[] { "Only owner can update his/her training plan" });
+        
         return View(new UpdateTrainingPlanModel
         {
             Id = trainingPlan.Id,

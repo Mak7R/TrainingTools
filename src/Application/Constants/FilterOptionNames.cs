@@ -39,6 +39,6 @@ public static class FilterOptionNames
         public const string TitleEquals = "title-equals";
         public const string AuthorId = "author-id";
         public const string Author = "author";
-        public const string PublicOnly = "public";
+        public const string PublicOnly = "public-only";
     }
 }

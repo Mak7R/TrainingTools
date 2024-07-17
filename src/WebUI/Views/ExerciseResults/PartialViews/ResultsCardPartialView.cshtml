@@ -1,4 +1,4 @@
-@model ExerciseResultViewModel
+@model WebUI.Models.ExerciseResult.ExerciseResultViewModel
 
 <div class="col mb-2 px-1">
     <div class="card text-center h-100">
@@ -6,11 +6,11 @@
             <div class="row px-3">
                 @if (ViewBag.IsResultsForExercise is true)
                 {
-                    <a class="col d-block w-75" asp-controller="ExerciseResults" asp-action="GetResultsForUser" asp-route-userName="@Model.Owner.Username">
-                        <h4>@Model.Owner.Username</h4>
+                    <a class="col d-block w-75" asp-controller="ExerciseResults" asp-action="GetResultsForUser" asp-route-userName="@Model.Owner.UserName">
+                        <h4>@Model.Owner.UserName</h4>
                     </a>
                     
-                    <a class="col-auto p-0 m-1" asp-controller="Exercises" asp-action="GetExercise" asp-route-exerciseId="@Model.Exercise.Id">
+                    <a class="col-auto p-0 m-1" asp-controller="Exercises" asp-action="Get" asp-route-exerciseId="@Model.Exercise.Id">
                         <img src="/img/icons/info.svg" alt="Info" style="width: 2em; height: 2em;"/>
                     </a>
                 }
@@ -20,24 +20,24 @@
                         <h4 class="text-truncate">@Model.Exercise.Group.Name/@Model.Exercise.Name</h4>
                     </a>
                     
-                    <a class="col-auto p-0 m-1" asp-controller="Exercises" asp-action="GetExercise" asp-route-exerciseId="@Model.Exercise.Id">
+                    <a class="col-auto p-0 m-1" asp-controller="Exercises" asp-action="Get" asp-route-exerciseId="@Model.Exercise.Id">
                         <img src="/img/icons/info.svg" alt="Info" style="width: 2em; height: 2em;"/>
                     </a>
                     
-                    if (User.Identity?.Name == Model.Owner.Username)
+                    if (User.Identity?.Name == Model.Owner.UserName)
                     {
                         <a class="col-auto p-0 m-1" asp-controller="ExerciseResults" asp-action="UpdateResults" asp-route-exerciseId="@Model.Exercise.Id">
                             <img src="/img/icons/editing.png" alt="Edit" style="width: 2em; height: 2em;"/>
                         </a>
-                        <div type="button" class="col-auto p-0 m-1" data-bs-toggle="modal" data-bs-target="#deleteResult-@Model.Owner.Username-@Model.Exercise.Id-Modal">
+                        <div type="button" class="col-auto p-0 m-1" data-bs-toggle="modal" data-bs-target="#deleteResult-@Model.Owner.UserName-@Model.Exercise.Id-Modal">
                             <img src="/img/icons/bin.png" alt="Remove" style="width: 2em; height: 2em;"/>
                         </div>
 
-                        <div class="modal fade" id="deleteResult-@Model.Owner.Username-@Model.Exercise.Id-Modal" tabindex="-1" aria-labelledby="deleteResult-@Model.Owner.Username-@Model.Exercise.Id-ModalLabel" aria-hidden="true">
+                        <div class="modal fade" id="deleteResult-@Model.Owner.UserName-@Model.Exercise.Id-Modal" tabindex="-1" aria-labelledby="deleteResult-@Model.Owner.UserName-@Model.Exercise.Id-ModalLabel" aria-hidden="true">
                             <div class="modal-dialog">
                                 <div class="modal-content">
                                     <div class="modal-header">
-                                        <h1 class="modal-title fs-5" id="deleteResult-@Model.Owner.Username-@Model.Exercise.Id-ModalLabel">Delete results from exercise @Model.Exercise.Name</h1>
+                                        <h1 class="modal-title fs-5" id="deleteResult-@Model.Owner.UserName-@Model.Exercise.Id-ModalLabel">Delete results from exercise @Model.Exercise.Name</h1>
                                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                     </div>
                                     <div class="modal-body text-danger">

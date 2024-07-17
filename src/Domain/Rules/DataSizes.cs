@@ -20,7 +20,7 @@ public static class DataSizes
     public static class GroupDataSizes
     {
         public const int MaxNameSize = 64;
-        public const int MinNameSize = 4;
+        public const int MinNameSize = 3;
     }
     
     public static class ExerciseDataSizes

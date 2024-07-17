@@ -1,6 +1,6 @@
 ﻿@using Filters = Application.Constants.FilterOptionNames.ExerciseResults.ForExercise
 @using Orders = Application.Constants.OrderOptionNames.ExerciseResults.ForExercise
-@model IEnumerable<ExerciseResultViewModel>
+@model IEnumerable<WebUI.Models.ExerciseResult.ExerciseResultViewModel>
 
 @{
     ViewBag.Title = "Results";
@@ -25,7 +25,7 @@
     <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3">
         @foreach (var result in Model)
         {
-            @if (result.Owner.Username == User.Identity?.Name)
+            @if (result.Owner.UserName == User.Identity?.Name)
             {
                 await Html.RenderPartialAsync("PartialViews/ResultsCardPartialView", result);
                 break;
@@ -34,7 +34,7 @@
         
         @foreach (var result in Model)
         {
-            @if (result.Owner.Username != User.Identity?.Name)
+            @if (result.Owner.UserName != User.Identity?.Name)
             {
                 await Html.RenderPartialAsync("PartialViews/ResultsCardPartialView", result);
             }
@@ -45,7 +45,7 @@
                     Add More Results
                 </div>
                 <div class="card-body p-1">
-                    <a class="d-block btn btn-success w-100 h-100 justify-content-center align-content-center" asp-controller="Exercises" asp-action="GetAllExercises">
+                    <a class="d-block btn btn-success w-100 h-100 justify-content-center align-content-center" asp-controller="Exercises" asp-action="GetAll">
                         <img src="/img/icons/plus-white.svg" alt="+" style="width: 4em;height: 4em;"/>
                     </a>
                 </div>
