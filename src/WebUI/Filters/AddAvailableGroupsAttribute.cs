@@ -8,11 +8,11 @@ using WebUI.Models.Group;
 namespace WebUI.Filters;
 
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
-public class AddAvailableGroupsAttribute : Attribute, IAsyncActionFilter
+public class AddAvailableGroupsAttribute : ActionFilterAttribute
 {
     private static readonly OrderModel DefaultOrder = new () { OrderOption = "ASC", OrderBy = "name" };
     
-    public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
+    public override async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
     {
         await next.Invoke();
         
