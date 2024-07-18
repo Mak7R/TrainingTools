@@ -97,7 +97,7 @@
                     <td>
                         @if (exerciseResults.FirstOrDefault(r => r.Exercise.Id == exercise.Id) is null)
                         {
-                            <a class="btn btn-success" asp-controller="ExerciseResults" asp-action="CreateResult" asp-route-exerciseId="@exercise.Id" asp-route-returnUrl="/exercises">Create Results</a>
+                            <a class="btn btn-success" asp-controller="ExerciseResults" asp-action="Create" asp-route-exerciseId="@exercise.Id" asp-route-returnUrl="/exercises">Create Results</a>
                         }
                         else
                         {

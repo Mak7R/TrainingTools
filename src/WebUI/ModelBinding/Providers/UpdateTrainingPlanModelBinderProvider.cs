@@ -1,9 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc.ModelBinding;
-using Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
-using WebUI.ModelBinding.CustomModelBinders;
+using WebUI.ModelBinding.ModelBinders;
 using WebUI.Models.TrainingPlan;
 
-namespace WebUI.ModelBinding.CustomModelBindingProviders;
+namespace WebUI.ModelBinding.Providers;
 
 public class UpdateTrainingPlanModelBinderProvider : IModelBinderProvider
 {
@@ -13,7 +12,7 @@ public class UpdateTrainingPlanModelBinderProvider : IModelBinderProvider
 
         if (context.Metadata.ModelType == typeof(UpdateTrainingPlanModel))
         {
-            return new UpdateTrainingPlanModelBinder();
+            return new UpdateTrainingPlanModelBinderAttribute();
         }
 
         return null;

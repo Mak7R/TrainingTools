@@ -6,7 +6,7 @@ using Domain.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using WebUI.Filters;
-using WebUI.ModelBinding.CustomModelBinders;
+using WebUI.ModelBinding.ModelBinders;
 using WebUI.Models.Group;
 using WebUI.Models.Shared;
 
@@ -32,9 +32,9 @@ public class GroupsController : ApiController
     /// <param name="filterModel">provides filters for filtering groups</param>
     /// <returns>List of groups</returns>
     [HttpGet("")]
-    [TypeFilter(typeof(QueryValuesProvidingActionFilter), Arguments = new object[] { typeof(DefaultOrderOptions) })]
+    [QueryValuesReader<DefaultOrderOptions>]
     [AllowAnonymous]
-    public async Task<ActionResult<IEnumerable<GroupViewModel>>> GetAll(OrderModel? orderModel,[ModelBinder(typeof(FilterModelBinder))] FilterModel? filterModel)
+    public async Task<ActionResult<IEnumerable<GroupViewModel>>> GetAll(OrderModel? orderModel,[FilterModelBinder] FilterModel? filterModel)
     {
         var groups = await _groupsService.GetAll(orderModel, filterModel);
 

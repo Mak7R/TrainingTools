@@ -24,8 +24,7 @@ public class UsersService : IUsersService
     private readonly IFriendsRepository _friendsRepository;
     private readonly ILogger<UsersService> _logger;
     private readonly IStringLocalizer<UsersService> _localizer;
-
-    // ReSharper disable once ConvertToPrimaryConstructor
+    
     public UsersService(UserManager<ApplicationUser> userManager, IFriendsRepository friendsRepository, ILogger<UsersService> logger, IStringLocalizer<UsersService> localizer)
     {
         _userManager = userManager;
@@ -322,7 +321,7 @@ public class UsersService : IUsersService
 
         if (currentUserRoles.Contains(nameof(Role.Admin)) || currentUserRoles.Contains(nameof(Role.Root)))
         {
-            var updatingUser = await _userManager.FindByNameAsync(updateUserDto.CurrentUserName);
+            var updatingUser = await _userManager.FindByNameAsync(updateUserDto.UserName);
             if (updatingUser == null) return DefaultOperationResult.FromException(new NotFoundException("User was not found"));
 
             if (await _userManager.IsInRoleAsync(updatingUser, nameof(Role.Root)))
@@ -333,7 +332,6 @@ public class UsersService : IUsersService
             var updatingUserIsAdmin = await _userManager.IsInRoleAsync(updatingUser, nameof(Role.Admin));
             if (!updatingUserIsAdmin || (updatingUserIsAdmin && currentUserRoles.Contains(nameof(Role.Root))))
             {
-                updatingUser.UserName = updateUserDto.Username;
                 updatingUser.IsPublic = updatingUser.IsPublic && !updateUserDto.SetPrivate;
                 if (updateUserDto.ClearAbout) updatingUser.About = string.Empty;
                 

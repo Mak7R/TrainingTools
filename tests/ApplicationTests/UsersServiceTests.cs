@@ -200,7 +200,7 @@ public class UsersServiceTests
     {
         // Arrange
         var currentUser = new ApplicationUser { Id = Guid.NewGuid() };
-        var updateUserDto = new UpdateUserDto { CurrentUserName = "existingUser", Username = "updatedUser" };
+        var updateUserDto = new UpdateUserDto { UserName = "existingUser", IsAdmin = true};
 
         _userManagerMock.Setup(mock => mock.GetRolesAsync(currentUser))
             .ReturnsAsync(new List<string> { nameof(Role.Admin) });

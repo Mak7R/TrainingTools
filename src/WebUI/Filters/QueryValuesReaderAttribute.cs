@@ -1,24 +1,17 @@
-using Application.Models.Shared;
+using Application.Constants;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using WebUI.Models.Shared;
 
 namespace WebUI.Filters;
 
-public class QueryValuesProvidingActionFilter : IActionFilter
+[AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
+public class QueryValuesReaderAttribute<TOrderOptions> : Attribute, IActionFilter
+    where TOrderOptions: IOrderOptions
 {
-    private readonly IOrderOptions _orderOptions;
+    private readonly TOrderOptions _orderOptions = (TOrderOptions)(Activator.CreateInstance(typeof(TOrderOptions)) 
+                                                                   ?? throw new NullReferenceException("Null result of creating order options Instance"));
 
-    public QueryValuesProvidingActionFilter(Type orderOptionsType)
-    {
-        if (!typeof(IOrderOptions).IsAssignableFrom(orderOptionsType))
-        {
-            throw new ArgumentException("Type must implement interface IOrderOptions", nameof(orderOptionsType));
-        }
-
-        _orderOptions = (IOrderOptions)(Activator.CreateInstance(orderOptionsType) ?? throw new NullReferenceException("Null result of creating orederOptionsInstace"));
-    }
-    
     public void OnActionExecuting(ActionExecutingContext context)
     {
         // nothing
@@ -33,14 +26,14 @@ public class QueryValuesProvidingActionFilter : IActionFilter
                 var key = queryValues.Key;
                 var value = queryValues.Value.First();
 
-                if (key.Equals(nameof(OrderModel.OrderOption), StringComparison.CurrentCultureIgnoreCase))
+                if (key.Equals(OrderOptionNames.Shared.Order, StringComparison.CurrentCultureIgnoreCase))
                 {
                     controller.ViewData["current_order"] = _orderOptions.Set(value).Current;
                     controller.ViewData[key] = _orderOptions.MoveNext().Current;
                 }
                 
                 else if (!string.IsNullOrWhiteSpace(value) && 
-                    (key.Equals("order_by", StringComparison.CurrentCultureIgnoreCase) || 
+                    (key.Equals(OrderOptionNames.Shared.OrderBy, StringComparison.CurrentCultureIgnoreCase) || 
                      key.Equals("page", StringComparison.CurrentCultureIgnoreCase) || 
                      key.StartsWith("f_"))
                     )

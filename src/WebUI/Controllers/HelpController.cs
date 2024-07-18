@@ -9,11 +9,6 @@ namespace WebUI.Controllers;
 [AllowAnonymous]
 public class HelpController : Controller
 {
-    public HelpController()
-    {
-        
-    }
-
     [HttpGet("")]
     public IActionResult Index()
     {

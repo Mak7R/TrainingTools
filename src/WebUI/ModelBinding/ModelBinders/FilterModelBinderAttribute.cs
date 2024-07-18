@@ -1,9 +1,23 @@
 using Application.Models.Shared;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 
-namespace WebUI.ModelBinding.CustomModelBinders;
+namespace WebUI.ModelBinding.ModelBinders;
 
-class FilterModelBinder : IModelBinder
+[AttributeUsage(
+    // Support method parameters in actions.
+    AttributeTargets.Parameter |
+
+    // Support properties on model DTOs.
+    AttributeTargets.Property |
+
+    // Support model types.
+    AttributeTargets.Class |
+    AttributeTargets.Enum |
+    AttributeTargets.Struct,
+
+    AllowMultiple = false,
+    Inherited = true)]
+public class FilterModelBinderAttribute : Attribute, IModelBinder
 {
     public Task BindModelAsync(ModelBindingContext bindingContext)
     {

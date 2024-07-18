@@ -2,7 +2,6 @@ using System.Globalization;
 using Domain.Enums;
 using Domain.Identity;
 using Infrastructure.Data;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.AspNetCore.Localization;
@@ -13,9 +12,10 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Serilog;
 using WebUI.Extensions;
+using WebUI.Filters;
 using WebUI.Mapping.Profiles;
 using WebUI.Middlewares;
-using WebUI.ModelBinding.CustomModelBindingProviders;
+using WebUI.ModelBinding.Providers;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -40,10 +40,13 @@ builder.Services.AddControllersWithViews(options =>
 {
     options.ModelBinderProviders.Insert(0, new FilterModelBinderProvider());
     options.ModelBinderProviders.Insert(0, new UpdateTrainingPlanModelBinderProvider());
+    
+    // option.Filters
 })
     .AddViewLocalization(LanguageViewLocationExpanderFormat.Suffix)
     .AddDataAnnotationsLocalization()
     .AddRazorRuntimeCompilation();
+
 builder.Services.AddHttpContextAccessor();
 
 builder.Services.Configure<RequestLocalizationOptions>(options =>
@@ -83,11 +86,10 @@ builder.Services.AddIdentity<ApplicationUser, ApplicationRole>(options =>
     .AddRoleStore<RoleStore<ApplicationRole, ApplicationDbContext, Guid>>();
 
 
-builder.Services.AddAuthorizationBuilder()
-    .SetFallbackPolicy(new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build());
-
 builder.Services.ConfigureApplicationCookie(options =>
 {
+    options.Cookie.HttpOnly = true;
+    
     options.LoginPath = "/login";
     options.LogoutPath = "/logout";
     options.AccessDeniedPath = "/access-denied";
@@ -155,14 +157,16 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseSwagger();
-app.UseSwaggerUI(options  =>
+app.UseSwaggerUI(options =>
 {
     options.SwaggerEndpoint("/swagger/v1/swagger.json", "1.0");
 });
 
 app.UseRouting();
 
+app.UseAuthentication();
 app.UseAuthorization();
+
 
 app.MapControllerRoute(
     name: "default",

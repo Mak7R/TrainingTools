@@ -1,11 +1,12 @@
+using Application.Constants;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Application.Models.Shared;
 
 public class OrderModel
 {
-    [FromQuery(Name = "order")] public string? OrderOption { get; set; }
-    [FromQuery(Name = "order_by")] public string? OrderBy { get; set; }
+    [FromQuery(Name = OrderOptionNames.Shared.Order)] public string? OrderOption { get; set; }
+    [FromQuery(Name = OrderOptionNames.Shared.OrderBy)] public string? OrderBy { get; set; }
 
     public IEnumerable<T> Order<T>(IEnumerable<T> enumerable, IEnumerable<KeyValuePair<OrderModel, Func<IEnumerable<T>, IEnumerable<T>>>> orders)
     {

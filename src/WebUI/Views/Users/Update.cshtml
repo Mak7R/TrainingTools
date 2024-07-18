@@ -1,31 +1,25 @@
-﻿@model WebUI.Models.User.UpdateUserModel
+﻿@model UpdateUserModel
 
 @{
-    ViewBag.Title = "Update user";
+    ViewBag.Title = $"Update user {Model.UserName}";
 }
 
-<div class="container">
-    <form method="post" asp-controller="Users" asp-action="Update">
-        <div class="col">
-            <div class="mb-3">
-                <label asp-for="UpdateUserName" class="form-label"></label>
-                <input asp-for="UpdateUserName" class="form-control"/>
-                <span asp-validation-for="UpdateUserName" class="text-danger"></span>
-            </div>
-        </div>
-
+<div class="container mt-3">
+    <form method="post" asp-controller="Users" asp-action="Update" asp-route-userName="@Model.UserName">
+        <h3>Update @Model.UserName</h3>
+        
         <div class="mb-3">
             <label asp-for="ClearAbout" class="form-label">Clear string about user: </label>
             <input asp-for="ClearAbout" class="form-check-input"/>
             <span asp-validation-for="ClearAbout" class="text-danger"></span>
         </div>
-        
+
         <div class="mb-3">
             <label asp-for="SetPrivate" class="form-label">Make user private: </label>
             <input asp-for="SetPrivate" class="form-check-input"/>
             <span asp-validation-for="SetPrivate" class="text-danger"></span>
         </div>
-        
+
         @if (Context.User.IsInRole(nameof(Role.Root)))
         {
             <div class="mb-3">
@@ -34,7 +28,7 @@
                 <span asp-validation-for="IsAdmin" class="text-danger"></span>
             </div>
         }
-        
+
         <div class="mb-3">
             <label asp-for="IsTrainer" class="form-label">Is User Trainer: </label>
             <input asp-for="IsTrainer" class="form-check-input"/>
@@ -42,7 +36,7 @@
         </div>
 
         <div class="mb-3">
-            <a class="btn btn-secondary" asp-controller="Users" asp-action="Get" asp-route-userName="@Model.UpdateUserName">Cancel</a>
+            <a class="btn btn-secondary" asp-controller="Users" asp-action="Get" asp-route-userName="@Model.UserName">Cancel</a>
             <button type="submit" class="btn btn-primary">Update</button>
         </div>
 

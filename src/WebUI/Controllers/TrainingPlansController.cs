@@ -13,8 +13,7 @@ using Rotativa.AspNetCore.Options;
 using WebUI.Extensions;
 using WebUI.Filters;
 using WebUI.Mapping.Mappers;
-using WebUI.ModelBinding.CustomModelBinders;
-using WebUI.Models.Response;
+using WebUI.ModelBinding.ModelBinders;
 using WebUI.Models.TrainingPlan;
 
 namespace WebUI.Controllers;
@@ -37,7 +36,7 @@ public class TrainingPlansController : Controller
     [HttpGet("")]
     public async Task<IActionResult> GetAll(
         [FromQuery] OrderModel? orderModel,
-        [ModelBinder(typeof(FilterModelBinder))] FilterModel? filterModel)
+        [FilterModelBinder] FilterModel? filterModel)
     {
         filterModel ??= new FilterModel();
         filterModel[FilterOptionNames.TrainingPlan.PublicOnly] = "true";
@@ -48,7 +47,7 @@ public class TrainingPlansController : Controller
     [HttpGet("for-user")]
     public async Task<IActionResult> GetUserTrainingPlans(
         [FromQuery] OrderModel? orderModel,
-        [ModelBinder(typeof(FilterModelBinder))]FilterModel? filterModel)
+        [FilterModelBinder] FilterModel? filterModel)
     {
         var user = await _userManager.GetUserAsync(User);
         if (user is null)
@@ -144,7 +143,7 @@ public class TrainingPlansController : Controller
     }
 
     [HttpGet("{author}/{title}/update")]
-    [TypeFilter(typeof(AddAvailableGroupsActionFilter))]
+    [AddAvailableGroups]
     public async Task<IActionResult> Update(string author, string title, [FromServices] IGroupsService groupsService)
     {
         var user = await _userManager.GetUserAsync(User);
@@ -179,8 +178,22 @@ public class TrainingPlansController : Controller
     }
 
     [HttpPost("{author}/{title}/update")]
-    public async Task<IActionResult> Update(string author, string title, [ModelBinder(typeof(UpdateTrainingPlanModelBinder))] UpdateTrainingPlanModel updateTrainingPlanModel)
+    public async Task<IActionResult> Update(string author, string title, [UpdateTrainingPlanModelBinder] UpdateTrainingPlanModel updateTrainingPlanModel)
     {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(new ProblemDetails
+            {
+                Title = "Invalid model",
+                Status = StatusCodes.Status400BadRequest,
+                Detail = "Model state is not valid",
+                Extensions = new Dictionary<string, object?>
+                {
+                    {"errors", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage)}
+                }
+            });
+        }
+        
         var user = await _userManager.GetUserAsync(User);
         if (user is null)
             return RedirectToAction("Login", "Accounts", new { returnUrl = $"/training-plans/{author}/{title}/update" });
@@ -188,15 +201,17 @@ public class TrainingPlansController : Controller
         var trainingPlan = await _trainingPlansService.GetByName(author, title);
 
         if (trainingPlan is null)
-            return NotFound(ResponseModel.BadResponse(new[] { "Training plan was not found" }));
+            return NotFound(new ProblemDetails
+            {
+                Detail = "Training plan was not found in database",
+                Status = StatusCodes.Status404NotFound,
+                Title = "Training plan was not found"
+            });
         
         if (user.Id != trainingPlan.Author.Id)
             return this.ErrorView(StatusCodes.Status403Forbidden, new[] { "Only author can edit training plan" });
 
-        if (!ModelState.IsValid)
-        {
-            return Json(ResponseModel.BadResponse(ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage)));
-        }
+        
 
         var newTrainingPlan = new TrainingPlan
         {
@@ -218,20 +233,36 @@ public class TrainingPlansController : Controller
 
         if (result.IsSuccessful)
         {
-            return Ok(ResponseModel.GoodResponse(null));
+            return Ok();
         }
+
+        var problemDetails = new ProblemDetails();
         
         if (result.Exception is AlreadyExistsException)
         {
-            return BadRequest(ResponseModel.BadResponse(result.Errors));
+            problemDetails.Title = "Training plan already exists";
+            problemDetails.Detail = "Training plan with this name already exists";
+            problemDetails.Status = StatusCodes.Status400BadRequest;
+            return BadRequest(problemDetails);
         }
         
         if (result.Exception is NotFoundException)
         {
-            return NotFound(ResponseModel.BadResponse(result.Errors));
-        }
+            problemDetails.Detail = "Training plan was not found in database";
+            problemDetails.Status = StatusCodes.Status404NotFound;
+            problemDetails.Title = "Training plan was not found";
 
-        return StatusCode(StatusCodes.Status500InternalServerError, ResponseModel.BadResponse(result.Errors));
+            return NotFound(problemDetails);
+        }
+        
+        problemDetails.Detail = "An internal server error occurred while processing the request";
+        problemDetails.Status = StatusCodes.Status500InternalServerError;
+        problemDetails.Title = "Server Error";
+        
+        if (result.Errors.Any())
+            problemDetails.Extensions.Add("errors", result.Errors);
+
+        return StatusCode(StatusCodes.Status500InternalServerError, problemDetails);
     }
     
     [HttpGet("{author}/{title}/delete")]

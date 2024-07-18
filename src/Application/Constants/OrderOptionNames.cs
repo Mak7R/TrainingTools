@@ -6,6 +6,9 @@ public static class OrderOptionNames
     {
         public const string Ascending = "asc";
         public const string Descending = "desc";
+
+        public const string Order = "order";
+        public const string OrderBy = "order_by";
     }
     
     public static class Group

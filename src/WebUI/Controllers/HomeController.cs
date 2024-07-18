@@ -3,11 +3,13 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc;
 using WebUI.Extensions;
+using WebUI.Filters;
 using WebUI.Models.Shared;
 
 namespace WebUI.Controllers;
 
 [AllowAnonymous]
+[Controller]
 public class HomeController : Controller
 {
     private readonly ILogger<HomeController> _logger;

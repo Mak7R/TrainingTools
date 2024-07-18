@@ -1,13 +1,14 @@
 ﻿using Application.Interfaces.ServiceInterfaces;
 using Application.Models.Shared;
 using AutoMapper;
+using Domain.Enums;
 using Domain.Exceptions;
 using Domain.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using WebUI.Extensions;
 using WebUI.Filters;
-using WebUI.ModelBinding.CustomModelBinders;
+using WebUI.ModelBinding.ModelBinders;
 using WebUI.Models.Group;
 using WebUI.Models.Shared;
 
@@ -28,9 +29,8 @@ public class GroupsController : Controller
     }
 
     [HttpGet("")]
-    [TypeFilter(typeof(QueryValuesProvidingActionFilter), Arguments = new object[] { typeof(DefaultOrderOptions) })]
-    [AllowAnonymous]
-    public async Task<IActionResult> GetAll(OrderModel? orderModel,[ModelBinder(typeof(FilterModelBinder))] FilterModel? filterModel)
+    [QueryValuesReader<DefaultOrderOptions>]
+    public async Task<IActionResult> GetAll(OrderModel? orderModel,[FilterModelBinder] FilterModel? filterModel)
     {
         var groups = await _groupsService.GetAll(orderModel, filterModel);
         
@@ -39,6 +39,7 @@ public class GroupsController : Controller
 
     [HttpPost("create")]
     [Authorize(Roles = "Root,Admin")]
+    [ConfirmUser]
     public async Task<IActionResult> Create([FromForm] CreateGroupModel createGroupModel)
     {
         if (!ModelState.IsValid)
@@ -57,6 +58,7 @@ public class GroupsController : Controller
 
     [HttpPost("update")]
     [Authorize(Roles = "Root,Admin")]
+    [ConfirmUser]
     public async Task<IActionResult> Update([FromForm] UpdateGroupModel updateGroupModel)
     {
         if (!ModelState.IsValid)
@@ -78,6 +80,7 @@ public class GroupsController : Controller
 
     [HttpGet("delete")]
     [Authorize(Roles = "Root,Admin")]
+    [ConfirmUser]
     public async Task<IActionResult> Delete([FromQuery] Guid groupId)
     {
         var result = await _groupsService.Delete(groupId);

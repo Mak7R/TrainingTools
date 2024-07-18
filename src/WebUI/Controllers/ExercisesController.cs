@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using WebUI.Extensions;
 using WebUI.Filters;
-using WebUI.ModelBinding.CustomModelBinders;
+using WebUI.ModelBinding.ModelBinders;
 using WebUI.Models.Exercise;
 using WebUI.Models.Shared;
 
@@ -30,11 +30,11 @@ public class ExercisesController : Controller
     }
     
     [HttpGet("")]
-    [TypeFilter(typeof(QueryValuesProvidingActionFilter), Arguments = new object[] { typeof(DefaultOrderOptions) })]
-    [TypeFilter(typeof(AddAvailableGroupsActionFilter))]
+    [QueryValuesReader<DefaultOrderOptions>]
+    [AddAvailableGroups]
     public async Task<IActionResult> GetAll(
         [FromQuery] OrderModel? orderModel,
-        [ModelBinder(typeof(FilterModelBinder))] FilterModel? filterModel, 
+        [FilterModelBinder] FilterModel? filterModel, 
         
         [FromServices] IExerciseResultsService resultsService, 
         [FromServices] UserManager<ApplicationUser> userManager)
@@ -68,7 +68,7 @@ public class ExercisesController : Controller
 
     [HttpGet("create")]
     [Authorize(Roles = "Admin,Root")]
-    [TypeFilter(typeof(AddAvailableGroupsActionFilter))]
+    [AddAvailableGroups]
     public IActionResult Create()
     {
         return View();
@@ -76,7 +76,8 @@ public class ExercisesController : Controller
 
     [Authorize(Roles = "Admin,Root")]
     [HttpPost("create")]
-    [TypeFilter(typeof(AddAvailableGroupsActionFilter))]
+    [ConfirmUser]
+    [AddAvailableGroups]
     public async Task<IActionResult> Create([FromForm] CreateExerciseModel createExerciseModel)
     {
         if (!ModelState.IsValid)
@@ -95,7 +96,7 @@ public class ExercisesController : Controller
 
     [Authorize(Roles = "Admin,Root")]
     [HttpGet("{exerciseId:guid}/update")]
-    [TypeFilter(typeof(AddAvailableGroupsActionFilter))]
+    [AddAvailableGroups]
     public async Task<IActionResult> Update(Guid exerciseId)
     {
         var exercise = await _exercisesService.GetById(exerciseId);
@@ -106,8 +107,9 @@ public class ExercisesController : Controller
     }
 
     [Authorize(Roles = "Admin,Root")]
+    [ConfirmUser]
     [HttpPost("{exerciseId:guid}/update")]
-    [TypeFilter(typeof(AddAvailableGroupsActionFilter))]
+    [AddAvailableGroups]
     public async Task<IActionResult> Update(Guid exerciseId, [FromForm] UpdateExerciseModel updateExerciseModel)
     {
         if (!ModelState.IsValid)
@@ -128,6 +130,7 @@ public class ExercisesController : Controller
     }
 
     [Authorize(Roles = "Admin,Root")]
+    [ConfirmUser]
     [HttpGet("delete")]
     public async Task<IActionResult> DeleteExercise([FromQuery] Guid exerciseId)
     {

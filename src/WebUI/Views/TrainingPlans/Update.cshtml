@@ -1,5 +1,4 @@
-﻿@using WebUI.Models.Group
-@model WebUI.Models.TrainingPlan.UpdateTrainingPlanModel
+﻿@model UpdateTrainingPlanModel
 
 @{
     ViewBag.Title = $"Update training plan {Model.NewTitle}";
@@ -175,7 +174,7 @@
                                 </div>
                                 <div class="form-group">
                                     <label>Description</label>
-                                    <textarea class="form-control" rows="2" oninput="trainingPlan.editEntry(${blockIndex}, ${i}, null, this.value)"></textarea>
+                                    <textarea class="form-control" rows="2" oninput="trainingPlan.editEntry(${blockIndex}, ${i}, null, this.value)">${entry.description}</textarea>
                                 </div>
                             `;
                         } else if (i === block.entries.length){
@@ -220,24 +219,25 @@
                 .then(response => {
                     if (!response.ok) {
                         return response.json().then(errorData => {
-                            const errors = errorData.Errors || [];
+                            const errors = errorData.errors || [];
                             const errorList = errors.map(error => `<li>${error}</li>`).join('');
                             document.getElementById('update-errors').innerHTML = errorList;
-                            throw new Error('Network response was not ok');
+                            throw new Error("BadResponse");
                         });
                     }
-                    return response.json();
-                })
-                .then(data => {
-                    const currentUrl = window.location.href;
-                    const baseUrl = currentUrl.split('/update')[0];
-                    window.location.href = baseUrl.substring(0, baseUrl.lastIndexOf("/") + 1) + this.newTitle;
+                    else{
+                        const currentUrl = window.location.href;
+                        const baseUrl = currentUrl.split('/update')[0];
+                        window.location.href = baseUrl.substring(0, baseUrl.lastIndexOf("/") + 1) + this.newTitle;
+                    }
                 })
                 .catch(error => {
-                    console.error('Error submitting data:', error);
-                    const errorElement = document.getElementById('update-errors');
-                    if (errorElement) {
-                        errorElement.innerHTML = `<li>Failed to submit the update.</li>`;
+                    if (error.message !== "BadResponse"){
+                        console.error('Error submitting data:', error);
+                        const errorElement = document.getElementById('update-errors');
+                        if (errorElement) {
+                            errorElement.innerHTML = `<li>Failed to submit the update.</li>`;
+                        }
                     }
                 });
             }

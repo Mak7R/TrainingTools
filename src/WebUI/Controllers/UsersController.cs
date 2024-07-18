@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 using WebUI.Extensions;
 using WebUI.Filters;
 using WebUI.Mapping.Mappers;
-using WebUI.ModelBinding.CustomModelBinders;
+using WebUI.ModelBinding.ModelBinders;
 using WebUI.Models.Shared;
 using WebUI.Models.User;
 
@@ -31,8 +31,8 @@ public class UsersController : Controller
     }
     
     [HttpGet("")]
-    [TypeFilter(typeof(QueryValuesProvidingActionFilter), Arguments = new object[] { typeof(DefaultOrderOptions) })]
-    public async Task<IActionResult> GetAll([FromQuery] OrderModel? orderModel, [ModelBinder(typeof(FilterModelBinder))]FilterModel? filterModel)
+    [QueryValuesReader<DefaultOrderOptions>]
+    public async Task<IActionResult> GetAll([FromQuery] OrderModel? orderModel, [FilterModelBinder] FilterModel? filterModel)
     {
         var user = await _userManager.GetUserAsync(User);
         if (user is null) return RedirectToAction("Login", "Accounts", new {ReturnUrl = "/users"});
@@ -44,6 +44,7 @@ public class UsersController : Controller
     
     [HttpGet("as-csv")]
     [Authorize(Roles = "Admin,Root")]
+    [ConfirmUser]
     public async Task<IActionResult> GetAllAsCsv()
     {
         var stream = await _usersService.GetAllUsersAsCsv();
@@ -52,6 +53,7 @@ public class UsersController : Controller
     }
 
     [HttpGet("{userName}")]
+    [ConfirmUser]
     public async Task<IActionResult> Get(string? userName)
     {
         if (string.IsNullOrWhiteSpace(userName))
@@ -77,6 +79,7 @@ public class UsersController : Controller
     }
     
     [Authorize(Roles = "Admin,Root")]
+    [ConfirmUser]
     [HttpPost("create")]
     public async Task<IActionResult> Create(CreateUserModel createUserModel)
     {
@@ -119,7 +122,7 @@ public class UsersController : Controller
         
         var updateUserModel= new UpdateUserModel
         {
-            UpdateUserName = user.User.UserName,
+            UserName = userName,
             IsAdmin = user.Roles.Contains(nameof(Role.Admin)),
             ClearAbout = false,
             SetPrivate = false,
@@ -130,6 +133,7 @@ public class UsersController : Controller
     }
     
     [Authorize(Roles = "Admin,Root")]
+    [ConfirmUser]
     [HttpPost("{userName}/update")]
     public async Task<IActionResult> Update([FromRoute] string? userName, [FromForm] UpdateUserModel updateUserModel)
     {
@@ -137,15 +141,18 @@ public class UsersController : Controller
             return this.BadRequestView(new[] { "User name was empty" });
         
         var user = await _userManager.GetUserAsync(User);
-        if (user is null) return RedirectToAction("Login", "Accounts", new {ReturnUrl = $"/users/{userName}/update"});
+        if (user is null) 
+            return RedirectToAction("Login", "Accounts", new {ReturnUrl = $"/users/{userName}/update"});
         
         if (!ModelState.IsValid)
+        {
+            updateUserModel.UserName = userName;
             return View(updateUserModel);
+        }
         
         var appUpdateUserDto = new Application.Dtos.UpdateUserDto
         {
-            CurrentUserName = userName,
-            Username = updateUserModel.UpdateUserName,
+            UserName = userName,
             ClearAbout = updateUserModel.ClearAbout,
             IsAdmin = updateUserModel.IsAdmin,
             SetPrivate = updateUserModel.SetPrivate,
@@ -157,10 +164,11 @@ public class UsersController : Controller
         if (!result.IsSuccessful)
             this.BadRequestView(result.Errors);
 
-        return RedirectToAction("Get", new {userName = appUpdateUserDto.Username});
+        return RedirectToAction("Get", new { userName });
     }
 
     [Authorize(Roles = "Admin,Root")]
+    [ConfirmUser]
     [HttpGet("{userName}/delete")]
     public async Task<IActionResult> Delete([FromRoute] string? userName)
     {

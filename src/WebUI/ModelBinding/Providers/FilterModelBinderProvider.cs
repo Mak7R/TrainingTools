@@ -1,9 +1,8 @@
 using Application.Models.Shared;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
-using Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
-using WebUI.ModelBinding.CustomModelBinders;
+using WebUI.ModelBinding.ModelBinders;
 
-namespace WebUI.ModelBinding.CustomModelBindingProviders;
+namespace WebUI.ModelBinding.Providers;
 
 public class FilterModelBinderProvider : IModelBinderProvider
 {
@@ -13,7 +12,7 @@ public class FilterModelBinderProvider : IModelBinderProvider
 
         if (context.Metadata.ModelType == typeof(FilterModel))
         {
-            return new BinderTypeModelBinder(typeof(FilterModelBinder));
+            return new FilterModelBinderAttribute();
         }
 
         return null;
