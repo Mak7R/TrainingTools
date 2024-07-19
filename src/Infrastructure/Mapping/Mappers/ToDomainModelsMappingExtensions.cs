@@ -4,7 +4,7 @@ using Domain.Rules;
 using Infrastructure.Entities;
 using Infrastructure.Entities.TrainingPlanEntities;
 
-namespace Infrastructure.Mappers;
+namespace Infrastructure.Mapping.Mappers;
 
 public static class ToDomainModelsMappingExtensions
 {

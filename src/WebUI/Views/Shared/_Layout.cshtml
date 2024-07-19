@@ -1,10 +1,16 @@
 ﻿@using System.Globalization
 
 <!doctype html>
-<html lang="en">
+<html lang="@CultureInfo.CurrentUICulture.Name">
 <head>
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="description" content="TrainingTools allows you to manage the results of sports exercises and create training plans. You can also view the results of your friends and use many other training tools.">
+    <meta name="keywords" content="training tools, training plans, training results">
+    <link rel="icon" href="~/favicon.ico" type="image/x-icon"/>
+    <link rel="canonical" href="@Context.Request.Scheme://@Context.Request.Host@Context.Request.Path"/>
+    <link rel="alternate" hreflang="en" href="@Context.Request.Scheme://@Context.Request.Host@Context.Request.Path"/>
+    <link rel="alternate" hreflang="uk" href="@Context.Request.Scheme://@Context.Request.Host@Context.Request.Path"/>
     <title>@ViewData["Title"]</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css"/>
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true"/>
@@ -116,6 +122,14 @@
 <script src="~/lib/jquery/dist/jquery.min.js"></script>
 <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
 <script src="~/js/site.js" asp-append-version="true"></script>
+<script type="application/ld+json">
+    {
+      "@@context": "https://schema.org",
+      "@@type": "WebSite",
+      "name": "TrainingTools",
+      "url": "@Context.Request.Scheme://@Context.Request.Host"
+    }
+</script>
 @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

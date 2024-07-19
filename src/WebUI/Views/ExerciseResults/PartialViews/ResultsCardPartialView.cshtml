@@ -26,7 +26,7 @@
                     
                     if (User.Identity?.Name == Model.Owner.UserName)
                     {
-                        <a class="col-auto p-0 m-1" asp-controller="ExerciseResults" asp-action="UpdateResults" asp-route-exerciseId="@Model.Exercise.Id">
+                        <a class="col-auto p-0 m-1" asp-controller="ExerciseResults" asp-action="Update" asp-route-exerciseId="@Model.Exercise.Id">
                             <img src="/img/icons/editing.png" alt="Edit" style="width: 2em; height: 2em;"/>
                         </a>
                         <div type="button" class="col-auto p-0 m-1" data-bs-toggle="modal" data-bs-target="#deleteResult-@Model.Owner.UserName-@Model.Exercise.Id-Modal">
@@ -45,7 +45,7 @@
                                     </div>
                                     <div class="modal-footer">
                                         <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Cancel</button>
-                                        <a type="button" class="btn btn-danger" asp-controller="ExerciseResults" asp-action="DeleteResults" asp-route-exerciseId="@Model.Exercise.Id">Delete</a>
+                                        <a type="button" class="btn btn-danger" asp-controller="ExerciseResults" asp-action="Delete" asp-route-exerciseId="@Model.Exercise.Id">Delete</a>
                                     </div>
                                 </div>
                             </div>

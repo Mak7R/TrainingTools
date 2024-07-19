@@ -2,7 +2,7 @@
 using Domain.Identity;
 using Domain.Models;
 
-namespace Application.Interfaces.RepositoryInterfaces;
+namespace Application.Interfaces.Repositories;
 
 public interface IFriendsRepository
 {

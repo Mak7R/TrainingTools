@@ -36,6 +36,15 @@
         "ASPNETCORE_ENVIRONMENT": "Production"
       }
     },
+    "local-hosting": {
+      "commandName": "Project",
+      "dotnetRunMessages": true,
+      "launchBrowser": false,
+      "applicationUrl": "https://192.168.1.103:7091;http://192.168.1.103:5140",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Production"
+      }
+    },
     "IIS Express": {
       "commandName": "IISExpress",
       "launchBrowser": false,

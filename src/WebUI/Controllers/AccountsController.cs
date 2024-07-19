@@ -178,6 +178,8 @@ public class AccountsController : Controller
                 }
             }
 
+            await _signInManager.RefreshSignInAsync(user);
+            
             return RedirectToAction("Profile");
         }
 

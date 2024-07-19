@@ -1,6 +1,6 @@
 ﻿using Application.Constants;
-using Application.Interfaces.RepositoryInterfaces;
-using Application.Interfaces.ServiceInterfaces;
+using Application.Interfaces.Repositories;
+using Application.Interfaces.Services;
 using Application.Models.Shared;
 using Domain.Models;
 
@@ -8,37 +8,21 @@ namespace Application.Services;
 
 public class GroupsService : IGroupsService
 {
-    private readonly IGroupsRepository _groupsRepository;
+    private readonly IRepository<Group, Guid> _groupsRepository;
     
-    public GroupsService(IGroupsRepository groupsRepository)
+    public GroupsService(IRepository<Group, Guid> groupsRepository)
     {
         _groupsRepository = groupsRepository;
     }
     
-    public async Task<IEnumerable<Group>> GetAll(OrderModel? orderModel = null, FilterModel? filterModel = null)
+    public async Task<IEnumerable<Group>> GetAll(OrderModel? orderModel = null, FilterModel? filterModel = null, PageModel? pageModel = null)
     {
-        var groups = await _groupsRepository.GetAll(filterModel);
-        
-        if (orderModel is null || string.IsNullOrWhiteSpace(orderModel.OrderBy)) return groups;
-        
-        if (orderModel.OrderBy.Equals(OrderOptionNames.Group.Name, StringComparison.CurrentCultureIgnoreCase))
-        {
-            if (orderModel.OrderOption?.Equals(OrderOptionNames.Shared.Descending, StringComparison.CurrentCultureIgnoreCase) ?? false)
-            {
-                groups = groups.OrderByDescending(g => g.Name);
-            }
-            else
-            {
-                groups = groups.OrderBy(g => g.Name);
-            }
-        }
-
-        return groups.ToList();
+        return await _groupsRepository.GetAll(filterModel, orderModel, pageModel);
     }
     
     public async Task<Group?> GetByName(string? name)
     {
-        return await _groupsRepository.GetByName(name);
+        return (await _groupsRepository.GetAll(new FilterModel{{FilterOptionNames.Group.NameEquals, name}}, null, new PageModel{PageSize = 1})).FirstOrDefault();
     }
 
     public async Task<Group?> GetById(Guid id)

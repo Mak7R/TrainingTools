@@ -1,4 +1,4 @@
-﻿using Application.Interfaces.RepositoryInterfaces;
+﻿using Application.Interfaces.Repositories;
 using Application.Models;
 using Domain.Defaults;
 using Domain.Exceptions;

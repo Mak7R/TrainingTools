@@ -1,4 +1,5 @@
 ﻿using Application.Interfaces.ServiceInterfaces;
+using Application.Interfaces.Services;
 using Application.Models.Shared;
 using AutoMapper;
 using Domain.Exceptions;
@@ -6,7 +7,7 @@ using Domain.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using WebUI.Filters;
-using WebUI.ModelBinding.CustomModelBinders;
+using WebUI.ModelBinding.ModelBinders;
 using WebUI.Models.Group;
 using WebUI.Models.Shared;
 
@@ -32,9 +33,9 @@ public class GroupsController : ApiController
     /// <param name="filterModel">provides filters for filtering groups</param>
     /// <returns>List of groups</returns>
     [HttpGet("")]
-    [TypeFilter(typeof(QueryValuesProvidingActionFilter), Arguments = new object[] { typeof(DefaultOrderOptions) })]
+    [QueryValuesReader<DefaultOrderOptions>]
     [AllowAnonymous]
-    public async Task<ActionResult<IEnumerable<GroupViewModel>>> GetAll(OrderModel? orderModel,[ModelBinder(typeof(FilterModelBinder))] FilterModel? filterModel)
+    public async Task<ActionResult<IEnumerable<GroupViewModel>>> GetAll(OrderModel? orderModel,[FilterModelBinder] FilterModel? filterModel)
     {
         var groups = await _groupsService.GetAll(orderModel, filterModel);
 
@@ -45,6 +46,9 @@ public class GroupsController : ApiController
     public async Task<ActionResult<GroupViewModel>> Get(Guid groupId)
     {
         var group = await _groupsService.GetById(groupId);
+        if (group is null)
+            return Problem("Group was not found", statusCode:404);
+        
         return _mapper.Map<GroupViewModel>(group);
     }
 
@@ -69,17 +73,13 @@ public class GroupsController : ApiController
         if (result.Exception is AlreadyExistsException)
             return Problem("Group already exists in database", statusCode: 400, title: "Group already exists");
 
-        var problemDetails = new ProblemDetails
+        return StatusCode(StatusCodes.Status500InternalServerError, new ProblemDetails
         {
             Detail = "An internal server error occurred while processing the request",
             Status = StatusCodes.Status500InternalServerError,
-            Title = "Server Error"
-        };
-        
-        if (result.Errors.Any())
-            problemDetails.Extensions.Add("errors", result.Errors);
-
-        return StatusCode(StatusCodes.Status500InternalServerError, problemDetails);
+            Title = "Server Error",
+            Extensions = new Dictionary<string, object?>{{"errors", result.Errors}}
+        });
     }
 
     [HttpPut("")]
@@ -95,9 +95,15 @@ public class GroupsController : ApiController
             return Problem("Group already exists", statusCode: 400);
         
         if (result.Exception is NotFoundException)
-            return NotFound();
+            return Problem("Group was not found", statusCode:404);
         
-        return Problem("Undefined errors", statusCode: 500);
+        return StatusCode(StatusCodes.Status500InternalServerError, new ProblemDetails
+        {
+            Detail = "An internal server error occurred while processing the request",
+            Status = StatusCodes.Status500InternalServerError,
+            Title = "Server Error",
+            Extensions = new Dictionary<string, object?>{{"errors", result.Errors}}
+        });
     }
 
     [HttpDelete("{groupId:guid}")]
@@ -112,6 +118,12 @@ public class GroupsController : ApiController
         if (result.Exception is NotFoundException)
             return NotFound();
         
-        return Problem("Undefined errors", statusCode: 500);
+        return StatusCode(StatusCodes.Status500InternalServerError, new ProblemDetails
+        {
+            Detail = "An internal server error occurred while processing the request",
+            Status = StatusCodes.Status500InternalServerError,
+            Title = "Server Error",
+            Extensions = new Dictionary<string, object?>{{"errors", result.Errors}}
+        });
     }
 }

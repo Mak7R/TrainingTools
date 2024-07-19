@@ -1,6 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 using Application.Constants;
-using Application.Interfaces.RepositoryInterfaces;
+using Application.Interfaces.Repositories;
 using Application.Interfaces.ServiceInterfaces;
 using Application.Models.Shared;
 using Domain.Models;
@@ -44,7 +44,7 @@ public class TrainingPlansService : ITrainingPlansService
                 {
                     new OrderModel
                     {
-                        OrderBy = OrderOptionNames.Author,
+                        OrderBy = OrderOptionNames.AuthorName,
                         OrderOption = Constants.OrderOptionNames.Shared.Ascending
                     },
                     enumerable => enumerable.OrderBy(p => p.Author.UserName)
@@ -53,7 +53,7 @@ public class TrainingPlansService : ITrainingPlansService
                 {
                     new OrderModel
                     {
-                        OrderBy = OrderOptionNames.Author,
+                        OrderBy = OrderOptionNames.AuthorName,
                         OrderOption = Constants.OrderOptionNames.Shared.Descending
                     },
                     enumerable => enumerable.OrderByDescending(p => p.Author.UserName)

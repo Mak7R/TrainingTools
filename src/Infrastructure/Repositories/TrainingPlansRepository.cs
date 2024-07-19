@@ -1,7 +1,7 @@
 ﻿using System.Collections.ObjectModel;
 using System.Linq.Expressions;
 using Application.Constants;
-using Application.Interfaces.RepositoryInterfaces;
+using Application.Interfaces.Repositories;
 using Application.Models.Shared;
 using Domain.Defaults;
 using Domain.Exceptions;
@@ -9,7 +9,7 @@ using Domain.Models;
 using Domain.Models.TrainingPlan;
 using Infrastructure.Data;
 using Infrastructure.Entities.TrainingPlanEntities;
-using Infrastructure.Mappers;
+using Infrastructure.Mapping.Mappers;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
@@ -33,7 +33,7 @@ public class TrainingPlansRepository : ITrainingPlansRepository
             { FilterOptionNames.TrainingPlan.Title, value => p => p.Title.Contains(value) },
             { FilterOptionNames.TrainingPlan.TitleEquals, value => p => p.Title == value},
             {
-                FilterOptionNames.TrainingPlan.Author,
+                FilterOptionNames.TrainingPlan.AuthorName,
                 value => p => p.Author.UserName != null && p.Author.UserName.Contains(value)
             },
             { FilterOptionNames.TrainingPlan.AuthorId, value => Guid.TryParse(value, out var authorId) ? _ => false : p => p.AuthorId == authorId },
@@ -51,7 +51,7 @@ public class TrainingPlansRepository : ITrainingPlansRepository
                 .AsNoTracking();
 
             if (filterModel is not null)
-                query = filterModel.FilterBy(query, TrainingPlanFilters);
+                query = filterModel.Filter(query, TrainingPlanFilters);
             
             return await query.Select(entity => entity.ToTrainingPlan()).ToListAsync();
         }

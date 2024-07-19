@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore;
 using WebUI.Extensions;
 using WebUI.Filters;
 using WebUI.Mapping.Mappers;
-using WebUI.ModelBinding.CustomModelBinders;
+using WebUI.ModelBinding.ModelBinders;
 using WebUI.Models.Exercise;
 using WebUI.Models.ExerciseResult;
 using WebUI.Models.Group;
@@ -36,8 +36,8 @@ public class ExerciseResultsController : Controller
     }
 
     [HttpGet("")]
-    [TypeFilter(typeof(QueryValuesProvidingActionFilter), Arguments = new object[] { typeof(DefaultOrderOptions) })]
-    public async Task<IActionResult> GetUserResults(OrderModel? orderModel,[ModelBinder(typeof(FilterModelBinder))] FilterModel? filterModel)
+    [QueryValuesReader<DefaultOrderOptions>]
+    public async Task<IActionResult> GetUserResults(OrderModel? orderModel,[FilterModelBinder] FilterModel? filterModel)
     {
         var user = await _userManager.GetUserAsync(HttpContext.User);
         if (user is null) return RedirectToAction("Login", "Accounts", new {returnUrl = "/exercises/results"});
@@ -60,9 +60,9 @@ public class ExerciseResultsController : Controller
     }
     
     [HttpGet("for-exercise/{exerciseId:guid}")]
-    [TypeFilter(typeof(QueryValuesProvidingActionFilter), Arguments = new object[] { typeof(DefaultOrderOptions) })]
+    [QueryValuesReader<DefaultOrderOptions>]
     public async Task<IActionResult> GetFriendsResultsForExercise(Guid exerciseId, [FromServices] IExercisesService exercisesService,
-        OrderModel? orderModel,[ModelBinder(typeof(FilterModelBinder))] FilterModel? filterModel)
+        OrderModel? orderModel,[FilterModelBinder] FilterModel? filterModel)
     {
         var user = await _userManager.GetUserAsync(HttpContext.User);
         if (user is null) return RedirectToAction("Login", "Accounts", new {returnUrl = $"/exercises/results/for-exercise/{exerciseId}"});
@@ -83,8 +83,8 @@ public class ExerciseResultsController : Controller
     }  
     
     [HttpGet("for-user/{userName}")]
-    [TypeFilter(typeof(QueryValuesProvidingActionFilter), Arguments = new object[] { typeof(DefaultOrderOptions) })]
-    public async Task<IActionResult> GetResultsForUser(string userName, OrderModel? orderModel,[ModelBinder(typeof(FilterModelBinder))] FilterModel? filterModel)
+    [QueryValuesReader<DefaultOrderOptions>]
+    public async Task<IActionResult> GetResultsForUser(string userName, OrderModel? orderModel,[FilterModelBinder] FilterModel? filterModel)
     {
         var user = await _userManager.GetUserAsync(HttpContext.User);
         if (user is null) return RedirectToAction("Login", "Accounts", new {returnUrl = "/exercises/results"});
@@ -117,7 +117,7 @@ public class ExerciseResultsController : Controller
     }
 
     [HttpGet("add/{exerciseId:guid}")]
-    public async Task<IActionResult> CreateResult([FromRoute] Guid exerciseId, [FromQuery] string? returnUrl)
+    public async Task<IActionResult> Create([FromRoute] Guid exerciseId, [FromQuery] string? returnUrl)
     {
         var user = await _userManager.GetUserAsync(HttpContext.User);
         if (user is null) return RedirectToAction("Login", "Accounts", new {returnUrl = "/exercises/results"});
@@ -132,7 +132,7 @@ public class ExerciseResultsController : Controller
     }
     
     [HttpGet("delete/{exerciseId:guid}")]
-    public async Task<IActionResult> DeleteResults(Guid exerciseId)
+    public async Task<IActionResult> Delete(Guid exerciseId)
     {
         var user = await _userManager.GetUserAsync(HttpContext.User);
         if (user is null) return RedirectToAction("Login", "Accounts", new {returnUrl = "/exercises/results"});
@@ -143,7 +143,7 @@ public class ExerciseResultsController : Controller
     }
     
     [HttpGet("update/{exerciseId:guid}")]
-    public async Task<IActionResult> UpdateResults(Guid exerciseId)
+    public async Task<IActionResult> Update(Guid exerciseId)
     {
         var user = await _userManager.GetUserAsync(User);
         if (user is null) return RedirectToAction("Login", "Accounts", new {returnUrl = $"/exercises/results/update/{exerciseId}"});
@@ -155,7 +155,7 @@ public class ExerciseResultsController : Controller
     }
     
     [HttpPost("update/{exerciseId:guid}")]
-    public async Task<IActionResult> UpdateResults(Guid exerciseId, [FromForm] UpdateResultsModel updateResultsModel)
+    public async Task<IActionResult> Update(Guid exerciseId, [FromForm] UpdateResultsModel updateResultsModel)
     {
         int i = 0;
         foreach (var approach in updateResultsModel.ApproachInfos)

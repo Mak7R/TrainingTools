@@ -1,4 +1,4 @@
-﻿using Application.Interfaces.RepositoryInterfaces;
+﻿using Application.Interfaces.Repositories;
 using Application.Interfaces.ServiceInterfaces;
 using Application.Models;
 using Domain.Identity;

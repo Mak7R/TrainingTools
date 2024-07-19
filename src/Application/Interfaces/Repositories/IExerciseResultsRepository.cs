@@ -1,7 +1,7 @@
 ﻿using Application.Models.Shared;
 using Domain.Models;
 
-namespace Application.Interfaces.RepositoryInterfaces;
+namespace Application.Interfaces.Repositories;
 
 public interface IExerciseResultsRepository
 {

@@ -12,14 +12,20 @@ public class UiApplicationMappingProfile : Profile
 {
     public UiApplicationMappingProfile()
     {
-        // ------------------------ Group Mapping ------------------------ //
-        
+        CreateGroupMaps();
+        CreateExerciseMaps();
+        CreateUserMaps();
+    }
+
+    private void CreateGroupMaps()
+    {
         CreateMap<Group, GroupViewModel>();
         CreateMap<CreateGroupModel, Group>();
         CreateMap<UpdateGroupModel, Group>();
-        
-        // ------------------------ Exercise Mapping ------------------------ //
+    }
 
+    private void CreateExerciseMaps()
+    {
         CreateMap<Exercise, ExerciseViewModel>();
         CreateMap<CreateExerciseModel, Exercise>()
             .ForMember(dest => dest.Group, 
@@ -34,17 +40,18 @@ public class UiApplicationMappingProfile : Profile
             .ForMember(dest => dest.GroupId, 
                 opt => opt.MapFrom(
                     src => src.Group.Id));
-        
-        // ------------------------ User Mapping ------------------------ //
-
+    }
+    
+    private void CreateUserMaps()
+    {
         CreateMap<RegisterDto, ApplicationUser>()
             .ForMember(dest => dest.PhoneNumber, 
-            opt => opt.MapFrom(
-                src => src.Phone));
+                opt => opt.MapFrom(
+                    src => src.Phone));
         CreateMap<UpdateProfileDto, ApplicationUser>()
             .ForMember(dest => dest.PhoneNumber, 
-            opt => opt.MapFrom(
-                src => src.Phone));
+                opt => opt.MapFrom(
+                    src => src.Phone));
         CreateMap<CreateUserModel, ApplicationUser>()
             .ForMember(dest => dest.PhoneNumber, 
                 opt => opt.MapFrom(
@@ -62,8 +69,5 @@ public class UiApplicationMappingProfile : Profile
             .ForMember(dest => dest.Phone, 
                 opt => opt.MapFrom(
                     src => src.PhoneNumber));
-
-        // ------------------------ User Mapping ------------------------ //
-
     }
 }

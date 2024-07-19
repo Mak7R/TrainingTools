@@ -25,8 +25,8 @@
         <div class="input-group mb-1">
             <label for="filter-by-group-input" hidden></label>
             
-            @{ var currentFilterGroup = ViewData[Filters.Group.AsFilterName()] as string;}
-            <select id="filter-by-group-input" class="form-select rounded-start-5 me-1" style="max-width: 30%;" name="@Filters.Group.AsFilterName()">
+            @{ var currentFilterGroup = ViewData[Filters.GroupId.AsFilterName()] as string;}
+            <select id="filter-by-group-input" class="form-select rounded-start-5 me-1" style="max-width: 30%;" name="@Filters.GroupId.AsFilterName()">
                 <option value="">Not selected</option>
                 @foreach (var group in availableGroups)
                 {
@@ -62,7 +62,7 @@
                     }
 
                     <input name="@Filters.Name.AsFilterName()" value="@ViewData[Filters.Name.AsFilterName()]" hidden/>
-                    <input name="@Filters.Group.AsFilterName()" value="@ViewData[Filters.Group.AsFilterName()]" hidden/>
+                    <input name="@Filters.GroupId.AsFilterName()" value="@ViewData[Filters.GroupId.AsFilterName()]" hidden/>
                 </form>
             </th>
             <th class="col-2 fs-5">
@@ -73,7 +73,7 @@
                     }
                     
                     <input name="@Filters.Name.AsFilterName()" value="@ViewData[Filters.Name.AsFilterName()]" hidden/>
-                    <input name="@Filters.Group.AsFilterName()" value="@ViewData[Filters.Group.AsFilterName()]" hidden/>
+                    <input name="@Filters.GroupId.AsFilterName()" value="@ViewData[Filters.GroupId.AsFilterName()]" hidden/>
                 </form>
             </th>
             @if (isUserAuthenticated)
@@ -97,7 +97,7 @@
                     <td>
                         @if (exerciseResults.FirstOrDefault(r => r.Exercise.Id == exercise.Id) is null)
                         {
-                            <a class="btn btn-success" asp-controller="ExerciseResults" asp-action="CreateResult" asp-route-exerciseId="@exercise.Id" asp-route-returnUrl="/exercises">Create Results</a>
+                            <a class="btn btn-success" asp-controller="ExerciseResults" asp-action="Create" asp-route-exerciseId="@exercise.Id" asp-route-returnUrl="/exercises">Create Results</a>
                         }
                         else
                         {

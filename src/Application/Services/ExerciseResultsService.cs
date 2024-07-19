@@ -1,5 +1,5 @@
 ﻿using Application.Constants;
-using Application.Interfaces.RepositoryInterfaces;
+using Application.Interfaces.Repositories;
 using Application.Interfaces.ServiceInterfaces;
 using Application.Models.Shared;
 using Domain.Defaults;
@@ -24,7 +24,7 @@ public class ExerciseResultsService : IExerciseResultsService
         
         if (orderModel is null || string.IsNullOrWhiteSpace(orderModel.OrderBy)) return results;
         
-        if (orderModel.OrderBy.Equals(OrderOptionNames.ExerciseResults.ForUser.GroupName, StringComparison.CurrentCultureIgnoreCase))
+        if (orderModel.OrderBy.Equals(OrderOptionNames.ExerciseResults.GroupName, StringComparison.CurrentCultureIgnoreCase))
         {
             if (orderModel.OrderOption?.Equals(OrderOptionNames.Shared.Descending, StringComparison.CurrentCultureIgnoreCase) ?? false)
             {
@@ -48,7 +48,7 @@ public class ExerciseResultsService : IExerciseResultsService
         var results = await _exerciseResultsRepository.GetForExercise(exerciseId, filterModel);
         if (orderModel is null || string.IsNullOrWhiteSpace(orderModel.OrderBy)) return results;
         
-        if (orderModel.OrderBy.Equals(OrderOptionNames.ExerciseResults.ForExercise.OwnerName, StringComparison.CurrentCultureIgnoreCase))
+        if (orderModel.OrderBy.Equals(OrderOptionNames.ExerciseResults.OwnerName, StringComparison.CurrentCultureIgnoreCase))
         {
             if (orderModel.OrderOption?.Equals(OrderOptionNames.Shared.Descending, StringComparison.CurrentCultureIgnoreCase) ?? false)
             {
@@ -69,7 +69,7 @@ public class ExerciseResultsService : IExerciseResultsService
 
         if (orderModel is null || string.IsNullOrWhiteSpace(orderModel.OrderBy)) return results;
         
-        if (orderModel.OrderBy.Equals(OrderOptionNames.ExerciseResults.ForExercise.OwnerName, StringComparison.CurrentCultureIgnoreCase))
+        if (orderModel.OrderBy.Equals(OrderOptionNames.ExerciseResults.OwnerName, StringComparison.CurrentCultureIgnoreCase))
         {
             if (orderModel.OrderOption?.Equals(OrderOptionNames.Shared.Descending, StringComparison.CurrentCultureIgnoreCase) ?? false)
             {
