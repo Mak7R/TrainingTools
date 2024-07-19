@@ -1,6 +1,6 @@
 ﻿using Application.Constants;
 using Application.Dtos;
-using Application.Interfaces.RepositoryInterfaces;
+using Application.Interfaces.Repositories;
 using Application.Models.Shared;
 using Application.Services;
 using Domain.Enums;

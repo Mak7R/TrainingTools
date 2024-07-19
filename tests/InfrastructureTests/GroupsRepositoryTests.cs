@@ -1,5 +1,5 @@
 using Application.Constants;
-using Application.Interfaces.RepositoryInterfaces;
+using Application.Interfaces.Repositories;
 using Application.Models.Shared;
 using AutoFixture;
 using Domain.Exceptions;
@@ -8,7 +8,7 @@ using EntityFrameworkCoreMock;
 using FluentAssertions;
 using Infrastructure.Data;
 using Infrastructure.Entities;
-using Infrastructure.Mappers;
+using Infrastructure.Mapping.Mappers;
 using Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;

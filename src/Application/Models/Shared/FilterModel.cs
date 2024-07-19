@@ -4,7 +4,7 @@ namespace Application.Models.Shared;
 
 public class FilterModel : Dictionary<string, string?>
 {
-    public IQueryable<T> FilterBy<T>(IQueryable<T> queryable, IEnumerable<KeyValuePair<string, Expression<Func<T, bool>>>> filters)
+    public IQueryable<T> Filter<T>(IQueryable<T> queryable, IEnumerable<KeyValuePair<string, Expression<Func<T, bool>>>> filters)
     {
         var result = queryable;
         foreach (var filter in filters)
@@ -14,7 +14,7 @@ public class FilterModel : Dictionary<string, string?>
         return result;
     }
 
-    public IQueryable<T> FilterBy<T>(IQueryable<T> queryable, IEnumerable<KeyValuePair<string, Func<string, Expression<Func<T, bool>>>>> filters)
+    public IQueryable<T> Filter<T>(IQueryable<T> queryable, IEnumerable<KeyValuePair<string, Func<string, Expression<Func<T, bool>>>>> filters)
     {
         var result = queryable;
         foreach (var filter in filters)
@@ -45,7 +45,7 @@ public class FilterModel : Dictionary<string, string?>
     }
     
     
-    public IEnumerable<T> FilterBy<T>(IEnumerable<T> enumerable, IEnumerable<KeyValuePair<string, Func<T, bool>>> filters)
+    public IEnumerable<T> Filter<T>(IEnumerable<T> enumerable, IEnumerable<KeyValuePair<string, Func<T, bool>>> filters)
     {
         var result = enumerable;
         foreach (var filter in filters)
@@ -55,7 +55,7 @@ public class FilterModel : Dictionary<string, string?>
         return result;
     }
 
-    public IEnumerable<T> FilterBy<T>(IEnumerable<T> enumerable, IEnumerable<KeyValuePair<string, Func<string, Func<T, bool>>>> filters)
+    public IEnumerable<T> Filter<T>(IEnumerable<T> enumerable, IEnumerable<KeyValuePair<string, Func<string, Func<T, bool>>>> filters)
     {
         var result = enumerable;
         foreach (var filter in filters)

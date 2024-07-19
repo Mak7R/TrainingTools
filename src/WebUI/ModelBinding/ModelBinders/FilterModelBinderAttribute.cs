@@ -1,4 +1,6 @@
+using Application.Constants;
 using Application.Models.Shared;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace WebUI.ModelBinding.ModelBinders;
@@ -17,8 +19,9 @@ namespace WebUI.ModelBinding.ModelBinders;
 
     AllowMultiple = false,
     Inherited = true)]
-public class FilterModelBinderAttribute : Attribute, IModelBinder
+public class FilterModelBinderAttribute : FromQueryAttribute, IModelBinder
 {
+    private static readonly int PrefixLength = FilterOptionNames.Shared.FiltersPrefix.Length;
     public Task BindModelAsync(ModelBindingContext bindingContext)
     {
         ArgumentNullException.ThrowIfNull(bindingContext);
@@ -27,9 +30,9 @@ public class FilterModelBinderAttribute : Attribute, IModelBinder
 
         foreach (var queryValue in bindingContext.HttpContext.Request.Query)
         {
-            if (queryValue.Key.StartsWith("f_"))
+            if (queryValue.Key.StartsWith(FilterOptionNames.Shared.FiltersPrefix))
             {
-                filterModel.Add(queryValue.Key.Substring(2).ToLower(), queryValue.Value.First());
+                filterModel.Add(queryValue.Key.Substring(PrefixLength).ToLower(), queryValue.Value);
             }
         }
         

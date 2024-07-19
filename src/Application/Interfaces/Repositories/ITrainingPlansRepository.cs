@@ -2,7 +2,7 @@
 using Domain.Models;
 using Domain.Models.TrainingPlan;
 
-namespace Application.Interfaces.RepositoryInterfaces;
+namespace Application.Interfaces.Repositories;
 
 public interface ITrainingPlansRepository
 {

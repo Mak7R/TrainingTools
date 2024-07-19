@@ -1,6 +1,6 @@
 ﻿using System.Linq.Expressions;
 using Application.Constants;
-using Application.Interfaces.RepositoryInterfaces;
+using Application.Interfaces.Repositories;
 using Application.Models.Shared;
 using Domain.Defaults;
 using Domain.Exceptions;
@@ -8,7 +8,7 @@ using Domain.Models;
 using Domain.Rules;
 using Infrastructure.Data;
 using Infrastructure.Entities;
-using Infrastructure.Mappers;
+using Infrastructure.Mapping.Mappers;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
@@ -68,7 +68,7 @@ public class ExerciseResultsRepository : IExerciseResultsRepository
     
     public async Task<IEnumerable<ExerciseResult>> GetForUser(Guid ownerId, FilterModel? filterModel = null)
     {
-        if ((filterModel?.TryGetValue(FilterOptionNames.ExerciseResults.ForUser.FullName, out var fullName) ?? false) && !string.IsNullOrWhiteSpace(fullName))
+        if ((filterModel?.TryGetValue(FilterOptionNames.ExerciseResults.FullName, out var fullName) ?? false) && !string.IsNullOrWhiteSpace(fullName))
         {
             var nameParts = fullName.Split("/");
             return nameParts.Length switch
@@ -92,7 +92,7 @@ public class ExerciseResultsRepository : IExerciseResultsRepository
 
     public async Task<IEnumerable<ExerciseResult>> GetForExercise(Guid exerciseId, FilterModel? filterModel = null)
     {
-        if ((filterModel?.TryGetValue(FilterOptionNames.ExerciseResults.ForExercise.OwnerName, out var value) ?? false) &&
+        if ((filterModel?.TryGetValue(FilterOptionNames.ExerciseResults.OwnerName, out var value) ?? false) &&
             !string.IsNullOrWhiteSpace(value))
         {
             return await GetFor(r => r.ExerciseId == exerciseId && r.Owner.UserName != null && r.Owner.UserName.Contains(value));
@@ -107,7 +107,7 @@ public class ExerciseResultsRepository : IExerciseResultsRepository
     {
         var userIds = (await _friendsRepository.GetFriendsFor(userId)).Select(u => u.Id);
         
-        if ((filterModel?.TryGetValue(FilterOptionNames.ExerciseResults.ForExercise.OwnerName, out var value) ?? false) &&
+        if ((filterModel?.TryGetValue(FilterOptionNames.ExerciseResults.OwnerName, out var value) ?? false) &&
             !string.IsNullOrWhiteSpace(value))
         {
             return await GetFor(r => 

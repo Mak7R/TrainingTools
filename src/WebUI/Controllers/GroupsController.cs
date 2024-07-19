@@ -1,14 +1,12 @@
-﻿using Application.Interfaces.ServiceInterfaces;
+﻿using Application.Interfaces.Services;
 using Application.Models.Shared;
 using AutoMapper;
-using Domain.Enums;
 using Domain.Exceptions;
 using Domain.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using WebUI.Extensions;
 using WebUI.Filters;
-using WebUI.ModelBinding.ModelBinders;
 using WebUI.Models.Group;
 using WebUI.Models.Shared;
 
@@ -30,9 +28,13 @@ public class GroupsController : Controller
 
     [HttpGet("")]
     [QueryValuesReader<DefaultOrderOptions>]
-    public async Task<IActionResult> GetAll(OrderModel? orderModel,[FilterModelBinder] FilterModel? filterModel)
+    
+    public async Task<IActionResult> GetAll(
+        OrderModel? orderModel, 
+        FilterModel? filterModel,
+        PageModel? pageModel)
     {
-        var groups = await _groupsService.GetAll(orderModel, filterModel);
+        var groups = await _groupsService.GetAll(orderModel, filterModel, pageModel);
         
         return View(_mapper.Map<List<GroupViewModel>>(groups));
     }

@@ -1,5 +1,6 @@
 ﻿using Application.Constants;
 using Application.Interfaces.ServiceInterfaces;
+using Application.Interfaces.Services;
 using Application.Models.Shared;
 using Domain.Exceptions;
 using Domain.Identity;
@@ -57,11 +58,11 @@ public class TrainingPlansController : Controller
         {
             filterModel = new FilterModel
             {
-                { FilterOptionNames.TrainingPlan.Author, user.UserName }
+                { FilterOptionNames.TrainingPlan.AuthorName, user.UserName }
             };
         }
         else
-            filterModel[FilterOptionNames.TrainingPlan.Author] = user.UserName;
+            filterModel[FilterOptionNames.TrainingPlan.AuthorName] = user.UserName;
 
         var plans = await _trainingPlansService.GetAll(orderModel, filterModel);
         return View(plans.Select(p => p.ToTrainingPlanViewModel()));

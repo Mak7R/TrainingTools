@@ -1,10 +1,13 @@
 ﻿using System.Globalization;
-using Application.Interfaces.RepositoryInterfaces;
+using Application.Interfaces.Repositories;
 using Application.Interfaces.ServiceInterfaces;
+using Application.Interfaces.Services;
 using Application.Services;
 using Application.Services.ReferencedContentProviders;
 using Domain.Identity;
+using Domain.Models;
 using Infrastructure.Data;
+using Infrastructure.Mapping.Profiles;
 using Infrastructure.Repositories;
 using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
@@ -33,8 +36,8 @@ public static class ConfigureServicesExtension
         
         services.AddControllersWithViews(options =>
         {
-            options.ModelBinderProviders.Insert(0, new FilterModelBinderProvider());
             options.ModelBinderProviders.Insert(0, new UpdateTrainingPlanModelBinderProvider());
+            options.ModelBinderProviders.Insert(0, new FOPModelBindersProvider());
             
             // option.Filters
         })
@@ -76,6 +79,7 @@ public static class ConfigureServicesExtension
                 options.User.AllowedUserNameCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.!#$%^&*()_-+=";
                 options.User.RequireUniqueEmail = true;
             })
+            .AddUserManager<SpecializedUserManager>()
             .AddEntityFrameworkStores<ApplicationDbContext>()
             .AddUserStore<UserStore<ApplicationUser, ApplicationRole, ApplicationDbContext, Guid>>()
             .AddRoleStore<RoleStore<ApplicationRole, ApplicationDbContext, Guid>>();
@@ -110,7 +114,7 @@ public static class ConfigureServicesExtension
         });
 
         services.AddHttpClient();
-        services.AddAutoMapper(typeof(UiApplicationMappingProfile));
+        services.AddAutoMapper(typeof(UiApplicationMappingProfile), typeof(InfrastructureApplicationMappingProfile));
 
         services.AddApplicationServices(configuration);
 
@@ -124,7 +128,7 @@ public static class ConfigureServicesExtension
     
     private static void AddApplicationServices(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddScoped<IGroupsRepository, GroupsRepository>();
+        services.AddScoped<IRepository<Group, Guid>, GroupsRepository>();
         services.AddScoped<IGroupsService, GroupsService>();
         services.AddScoped<IFriendsRepository, FriendsRepository>();
         services.AddScoped<IUsersService, UsersService>();

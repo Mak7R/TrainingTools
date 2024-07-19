@@ -1,16 +1,35 @@
-﻿namespace Application.Models.Shared;
+﻿using Application.Constants;
+using Microsoft.AspNetCore.Mvc;
+
+namespace Application.Models.Shared;
 
 public class PageModel
 {
-    public int CurrentPage { get; set; }
+    public int CurrentPage { get; set; } = 0;
+    public int PageSize { get; set; } = int.MaxValue;
+    public int PagesCount { get; set; } = 1;
 
-    public IEnumerable<T> SelectPage<T>(IEnumerable<T> enumerable, int pageSize)
+    public IEnumerable<T> TakePage<T>(IEnumerable<T> enumerable)
     {
-        return enumerable.Skip(CurrentPage * pageSize).Take(pageSize);
+        var result = enumerable;
+        
+        if (CurrentPage > 0 && PageSize > 0)
+            result = result.Skip(CurrentPage * PageSize);
+        if (PageSize > 0)
+            result = result.Take(PageSize * PagesCount);
+
+        return result;
     }
     
-    public IQueryable<T> SelectPage<T>(IQueryable<T> enumerable, int pageSize)
+    public IQueryable<T> TakePage<T>(IQueryable<T> queryable)
     {
-        return enumerable.Skip(CurrentPage * pageSize).Take(pageSize);
+        var result = queryable;
+        
+        if (CurrentPage > 0 && PageSize > 0)
+            result = result.Skip(CurrentPage * PageSize);
+        if (PageSize > 0)
+            result = result.Take(PageSize * PagesCount);
+
+        return result;
     }
 }

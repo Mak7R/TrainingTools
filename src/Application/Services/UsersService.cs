@@ -3,7 +3,7 @@ using System.Linq.Expressions;
 using Application.Constants;
 using Application.Dtos;
 using Application.Enums;
-using Application.Interfaces.RepositoryInterfaces;
+using Application.Interfaces.Repositories;
 using Application.Interfaces.ServiceInterfaces;
 using Application.Models.Shared;
 using Domain.Defaults;
@@ -83,7 +83,7 @@ public class UsersService : IUsersService
             }
         }
         
-        if ((filterModel?.TryGetValue(FilterOptionNames.User.FriendshipState, out var filterRelationship) ?? false) &&
+        if ((filterModel?.TryGetValue(FilterOptionNames.User.RelationshipsState, out var filterRelationship) ?? false) &&
             !string.IsNullOrWhiteSpace(filterRelationship))
         {
             userInfosAsEnumerable = userInfosAsEnumerable.Where(u => u.RelationshipState.ToString().Equals(filterRelationship, StringComparison.CurrentCultureIgnoreCase));
@@ -113,7 +113,7 @@ public class UsersService : IUsersService
                 userInfosAsEnumerable = userInfosAsEnumerable.OrderBy(i => i.Roles, new RolesComparer());
             }
         }
-        else if (orderModel.OrderBy.Equals(OrderOptionNames.User.FriendshipState, StringComparison.CurrentCultureIgnoreCase))
+        else if (orderModel.OrderBy.Equals(OrderOptionNames.User.RelationshipsState, StringComparison.CurrentCultureIgnoreCase))
         {
             if (orderModel.OrderOption?.Equals(OrderOptionNames.Shared.Descending, StringComparison.CurrentCultureIgnoreCase) ?? false)
             {

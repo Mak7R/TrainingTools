@@ -1,12 +1,14 @@
+using Application.Constants;
+
 namespace WebUI.Models.Shared;
 
 public class DefaultOrderOptions : IOrderOptions
 {
     private static readonly List<string> Options =
     [
-        "asc",
-        "desc",
-        ""
+        OrderOptionNames.Shared.Ascending,
+        OrderOptionNames.Shared.Descending,
+        OrderOptionNames.Shared.Empty
     ];
 
     private int _current;

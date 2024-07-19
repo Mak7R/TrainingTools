@@ -1,7 +1,7 @@
 ﻿using Domain.Models.TrainingPlan;
 using Infrastructure.Entities.TrainingPlanEntities;
 
-namespace Infrastructure.Mappers;
+namespace Infrastructure.Mapping.Mappers;
 
 public static class ToEntitiesMappingExtensions
 {

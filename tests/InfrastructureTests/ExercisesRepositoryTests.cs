@@ -1,5 +1,5 @@
 ﻿using Application.Constants;
-using Application.Interfaces.RepositoryInterfaces;
+using Application.Interfaces.Repositories;
 using Application.Models.Shared;
 using AutoFixture;
 using Domain.Exceptions;
@@ -8,7 +8,6 @@ using EntityFrameworkCoreMock;
 using FluentAssertions;
 using Infrastructure.Data;
 using Infrastructure.Entities;
-using Infrastructure.Mappers;
 using Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -103,7 +102,7 @@ public class ExercisesRepositoryTests
 
         var filterModel = new FilterModel
         {
-            { FilterOptionNames.Exercise.Group, group1.Id.ToString() },
+            { FilterOptionNames.Exercise.GroupId, group1.Id.ToString() },
             { FilterOptionNames.Exercise.Name, "GroupName" }
         };
 
@@ -134,7 +133,7 @@ public class ExercisesRepositoryTests
 
         var filterModel = new FilterModel
         {
-            { FilterOptionNames.Exercise.Group, Guid.NewGuid().ToString() }
+            { FilterOptionNames.Exercise.GroupId, Guid.NewGuid().ToString() }
         };
 
         // Act

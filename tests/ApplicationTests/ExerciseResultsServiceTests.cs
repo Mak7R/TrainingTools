@@ -1,5 +1,5 @@
 ﻿using Application.Constants;
-using Application.Interfaces.RepositoryInterfaces;
+using Application.Interfaces.Repositories;
 using Application.Interfaces.ServiceInterfaces;
 using Application.Models.Shared;
 using Application.Services;
@@ -50,7 +50,7 @@ public class ExerciseResultsServiceTests
         var results = _fixture.CreateMany<ExerciseResult>().ToList();
         var orderModel = new OrderModel
         {
-            OrderBy = OrderOptionNames.ExerciseResults.ForUser.GroupName,
+            OrderBy = OrderOptionNames.ExerciseResults.GroupName,
             OrderOption = OrderOptionNames.Shared.Ascending
         };
 
@@ -90,7 +90,7 @@ public class ExerciseResultsServiceTests
         var results = _fixture.CreateMany<ExerciseResult>().ToList();
         var orderModel = new OrderModel
         {
-            OrderBy = OrderOptionNames.ExerciseResults.ForExercise.OwnerName,
+            OrderBy = OrderOptionNames.ExerciseResults.OwnerName,
             OrderOption = OrderOptionNames.Shared.Ascending
         };
 
@@ -132,7 +132,7 @@ public class ExerciseResultsServiceTests
         var results = _fixture.CreateMany<ExerciseResult>().ToList();
         var orderModel = new OrderModel
         {
-            OrderBy = OrderOptionNames.ExerciseResults.ForExercise.OwnerName,
+            OrderBy = OrderOptionNames.ExerciseResults.OwnerName,
             OrderOption = OrderOptionNames.Shared.Ascending
         };
 

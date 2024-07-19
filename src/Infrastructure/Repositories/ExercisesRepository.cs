@@ -1,14 +1,14 @@
 ﻿using System.Collections.ObjectModel;
 using System.Linq.Expressions;
 using Application.Constants;
-using Application.Interfaces.RepositoryInterfaces;
+using Application.Interfaces.Repositories;
 using Application.Models.Shared;
 using Domain.Defaults;
 using Domain.Exceptions;
 using Domain.Models;
 using Infrastructure.Data;
 using Infrastructure.Entities;
-using Infrastructure.Mappers;
+using Infrastructure.Mapping.Mappers;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
@@ -28,7 +28,7 @@ public class ExercisesRepository : IExercisesRepository
     private static readonly ReadOnlyDictionary<string, Func<string, Expression<Func<ExerciseEntity, bool>>>> ExerciseFilters =
         new(new Dictionary<string, Func<string, Expression<Func<ExerciseEntity, bool>>>>
         {
-            { FilterOptionNames.Exercise.Group, value =>
+            { FilterOptionNames.Exercise.GroupId, value =>
             {
                 Guid.TryParse(value, out var groupId);
                 return e => e.GroupId == groupId;
@@ -42,7 +42,7 @@ public class ExercisesRepository : IExercisesRepository
             var query = _dbContext.Exercises.Include(exerciseEntity => exerciseEntity.Group).AsNoTracking();
 
             if (filterModel is not null)
-                query = filterModel.FilterBy(query, ExerciseFilters);
+                query = filterModel.Filter(query, ExerciseFilters);
             
             return await query.Select(e => e.ToExercise()).ToListAsync();
         }

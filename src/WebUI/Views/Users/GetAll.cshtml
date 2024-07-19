@@ -45,8 +45,8 @@
             </select>
 
             <label for="filter-by-friendship-state-input" hidden></label>
-            @{ var currentFilterFriendshipState = ViewData[Filters.FriendshipState.AsFilterName()] as string; }
-            <select id="filter-by-friendship-state-input" class="form-select me-1" style="max-width: 20%;" name="@Filters.FriendshipState.AsFilterName()">
+            @{ var currentFilterFriendshipState = ViewData[Filters.RelationshipsState.AsFilterName()] as string; }
+            <select id="filter-by-friendship-state-input" class="form-select me-1" style="max-width: 20%;" name="@Filters.RelationshipsState.AsFilterName()">
                 <option value="">Not selected</option>
                 @foreach (var relationshipState in Enum.GetNames<RelationshipState>())
                 {
@@ -80,7 +80,7 @@
 
                     <input name="@Filters.Name.AsFilterName()" value="@ViewData[Filters.Name.AsFilterName()]" hidden/>
                     <input name="@Filters.Role.AsFilterName()" value="@ViewData[Filters.Role.AsFilterName()]" hidden/>
-                    <input name="@Filters.FriendshipState.AsFilterName()" value="@ViewData[Filters.FriendshipState.AsFilterName()]" hidden/>
+                    <input name="@Filters.RelationshipsState.AsFilterName()" value="@ViewData[Filters.RelationshipsState.AsFilterName()]" hidden/>
                 </form>
             </th>
             <th class="col-1 fs-5">
@@ -92,19 +92,19 @@
 
                     <input name="@Filters.Name.AsFilterName()" value="@ViewData[Filters.Name.AsFilterName()]" hidden/>
                     <input name="@Filters.Role.AsFilterName()" value="@ViewData[Filters.Role.AsFilterName()]" hidden/>
-                    <input name="@Filters.FriendshipState.AsFilterName()" value="@ViewData[Filters.FriendshipState.AsFilterName()]" hidden/>
+                    <input name="@Filters.RelationshipsState.AsFilterName()" value="@ViewData[Filters.RelationshipsState.AsFilterName()]" hidden/>
                 </form>
             </th>
             <th class="col-1 fs-5">
                 <form method="get" onclick="this.submit()" class="cursor-pointer non-selectable">
                     Friendship Status
                     @{
-                        await Html.RenderPartialAsync("Partials/DefaultOrderFormPartialView", Orders.FriendshipState);
+                        await Html.RenderPartialAsync("Partials/DefaultOrderFormPartialView", Orders.RelationshipsState);
                     }
 
                     <input name="@Filters.Name.AsFilterName()" value="@ViewData[Filters.Name.AsFilterName()]" hidden/>
                     <input name="@Filters.Role.AsFilterName()" value="@ViewData[Filters.Role.AsFilterName()]" hidden/>
-                    <input name="@Filters.FriendshipState.AsFilterName()" value="@ViewData[Filters.FriendshipState.AsFilterName()]" hidden/>
+                    <input name="@Filters.RelationshipsState.AsFilterName()" value="@ViewData[Filters.RelationshipsState.AsFilterName()]" hidden/>
                 </form>
             </th>
         </tr>
