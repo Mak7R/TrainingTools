@@ -29,7 +29,12 @@ public class GroupsService : IGroupsService
     {
         return await _groupsRepository.GetById(id);
     }
-    
+
+    public Task<int> Count(FilterModel? filterModel = null)
+    {
+        return _groupsRepository.Count(filterModel);
+    }
+
     public async Task<OperationResult> Create(Group? group)
     {
         ArgumentNullException.ThrowIfNull(group);

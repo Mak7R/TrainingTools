@@ -1,8 +1,6 @@
 ﻿using Domain.Models;
-using Domain.Models.TrainingPlan;
 using Domain.Rules;
 using Infrastructure.Entities;
-using Infrastructure.Entities.TrainingPlanEntities;
 
 namespace Infrastructure.Mapping.Mappers;
 
@@ -41,42 +39,6 @@ public static class ToDomainModelsMappingExtensions
             Owner = exerciseResultEntity.Owner,
             Exercise = exerciseResultEntity.Exercise.ToExercise(),
             ApproachInfos = approachInfos
-        };
-    }
-
-    public static TrainingPlan ToTrainingPlan(this TrainingPlanEntity trainingPlanEntity)
-    {
-        return new TrainingPlan
-        {
-            Id = trainingPlanEntity.Id,
-            Title = trainingPlanEntity.Title,
-            IsPublic = trainingPlanEntity.IsPublic,
-            Author = trainingPlanEntity.Author,
-            TrainingPlanBlocks = trainingPlanEntity.TrainingPlanBlocks
-                .OrderBy(b => b.Position)
-                .Select(b => b.ToTrainingPlanBlock())
-                .ToList()
-        };
-    }
-
-    public static TrainingPlanBlock ToTrainingPlanBlock(this TrainingPlanBlockEntity trainingPlanBlockEntity)
-    {
-        return new TrainingPlanBlock
-        {
-            Name = trainingPlanBlockEntity.Title,
-            TrainingPlanBlockEntries = trainingPlanBlockEntity.TrainingPlanBlockEntries
-                .OrderBy(e => e.Position)
-                .Select(e => e.ToTrainingPlanBlock())
-                .ToList()
-        };
-    }
-    
-    public static TrainingPlanBlockEntry ToTrainingPlanBlock(this TrainingPlanBlockEntryEntity trainingPlanBlockEntryEntity)
-    {
-        return new TrainingPlanBlockEntry
-        {
-            Group = trainingPlanBlockEntryEntity.Group.ToGroup(),
-            Description = trainingPlanBlockEntryEntity.Desctiption
         };
     }
 }

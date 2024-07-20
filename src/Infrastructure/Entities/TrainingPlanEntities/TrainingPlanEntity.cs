@@ -20,5 +20,5 @@ public class TrainingPlanEntity
     
     public bool IsPublic { get; set; }
     
-    public IEnumerable<TrainingPlanBlockEntity> TrainingPlanBlocks { get; set; }
+    public List<TrainingPlanBlockEntity> TrainingPlanBlocks { get; set; }
 }

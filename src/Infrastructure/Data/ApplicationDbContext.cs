@@ -105,7 +105,9 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, Applicati
 
 
         builder.Entity<TrainingPlanBlockEntity>()
-            .ToTable("TrainingPlanBlock");
+            .ToTable("TrainingPlanBlock")
+            .Property("TrainingPlanEntityId")
+            .IsRequired();
         
 
         builder.Entity<TrainingPlanBlockEntity>()

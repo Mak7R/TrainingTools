@@ -16,5 +16,5 @@ public class TrainingPlanBlockEntryEntity
     public GroupEntity Group { get; set; }
     
     [StringLength(MaxBlockEntryDescriptionSize)]
-    public string Desctiption { get; set; }
+    public string? Desctiption { get; set; }
 }

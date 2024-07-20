@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 
 using static Domain.Rules.DataSizes.TrainingPlanDataSizes;
 
@@ -14,5 +13,5 @@ public class TrainingPlanBlockEntity
     [StringLength(MaxBlockNameSize)]
     public string Title { get; set; }
     
-    public IEnumerable<TrainingPlanBlockEntryEntity> TrainingPlanBlockEntries { get; set; }
+    public List<TrainingPlanBlockEntryEntity> TrainingPlanBlockEntries { get; set; }
 }

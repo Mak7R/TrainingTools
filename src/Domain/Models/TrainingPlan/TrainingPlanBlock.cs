@@ -2,6 +2,6 @@
 
 public class TrainingPlanBlock
 {
-    public string Name { get; set; }
+    public string Title { get; set; }
     public List<TrainingPlanBlockEntry> TrainingPlanBlockEntries { get; set; }
 }

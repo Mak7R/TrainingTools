@@ -9,6 +9,8 @@ public interface IGroupsService
     
     Task<Group?> GetByName(string? name);
     Task<Group?> GetById(Guid id);
+
+    Task<int> Count(FilterModel? filterModel = null);
     
     
     Task<OperationResult> Create(Group? group);

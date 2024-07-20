@@ -168,7 +168,7 @@ public class TrainingPlansController : Controller
             IsPublic = trainingPlan.IsPublic,
             Blocks = trainingPlan.TrainingPlanBlocks.Select(b => new UpdateTrainingPlanBlockModel
             {
-                Name = b.Name,
+                Name = b.Title,
                 Entries = b.TrainingPlanBlockEntries.Select(e => new UpdateTrainingPlanBlockEntryModel
                 {
                     Description = e.Description,
@@ -222,7 +222,7 @@ public class TrainingPlansController : Controller
             IsPublic = updateTrainingPlanModel.IsPublic,
             TrainingPlanBlocks = updateTrainingPlanModel.Blocks.Select(b => new TrainingPlanBlock
             {
-                Name = b.Name,
+                Title = b.Name,
                 TrainingPlanBlockEntries = b.Entries.Select(e => new TrainingPlanBlockEntry
                 {
                     Description = e.Description,

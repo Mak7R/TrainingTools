@@ -105,7 +105,7 @@ public static class DefaultViewModelsMappingExtensions
     {
         return new TrainingPlanBlockViewModel
         {
-            Name = block.Name,
+            Name = block.Title,
             TrainingPlanBlockEntries = block.TrainingPlanBlockEntries
                 .Select(e => e.ToTrainingPlanBlockEntryViewModel())
                 .ToList()

@@ -3,13 +3,13 @@ using System.Linq.Expressions;
 using Application.Constants;
 using Application.Interfaces.Repositories;
 using Application.Models.Shared;
+using AutoMapper;
 using Domain.Defaults;
 using Domain.Exceptions;
 using Domain.Models;
 using Domain.Models.TrainingPlan;
 using Infrastructure.Data;
 using Infrastructure.Entities.TrainingPlanEntities;
-using Infrastructure.Mapping.Mappers;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
@@ -20,11 +20,13 @@ public class TrainingPlansRepository : ITrainingPlansRepository
 {
     private readonly ApplicationDbContext _dbContext;
     private readonly ILogger<TrainingPlansRepository> _logger;
+    private readonly IMapper _mapper;
 
-    public TrainingPlansRepository(ApplicationDbContext dbContext, ILogger<TrainingPlansRepository> logger)
+    public TrainingPlansRepository(ApplicationDbContext dbContext, ILogger<TrainingPlansRepository> logger, IMapper mapper)
     {
         _dbContext = dbContext;
         _logger = logger;
+        _mapper = mapper;
     }
 
     private static readonly ReadOnlyDictionary<string, Func<string, Expression<Func<TrainingPlanEntity, bool>>>> TrainingPlanFilters =
@@ -53,7 +55,7 @@ public class TrainingPlansRepository : ITrainingPlansRepository
             if (filterModel is not null)
                 query = filterModel.Filter(query, TrainingPlanFilters);
             
-            return await query.Select(entity => entity.ToTrainingPlan()).ToListAsync();
+            return await query.Select(entity => _mapper.Map<TrainingPlan>(entity)).ToListAsync();
         }
         catch (Exception e)
         {
@@ -74,7 +76,7 @@ public class TrainingPlansRepository : ITrainingPlansRepository
                 .ThenInclude(e => e.Group)
                 
                 .FirstOrDefaultAsync(predicate);
-            return trainingPlanEntity?.ToTrainingPlan();
+            return trainingPlanEntity is null ? null : _mapper.Map<TrainingPlan>(trainingPlanEntity);
         }
         catch (Exception e)
         {
@@ -94,64 +96,61 @@ public class TrainingPlansRepository : ITrainingPlansRepository
         return GetBy(plan => plan.Title == name && plan.Author.UserName == authorName);
     }
 
-    public async Task<OperationResult> Create(TrainingPlan plan)
+    public async Task<OperationResult> Create(TrainingPlan trainingPlan)
     {
-        ArgumentNullException.ThrowIfNull(plan);
+        ArgumentNullException.ThrowIfNull(trainingPlan);
         
-        var planEntity = plan.ToTrainingPlanEntity(true);
+        var trainingPlanEntity = _mapper.Map<TrainingPlanEntity>(trainingPlan);
 
         try
         {
             var existsPlan = await _dbContext.TrainingPlans
                 .AsNoTracking()
-                .FirstOrDefaultAsync(e => e.Title == plan.Title && e.Author.Id == plan.Author.Id);
+                .FirstOrDefaultAsync(e => e.Title == trainingPlan.Title && e.Author.Id == trainingPlan.Author.Id);
 
             if (existsPlan is not null)
                 throw new AlreadyExistsException("Plan with this name already exists");
 
-            await _dbContext.TrainingPlans.AddAsync(planEntity);
+            await _dbContext.TrainingPlans.AddAsync(trainingPlanEntity);
             await _dbContext.SaveChangesAsync();
         }
         catch (AlreadyExistsException alreadyExistsException)
         {
-            _logger.LogInformation(alreadyExistsException, "Training plan with name '{trainingPlanName}' already exist in database", plan.Title);
+            _logger.LogInformation(alreadyExistsException, "Training plan with name '{trainingPlanName}' already exist in database", trainingPlan.Title);
             return DefaultOperationResult.FromException(alreadyExistsException);
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Exception was thrown while adding new training plan '{plan}' to database", plan.Title);
+            _logger.LogError(e, "Exception was thrown while adding new training plan '{plan}' to database", trainingPlan.Title);
             return DefaultOperationResult.FromException(new DataBaseException("Error while adding training plan to database", e));
         }
 
-        return new DefaultOperationResult(true, plan);
+        return new DefaultOperationResult(true, trainingPlan);
     }
 
     public async Task<OperationResult> Update(TrainingPlan updatedPlan)
     {
         ArgumentNullException.ThrowIfNull(updatedPlan);
-        
-        var updatedPlanEntity = updatedPlan.ToTrainingPlanEntity(true);
 
         try
         {
-            var existEntity = await _dbContext.TrainingPlans
+            var trainingPlanEntity = await _dbContext.TrainingPlans
                 .Include(p => p.TrainingPlanBlocks)
                 .ThenInclude(b => b.TrainingPlanBlockEntries)
                 .FirstOrDefaultAsync(e => e.Id == updatedPlan.Id);
 
-            if (existEntity is null)
+            if (trainingPlanEntity is null)
                 throw new NotFoundException("Training plan was not found");
             
-            var planWithSameName = await _dbContext.TrainingPlans
+            var sameName = await _dbContext.TrainingPlans
                 .AsNoTracking()
-                .FirstOrDefaultAsync(p => p.Id != existEntity.Id && p.AuthorId == updatedPlan.Author.Id && p.Title == updatedPlan.Title);
+                .FirstOrDefaultAsync(p => p.Id != trainingPlanEntity.Id && p.AuthorId == updatedPlan.Author.Id && p.Title == updatedPlan.Title);
 
-            if (planWithSameName is not null)
+            if (sameName is not null)
                 throw new AlreadyExistsException("Plan with this name already exists");
-
-            _dbContext.TrainingPlans.Remove(existEntity);
-            await _dbContext.TrainingPlans.AddAsync(updatedPlanEntity);
-
+            
+            _mapper.Map(updatedPlan, trainingPlanEntity); // todo optimization with execute update
+            
             await _dbContext.SaveChangesAsync();
         }
         catch (NotFoundException notFoundException)
@@ -175,14 +174,17 @@ public class TrainingPlansRepository : ITrainingPlansRepository
 
     public async Task<OperationResult> Delete(Guid trainingPlanId)
     {
+        TrainingPlan? trainingPlan;
         try
         {
-            var trainingPlan = await _dbContext.TrainingPlans.FirstOrDefaultAsync(plan => plan.Id == trainingPlanId);
+            var trainingPlanEntity = await _dbContext.TrainingPlans.FirstOrDefaultAsync(plan => plan.Id == trainingPlanId);
 
-            if (trainingPlan is null)
+            if (trainingPlanEntity is null)
                 throw new NotFoundException("Training plan was not found");
 
-            _dbContext.TrainingPlans.Remove(trainingPlan);
+            trainingPlan = _mapper.Map<TrainingPlan>(trainingPlanEntity);
+            
+            _dbContext.TrainingPlans.Remove(trainingPlanEntity);
             await _dbContext.SaveChangesAsync();
         }
         catch (NotFoundException notFoundException)
@@ -197,6 +199,6 @@ public class TrainingPlansRepository : ITrainingPlansRepository
             return DefaultOperationResult.FromException(new DataBaseException("Error while deleting training plan"));
         }
 
-        return new DefaultOperationResult(true);
+        return new DefaultOperationResult(trainingPlan);
     }
 }

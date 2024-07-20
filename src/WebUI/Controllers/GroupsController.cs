@@ -25,17 +25,25 @@ public class GroupsController : Controller
         _groupsService = groupsService;
         _mapper = mapper;
     }
-
+    
     [HttpGet("")]
     [QueryValuesReader<DefaultOrderOptions>]
-    
     public async Task<IActionResult> GetAll(
         OrderModel? orderModel, 
         FilterModel? filterModel,
         PageModel? pageModel)
     {
-        var groups = await _groupsService.GetAll(orderModel, filterModel, pageModel);
+        pageModel ??= new PageModel();
+        if (pageModel.PageSize is PageModel.DefaultPageSize or <= 0)
+        {
+            int defaultPageSize = 10;
+            pageModel.PageSize = defaultPageSize;
+            ViewBag.DefaultPageSize = defaultPageSize;
+        } 
+            
         
+        var groups = await _groupsService.GetAll(orderModel, filterModel, pageModel);
+        ViewBag.GroupsCount = await _groupsService.Count(filterModel);
         return View(_mapper.Map<List<GroupViewModel>>(groups));
     }
 

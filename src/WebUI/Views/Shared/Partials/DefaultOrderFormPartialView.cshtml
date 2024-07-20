@@ -1,23 +1,28 @@
-@model string?
+@model (string? OrderBy, string? FormInner)
 
-@if (ViewData["order_by"] as string == Model)
-{
-    <input name="order" value="@(ViewData["order"] ?? SharedOrderOptions.Ascending)" hidden/>
-    <input name="order_by" value="@Model" hidden/>
-    switch (ViewData["current_order"] as string)
+<form method="get" onclick="addQueryParametersFromForm(event)" class="cursor-pointer non-selectable">
+    <text>@Model.FormInner</text>
+    @if (ViewData["order_by"] as string == Model.OrderBy)
     {
-        case SharedOrderOptions.Ascending:
-            <img style="width: 1em; height: 1em" src="/img/icons/sort-up-black.svg" alt="srt"/>
-            break;
-        case SharedOrderOptions.Descending:
-            <img style="width: 1em; height: 1em" src="/img/icons/sort-down-black.svg" alt="srt"/>
-            break;
-        default:
-            <img style="width: 1em; height: 1em" src="/img/icons/sort-full-grey.svg" alt="srt"/>
-            break;
+        <input name="order" value="@(ViewData["order"] ?? SharedOrderOptions.Ascending)" hidden/>
+        <input name="order_by" value="@Model.OrderBy" hidden/>
+        switch (ViewData["current_order"] as string)
+        {
+            case SharedOrderOptions.Ascending:
+                <img style="width: 1em; height: 1em" src="/img/icons/sort-up-black.svg" alt="srt"/>
+                break;
+            case SharedOrderOptions.Descending:
+                <img style="width: 1em; height: 1em" src="/img/icons/sort-down-black.svg" alt="srt"/>
+                break;
+            default:
+                <img style="width: 1em; height: 1em" src="/img/icons/sort-full-grey.svg" alt="srt"/>
+                break;
+        }
     }
-} else {
-    <input name="order" value="@SharedOrderOptions.Ascending" hidden/>
-    <input name="order_by" value="@Model" hidden/>
-    <img style="width: 1em; height: 1em" src="/img/icons/sort-full-grey.svg" alt="srt"/>
-}
+    else
+    {
+        <input name="order" value="@SharedOrderOptions.Ascending" hidden/>
+        <input name="order_by" value="@Model.OrderBy" hidden/>
+        <img style="width: 1em; height: 1em" src="/img/icons/sort-full-grey.svg" alt="srt"/>
+    }
+</form>
