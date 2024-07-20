@@ -1,6 +1,7 @@
 ﻿using Domain.Identity;
 using Infrastructure.Entities;
-using Infrastructure.Entities.TrainingPlanEntities;
+using Infrastructure.Entities.Friendship;
+using Infrastructure.Entities.TrainingPlan;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
@@ -12,7 +13,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, Applicati
     public virtual DbSet<ExerciseEntity> Exercises { get; set; }
     public virtual DbSet<ExerciseResultEntity> ExerciseResults { get; set; }
     public virtual DbSet<FriendInvitationEntity> FriendInvitations { get; set; }
-    public virtual DbSet<FriendRelationshipEntity> FriendRelationships { get; set; }
+    public virtual DbSet<FriendshipEntity> Friendships { get; set; }
     
     
     public virtual DbSet<TrainingPlanEntity> TrainingPlans { get; set; }
@@ -53,7 +54,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, Applicati
         
         builder.Entity<FriendInvitationEntity>()
             .ToTable("FriendInvitation")
-            .HasKey(fi => new { fi.InvitorId, fi.TargetId });
+            .HasKey(fi => new { fi.InvitorId, TargetId = fi.InvitedId });
         
 
         builder.Entity<FriendInvitationEntity>()
@@ -63,22 +64,22 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, Applicati
             .OnDelete(DeleteBehavior.NoAction);
         
         builder.Entity<FriendInvitationEntity>()
-            .HasOne(fi => fi.Target)
+            .HasOne(fi => fi.Invited)
             .WithMany()
-            .HasForeignKey(fi => fi.TargetId)
+            .HasForeignKey(fi => fi.InvitedId)
             .OnDelete(DeleteBehavior.NoAction);
 
-        builder.Entity<FriendRelationshipEntity>()
-            .ToTable("FriendRelationship")
+        builder.Entity<FriendshipEntity>()
+            .ToTable("Friendship")
             .HasKey(fr => new { fr.FirstFriendId, fr.SecondFriendId });
         
-        builder.Entity<FriendRelationshipEntity>()
+        builder.Entity<FriendshipEntity>()
             .HasOne(fr => fr.FirstFriend)
             .WithMany()
             .HasForeignKey(fr => fr.FirstFriendId)
             .OnDelete(DeleteBehavior.NoAction);
         
-        builder.Entity<FriendRelationshipEntity>()
+        builder.Entity<FriendshipEntity>()
             .HasOne(fr => fr.SecondFriend)
             .WithMany()
             .HasForeignKey(fr => fr.SecondFriendId)

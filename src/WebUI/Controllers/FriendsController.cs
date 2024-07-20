@@ -1,4 +1,4 @@
-﻿using Application.Interfaces.ServiceInterfaces;
+﻿using Application.Interfaces.Services;
 using Domain.Identity;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;

@@ -1,5 +1,6 @@
 ﻿using Application.Interfaces.Repositories;
 using Application.Interfaces.ServiceInterfaces;
+using Application.Interfaces.Services;
 using Application.Models;
 using Application.Services;
 using AutoFixture;
@@ -10,16 +11,16 @@ using Moq;
 
 namespace ApplicationTests;
 
-public class FriendsServiceTests
+public class FriendshipsServiceTests
 {
     private readonly Mock<IFriendsRepository> _friendsRepositoryMock;
     private readonly IFriendsService _friendsService;
     private readonly IFixture _fixture;
 
-    public FriendsServiceTests()
+    public FriendshipsServiceTests()
     {
         _friendsRepositoryMock = new Mock<IFriendsRepository>();
-        _friendsService = new FriendsService(_friendsRepositoryMock.Object);
+        _friendsService = new FriendshipsService(_friendsRepositoryMock.Object);
         _fixture = new Fixture();
     }
 

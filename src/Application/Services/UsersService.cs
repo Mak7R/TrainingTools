@@ -3,8 +3,8 @@ using System.Linq.Expressions;
 using Application.Constants;
 using Application.Dtos;
 using Application.Enums;
-using Application.Interfaces.Repositories;
 using Application.Interfaces.ServiceInterfaces;
+using Application.Interfaces.Services;
 using Application.Models.Shared;
 using Domain.Defaults;
 using Domain.Enums;
@@ -21,14 +21,14 @@ namespace Application.Services;
 public class UsersService : IUsersService
 {
     private readonly UserManager<ApplicationUser> _userManager;
-    private readonly IFriendsRepository _friendsRepository;
+    private readonly IFriendsService _friendsService;
     private readonly ILogger<UsersService> _logger;
     private readonly IStringLocalizer<UsersService> _localizer;
     
-    public UsersService(UserManager<ApplicationUser> userManager, IFriendsRepository friendsRepository, ILogger<UsersService> logger, IStringLocalizer<UsersService> localizer)
+    public UsersService(UserManager<ApplicationUser> userManager, IFriendsService friendsService, ILogger<UsersService> logger, IStringLocalizer<UsersService> localizer)
     {
         _userManager = userManager;
-        _friendsRepository = friendsRepository;
+        _friendsService = friendsService;
         _logger = logger;
         _localizer = localizer;
     }
@@ -53,9 +53,9 @@ public class UsersService : IUsersService
 
         var users = query.ToArray();
         
-        var friends = (await _friendsRepository.GetFriendsFor(currentUser.Id)).ToDictionary(f => f.Id);
-        var inviters = (await _friendsRepository.GetInviters(currentUser.Id)).ToDictionary(f => f.Id);
-        var invited = (await _friendsRepository.GetInvitedUsersBy(currentUser.Id)).ToDictionary(f => f.Id);
+        var friends = (await _friendsService.GetFriendsFor(currentUser)).ToDictionary(f => f.Id);
+        var inviters = (await _friendsService.GetInvitationsFor(currentUser)).Select(i => i.Invitor).ToDictionary(f => f.Id);
+        var invited = (await _friendsService.GetInvitationsOf(currentUser)).Select(i => i.Invited).ToDictionary(f => f.Id);
         
         var userInfos = new List<UserInfo>();
 
@@ -215,9 +215,9 @@ public class UsersService : IUsersService
         
         var roles = await _userManager.GetRolesAsync(currentUser);
         
-        var friends = (await _friendsRepository.GetFriendsFor(currentUser.Id)).ToDictionary(f => f.Id);
-        var inviters = (await _friendsRepository.GetInviters(currentUser.Id)).ToDictionary(f => f.Id);
-        var invited = (await _friendsRepository.GetInvitedUsersBy(currentUser.Id)).ToDictionary(f => f.Id);
+        var friends = (await _friendsService.GetFriendsFor(currentUser)).ToDictionary(f => f.Id);
+        var inviters = (await _friendsService.GetInvitationsFor(currentUser)).Select(i => i.Invitor).ToDictionary(f => f.Id);
+        var invited = (await _friendsService.GetInvitationsOf(currentUser)).Select(i => i.Invited).ToDictionary(f => f.Id);
 
         ApplicationUser? foundUser;
         {

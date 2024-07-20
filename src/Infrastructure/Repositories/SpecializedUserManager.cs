@@ -22,12 +22,12 @@ public class SpecializedUserManager : UserManager<ApplicationUser>
 
     public override async Task<IdentityResult> DeleteAsync(ApplicationUser user)
     {
-        var invitations = _context.FriendInvitations.Where(fi => fi.InvitorId == user.Id || fi.TargetId == user.Id);
+        var invitations = _context.FriendInvitations.Where(fi => fi.InvitorId == user.Id || fi.InvitedId == user.Id);
         _context.FriendInvitations.RemoveRange(invitations);
 
         // Delete related friendships
-        var friendships = _context.FriendRelationships.Where(fr => fr.FirstFriendId == user.Id || fr.SecondFriendId == user.Id);
-        _context.FriendRelationships.RemoveRange(friendships);
+        var friendships = _context.Friendships.Where(fr => fr.FirstFriendId == user.Id || fr.SecondFriendId == user.Id);
+        _context.Friendships.RemoveRange(friendships);
 
         await _context.SaveChangesAsync();
         

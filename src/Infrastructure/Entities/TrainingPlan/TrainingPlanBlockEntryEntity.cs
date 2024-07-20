@@ -1,9 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-
 using static Domain.Rules.DataSizes.TrainingPlanDataSizes;
 
-namespace Infrastructure.Entities.TrainingPlanEntities;
+namespace Infrastructure.Entities.TrainingPlan;
 
 public class TrainingPlanBlockEntryEntity
 {
@@ -16,5 +15,5 @@ public class TrainingPlanBlockEntryEntity
     public GroupEntity Group { get; set; }
     
     [StringLength(MaxBlockEntryDescriptionSize)]
-    public string? Desctiption { get; set; }
+    public string? Description { get; set; }
 }

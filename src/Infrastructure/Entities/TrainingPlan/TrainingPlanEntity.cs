@@ -4,21 +4,19 @@ using Domain.Identity;
 using static Domain.Rules.DataSizes.TrainingPlanDataSizes;
 
 
-namespace Infrastructure.Entities.TrainingPlanEntities;
+namespace Infrastructure.Entities.TrainingPlan;
 
 public class TrainingPlanEntity
 {
-    [Key]
-    public Guid Id { get; set; }
-    
-    [StringLength(MaxTitleSize)]
-    public string Title { get; set; }
+    [Key] public Guid Id { get; set; }
+
+    [StringLength(MaxTitleSize)] public string Title { get; set; } = string.Empty;
     
     [ForeignKey(nameof(Author))]
     public Guid AuthorId { get; set; }
     public ApplicationUser Author { get; set; }
     
     public bool IsPublic { get; set; }
-    
-    public List<TrainingPlanBlockEntity> TrainingPlanBlocks { get; set; }
+
+    public List<TrainingPlanBlockEntity> TrainingPlanBlocks { get; set; } = new List<TrainingPlanBlockEntity>();
 }

@@ -1,7 +1,7 @@
 using Application.Dtos;
-using Application.Models;
 using Domain.Identity;
 using Domain.Models;
+using Domain.Models.Friendship;
 using Domain.Models.TrainingPlan;
 using WebUI.Models.Exercise;
 using WebUI.Models.ExerciseResult;
@@ -61,8 +61,8 @@ public static class DefaultViewModelsMappingExtensions
         return new FriendInvitationViewModel
         {
             Invitor = friendInvitation.Invitor.ToUserViewModel(),
-            Target = friendInvitation.Target.ToUserViewModel(),
-            InvitationTime = friendInvitation.InvitationTime
+            Target = friendInvitation.Invited.ToUserViewModel(),
+            InvitationTime = friendInvitation.InvitationDateTime
         };
     }
 
@@ -117,7 +117,7 @@ public static class DefaultViewModelsMappingExtensions
         return new TrainingPlanBlockEntryViewModel
         {
             Group = entry.Group.ToGroupViewModel(),
-            Description = entry.Description
+            Description = entry.Description ?? string.Empty
         };
     }
 }

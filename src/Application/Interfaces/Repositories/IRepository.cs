@@ -16,7 +16,7 @@ public interface IRepository<TModel, TKey>
     Task<TModel?> GetById(TKey id);
     Task<int> Count(FilterModel? filterModel = null);
     
-    Task<OperationResult> Create(TModel group);
-    Task<OperationResult> Update(TModel group);
+    Task<OperationResult> Create(TModel model);
+    Task<OperationResult> Update(TModel model);
     Task<OperationResult> Delete(TKey id);
 }

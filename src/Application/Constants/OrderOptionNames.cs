@@ -96,4 +96,23 @@ public static class OrderOptionNames
         /// </summary>
         public const string AuthorName = "owner";
     }
+    
+    public static class Relationships
+    {
+        public static class FriendInvitation
+        {
+            /// <summary>
+            /// Order by invitation date time
+            /// </summary>
+            public const string InvitationDateTime = "date";
+        }
+        
+        public static class Friendship
+        {
+            /// <summary>
+            /// Order by  date time
+            /// </summary>
+            public const string FriendsFromDateTime = "date";
+        }
+    }
 }

@@ -9,14 +9,14 @@ using Domain.Exceptions;
 using Domain.Models;
 using Domain.Models.TrainingPlan;
 using Infrastructure.Data;
-using Infrastructure.Entities.TrainingPlanEntities;
+using Infrastructure.Entities.TrainingPlan;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 
 namespace Infrastructure.Repositories;
 
-public class TrainingPlansRepository : ITrainingPlansRepository
+public class TrainingPlansRepository : IRepository<TrainingPlan, Guid>
 {
     private readonly ApplicationDbContext _dbContext;
     private readonly ILogger<TrainingPlansRepository> _logger;
@@ -38,10 +38,25 @@ public class TrainingPlansRepository : ITrainingPlansRepository
                 FilterOptionNames.TrainingPlan.AuthorName,
                 value => p => p.Author.UserName != null && p.Author.UserName.Contains(value)
             },
-            { FilterOptionNames.TrainingPlan.AuthorId, value => Guid.TryParse(value, out var authorId) ? _ => false : p => p.AuthorId == authorId },
+            {
+                FilterOptionNames.TrainingPlan.AuthorNameEquals,
+                value => p => p.Author.UserName != null && p.Author.UserName == value
+            },
+            { FilterOptionNames.TrainingPlan.AuthorId, value => Guid.TryParse(value, out var authorId) ? p => p.AuthorId == authorId : _ => false },
             { FilterOptionNames.TrainingPlan.PublicOnly, value => value == "true" ? p => p.IsPublic : p => true }
         });
-    public async Task<IEnumerable<TrainingPlan>> GetAll(FilterModel? filterModel = null)
+    
+    private static readonly
+        ReadOnlyDictionary<OrderModel, Func<IQueryable<TrainingPlanEntity>, IQueryable<TrainingPlanEntity>>> TrainingPlanOrders =
+            new(new Dictionary<OrderModel, Func<IQueryable<TrainingPlanEntity>, IQueryable<TrainingPlanEntity>>>
+            {
+                {new OrderModel{OrderBy = OrderOptionNames.TrainingPlan.Title, OrderOption = OrderOptionNames.Shared.Ascending}, query => query.OrderBy(t => t.Title)},
+                {new OrderModel{OrderBy = OrderOptionNames.TrainingPlan.Title, OrderOption = OrderOptionNames.Shared.Descending}, query => query.OrderByDescending(t => t.Title)},
+                {new OrderModel{OrderBy = OrderOptionNames.TrainingPlan.AuthorName, OrderOption = OrderOptionNames.Shared.Ascending}, query => query.OrderBy(t => t.Author.UserName).ThenBy(t => t.Title)},
+                {new OrderModel{OrderBy = OrderOptionNames.TrainingPlan.AuthorName, OrderOption = OrderOptionNames.Shared.Descending}, query => query.OrderByDescending(t => t.Author.UserName).ThenBy(t => t.Title)}
+            });
+    
+    public async Task<IEnumerable<TrainingPlan>> GetAll(FilterModel? filterModel = null, OrderModel? orderModel = null, PageModel? pageModel = null)
     {
         try
         {
@@ -55,6 +70,12 @@ public class TrainingPlansRepository : ITrainingPlansRepository
             if (filterModel is not null)
                 query = filterModel.Filter(query, TrainingPlanFilters);
             
+            if (orderModel is not null)
+                query = orderModel.Order(query, TrainingPlanOrders);
+
+            if (pageModel is not null)
+                query = pageModel.TakePage(query);
+            
             return await query.Select(entity => _mapper.Map<TrainingPlan>(entity)).ToListAsync();
         }
         catch (Exception e)
@@ -63,37 +84,44 @@ public class TrainingPlansRepository : ITrainingPlansRepository
             throw new DataBaseException("Error while receiving training plans from database", e);
         }
     }
-    
-    private async Task<TrainingPlan?> GetBy(Expression<Func<TrainingPlanEntity, bool>> predicate)
+
+    public async Task<TrainingPlan?> GetById(Guid id)
     {
         try
         {
-            var trainingPlanEntity = await _dbContext.TrainingPlans
+            return await _dbContext.TrainingPlans
                 .AsNoTracking()
                 .Include(plan => plan.Author)
                 .Include(plan => plan.TrainingPlanBlocks)
                 .ThenInclude(block => block.TrainingPlanBlockEntries)
                 .ThenInclude(e => e.Group)
                 
-                .FirstOrDefaultAsync(predicate);
-            return trainingPlanEntity is null ? null : _mapper.Map<TrainingPlan>(trainingPlanEntity);
+                .Select(plan => _mapper.Map<TrainingPlan>(plan))
+                .FirstOrDefaultAsync(plan => plan.Id == id);
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Exception was thrown while receiving training plan with expression '{expression}'", predicate);
+            _logger.LogError(e, "Exception was thrown while receiving training plan by id '{id}'", id);
             throw new DataBaseException("Error while receiving training plan from database", e);
         }
     }
 
-    public Task<TrainingPlan?> GetById(Guid trainingPlanId)
+    public async Task<int> Count(FilterModel? filterModel = null)
     {
-        return GetBy(plan => plan.Id == trainingPlanId);
-    }
+        try
+        {
+            var query = _dbContext.TrainingPlans.AsNoTracking();
 
-    public Task<TrainingPlan?> GetByName(string? authorName, string? name)
-    {
-        ArgumentException.ThrowIfNullOrWhiteSpace(name);
-        return GetBy(plan => plan.Title == name && plan.Author.UserName == authorName);
+            if (filterModel is not null)
+                query = filterModel.Filter(query, TrainingPlanFilters);
+
+            return await query.CountAsync();
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "Exception was thrown while receiving training plans count by filter '{filter}' from database", filterModel);
+            throw new DataBaseException("Error while receiving training plans count from database", e);
+        }
     }
 
     public async Task<OperationResult> Create(TrainingPlan trainingPlan)
@@ -155,7 +183,7 @@ public class TrainingPlansRepository : ITrainingPlansRepository
         }
         catch (NotFoundException notFoundException)
         {
-            _logger.LogWarning(notFoundException, "Training plan with id '{trainingPlanId}' was not found", updatedPlan.Id);
+            _logger.LogInformation(notFoundException, "Training plan with id '{trainingPlanId}' was not found", updatedPlan.Id);
             return DefaultOperationResult.FromException(notFoundException);
         }
         catch (AlreadyExistsException alreadyExistsException)
@@ -195,7 +223,7 @@ public class TrainingPlansRepository : ITrainingPlansRepository
         }
         catch (Exception)
         {
-            _logger.LogWarning("Error when deleting training plan with id '{trainingPlanId}'", trainingPlanId);
+            _logger.LogError("Error when deleting training plan with id '{trainingPlanId}'", trainingPlanId);
             return DefaultOperationResult.FromException(new DataBaseException("Error while deleting training plan"));
         }
 

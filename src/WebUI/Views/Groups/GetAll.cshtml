@@ -105,7 +105,7 @@
         </tbody>
     </table>
     
-    @await Html.PartialAsync("Partials/DefaultPagingFormPartialView", ViewBag.GroupsCount ?? 0, ViewData)
+    @await Html.PartialAsync("Partials/DefaultPagingFormPartialView", ViewBag.GroupsCount ?? 1, ViewData)
     
     @if (isUserAdmin)
     {

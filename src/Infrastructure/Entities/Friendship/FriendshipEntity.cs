@@ -1,9 +1,9 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using Domain.Identity;
 
-namespace Infrastructure.Entities;
+namespace Infrastructure.Entities.Friendship;
 
-public class FriendRelationshipEntity
+public class FriendshipEntity
 {
     [ForeignKey(nameof(FirstFriend))]
     public Guid FirstFriendId { get; set; }

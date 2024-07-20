@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using Domain.Identity;
 
-namespace Infrastructure.Entities;
+namespace Infrastructure.Entities.Friendship;
 
 public class FriendInvitationEntity
 {
@@ -9,9 +9,9 @@ public class FriendInvitationEntity
     public Guid InvitorId { get; set; }
     public ApplicationUser Invitor { get; set; }
     
-    [ForeignKey(nameof(Target))]
-    public Guid TargetId { get; set; }
-    public ApplicationUser Target { get; set; }
+    [ForeignKey(nameof(Invited))]
+    public Guid InvitedId { get; set; }
+    public ApplicationUser Invited { get; set; }
     
-    public DateTime InvitationTime { get; set; }
+    public DateTime InvitationDateTime { get; set; }
 }

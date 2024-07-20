@@ -1,8 +1,10 @@
 ﻿using AutoMapper;
 using Domain.Models;
+using Domain.Models.Friendship;
 using Domain.Models.TrainingPlan;
 using Infrastructure.Entities;
-using Infrastructure.Entities.TrainingPlanEntities;
+using Infrastructure.Entities.Friendship;
+using Infrastructure.Entities.TrainingPlan;
 
 namespace Infrastructure.Mapping.Profiles;
 
@@ -11,6 +13,9 @@ public class InfrastructureApplicationMappingProfile : Profile
     public InfrastructureApplicationMappingProfile()
     {
         CreateGroupMaps();
+        CreateExerciseMaps();
+        CreateFriendInvitationMaps();
+        CreateFriendshipMaps();
         CreateTrainingPlanMaps();
     }
 
@@ -20,14 +25,34 @@ public class InfrastructureApplicationMappingProfile : Profile
         CreateMap<GroupEntity, Group>();
     }
 
+    private void CreateExerciseMaps()
+    {
+        CreateMap<Exercise, ExerciseEntity>();
+        CreateMap<ExerciseEntity, Exercise>();
+    }
+    
+    private void CreateFriendInvitationMaps()
+    {
+        CreateMap<FriendInvitation, FriendInvitationEntity>();
+        CreateMap<FriendInvitationEntity, FriendInvitation>();
+    }
+
+    private void CreateFriendshipMaps()
+    {
+        CreateMap<Friendship, FriendshipEntity>()
+            .ForMember(dest => dest.FriendsFrom, opt => opt.MapFrom(src => src.FriendsFromDateTime));
+        
+        CreateMap<FriendshipEntity, Friendship>()
+            .ForMember(dest => dest.FriendsFromDateTime, opt => opt.MapFrom(src => src.FriendsFrom));
+    }
+    
     private void CreateTrainingPlanMaps()
     {
         CreateMap<TrainingPlanEntity, TrainingPlan>()
             .ForMember(dest => dest.TrainingPlanBlocks, opt => opt.MapFrom(src => src.TrainingPlanBlocks.OrderBy(b => b.Position)));
         CreateMap<TrainingPlanBlockEntity, TrainingPlanBlock>()
             .ForMember(dest => dest.TrainingPlanBlockEntries, opt => opt.MapFrom(src => src.TrainingPlanBlockEntries.OrderBy(e => e.Position)));
-        CreateMap<TrainingPlanBlockEntryEntity, TrainingPlanBlockEntry>()
-            .ForMember(dest => dest.Description, opt => opt.MapFrom(src => src.Desctiption));
+        CreateMap<TrainingPlanBlockEntryEntity, TrainingPlanBlockEntry>();
 
         
         CreateMap<TrainingPlan, TrainingPlanEntity>()
@@ -50,7 +75,6 @@ public class InfrastructureApplicationMappingProfile : Profile
         CreateMap<TrainingPlanBlockEntry, TrainingPlanBlockEntryEntity>()
             .ForMember(dest => dest.Id, opt => opt.Ignore())
             .ForMember(dest => dest.Group, opt => opt.Ignore())
-            .ForMember(dest => dest.Desctiption, opt => opt.MapFrom(src => src.Description))
             .ForMember(dest => dest.GroupId, opt => opt.MapFrom(src => src.Group.Id));
     }
 }

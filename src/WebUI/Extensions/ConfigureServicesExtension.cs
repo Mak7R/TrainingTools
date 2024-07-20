@@ -6,6 +6,8 @@ using Application.Services;
 using Application.Services.ReferencedContentProviders;
 using Domain.Identity;
 using Domain.Models;
+using Domain.Models.Friendship;
+using Domain.Models.TrainingPlan;
 using Infrastructure.Data;
 using Infrastructure.Mapping.Profiles;
 using Infrastructure.Repositories;
@@ -129,15 +131,18 @@ public static class ConfigureServicesExtension
     private static void AddApplicationServices(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddScoped<IRepository<Group, Guid>, GroupsRepository>();
-        services.AddScoped<IGroupsService, GroupsService>();
-        services.AddScoped<IFriendsRepository, FriendsRepository>();
-        services.AddScoped<IUsersService, UsersService>();
-        services.AddScoped<IFriendsService, FriendsService>();
-        services.AddScoped<IExercisesRepository, ExercisesRepository>();
-        services.AddScoped<IExercisesService, ExercisesService>();
+        services.AddScoped<IRepository<Exercise, Guid>, ExercisesRepository>();
+        services.AddScoped<IRepository<TrainingPlan, Guid>, TrainingPlansRepository>();
+        services.AddScoped<IRepository<FriendInvitation, (Guid, Guid)>, FriendInvitationsRepository>();
+        services.AddScoped<IRepository<Friendship, (Guid, Guid)>, FriendshipsRepository>();
+        
         services.AddScoped<IExerciseResultsRepository, ExerciseResultsRepository>();
+        
+        services.AddScoped<IGroupsService, GroupsService>();
+        services.AddScoped<IUsersService, UsersService>();
+        services.AddScoped<IFriendsService, FriendshipsService>();
+        services.AddScoped<IExercisesService, ExercisesService>();
         services.AddScoped<IExerciseResultsService, ExerciseResultsService>();
-        services.AddScoped<ITrainingPlansRepository, TrainingPlansRepository>();
         services.AddScoped<ITrainingPlansService, TrainingPlansService>();
         
         services.AddScoped<IReferencedContentProvider, ImagesAndVideosReferencedContentProvider>();

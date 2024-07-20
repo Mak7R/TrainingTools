@@ -5,6 +5,7 @@ using Application.Models.Shared;
 using Domain.Defaults;
 using Domain.Exceptions;
 using Domain.Models;
+using Domain.Models.Friendship;
 using Domain.Rules;
 using Infrastructure.Data;
 using Infrastructure.Entities;
@@ -17,14 +18,13 @@ namespace Infrastructure.Repositories;
 public class ExerciseResultsRepository : IExerciseResultsRepository
 {
     private readonly ApplicationDbContext _dbContext;
-    private readonly IFriendsRepository _friendsRepository;
+    private readonly IRepository<Friendship, (Guid, Guid)> _friendshipsRepository;
     private readonly ILogger<ExerciseResultsRepository> _logger;
 
-    // ReSharper disable once ConvertToPrimaryConstructor
-    public ExerciseResultsRepository(ApplicationDbContext dbContext, IFriendsRepository friendsRepository, ILogger<ExerciseResultsRepository> logger)
+    public ExerciseResultsRepository(ApplicationDbContext dbContext, IRepository<Friendship, (Guid, Guid)> friendshipsRepository, ILogger<ExerciseResultsRepository> logger)
     {
         _dbContext = dbContext;
-        _friendsRepository = friendsRepository;
+        _friendshipsRepository = friendshipsRepository;
         _logger = logger;
     }
     
@@ -105,7 +105,15 @@ public class ExerciseResultsRepository : IExerciseResultsRepository
 
     public async Task<IEnumerable<ExerciseResult>> GetOnlyUserAndFriendsResultForExercise(Guid userId, Guid exerciseId, FilterModel? filterModel = null)
     {
-        var userIds = (await _friendsRepository.GetFriendsFor(userId)).Select(u => u.Id);
+        var userIds = new List<Guid> { userId };
+        
+        userIds.AddRange((await _friendshipsRepository.GetAll(
+            new FilterModel
+            {
+                {FilterOptionNames.Relationships.Friendship.FriendId, userId.ToString()}
+            }))
+            .Select(f => f.FirstFriend.Id == userId ? f.SecondFriend.Id : f.FirstFriend.Id));
+
         
         if ((filterModel?.TryGetValue(FilterOptionNames.ExerciseResults.OwnerName, out var value) ?? false) &&
             !string.IsNullOrWhiteSpace(value))

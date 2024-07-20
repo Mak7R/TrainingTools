@@ -3,17 +3,25 @@
 @model int  
 
 @{
+    int modelsCount = 1;
+    if (Model > 0)
+    {
+        modelsCount = Model;
+    }
+}
+
+@{
     int pageSize = 0;
     if (Context.Request.Query.ContainsKey(Paging.PageSize) && !int.TryParse(Context.Request.Query[Paging.PageSize], out pageSize))
     {
-        pageSize = ViewBag.DefaultPageSize ?? Model;
+        pageSize = ViewBag.DefaultPageSize ?? modelsCount;
     }
     if (pageSize <= 0)
     {
-        pageSize = ViewBag.DefaultPageSize ?? Model;
+        pageSize = ViewBag.DefaultPageSize ?? modelsCount;
     }
     
-    int pagesCount = Model / pageSize + (Model % pageSize == 0 ? 0 : 1); 
+    int pagesCount = modelsCount / pageSize + (modelsCount % pageSize == 0 ? 0 : 1); 
     if (!int.TryParse(Context.Request.Query[Paging.CurrentPage], out var currentPage))
     {
         currentPage = 0;

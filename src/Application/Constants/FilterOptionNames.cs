@@ -101,7 +101,7 @@ public static class FilterOptionNames
         public const string TitleEquals = "title-equals";
         
         /// <summary>
-        /// Author id is same as value
+        /// Author id is the same as value
         /// </summary>
         public const string AuthorId = "author-id";
         
@@ -110,10 +110,39 @@ public static class FilterOptionNames
         /// </summary>
         public const string AuthorName = "author";
         
+        /// <summary>
+        /// Author name equals
+        /// </summary>
+        public const string AuthorNameEquals = "author-equals";
+        
         
         /// <summary>
         /// If Public Only value equals to true returns only public values
         /// </summary>
         public const string PublicOnly = "public-only";
+    }
+    
+    public static class Relationships
+    {
+        public static class FriendInvitation
+        {
+            /// <summary>
+            /// Invitor id is the same as value
+            /// </summary>
+            public const string Invitor = "invitor-id";
+            
+            /// <summary>
+            /// Invited id is the same as value
+            /// </summary>
+            public const string Invited = "invited-id";
+        }
+
+        public static class Friendship
+        {
+            /// <summary>
+            /// Friend id is the same as value
+            /// </summary>
+            public const string FriendId = "friend-id";
+        }
     }
 }

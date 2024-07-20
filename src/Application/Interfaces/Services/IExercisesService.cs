@@ -8,6 +8,7 @@ public interface IExercisesService
     Task<IEnumerable<Exercise>> GetAll(OrderModel? orderModel = null, FilterModel? filterModel = null);
     Task<Exercise?> GetByName(string? name);
     Task<Exercise?> GetById(Guid id);
+    Task<int> Count(FilterModel? filterModel = null);
     
     Task<OperationResult> Create(Exercise? exercise);
     Task<OperationResult> Update(Exercise? group);

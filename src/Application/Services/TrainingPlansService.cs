@@ -1,4 +1,5 @@
 ﻿using System.Collections.ObjectModel;
+using Application.Constants;
 using Application.Interfaces.Repositories;
 using Application.Interfaces.ServiceInterfaces;
 using Application.Models.Shared;
@@ -10,9 +11,9 @@ namespace Application.Services;
 
 public class TrainingPlansService : ITrainingPlansService
 {
-    private readonly ITrainingPlansRepository _trainingPlansRepository;
+    private readonly IRepository<TrainingPlan, Guid> _trainingPlansRepository;
 
-    public TrainingPlansService(ITrainingPlansRepository trainingPlansRepository)
+    public TrainingPlansService(IRepository<TrainingPlan, Guid> trainingPlansRepository)
     {
         _trainingPlansRepository = trainingPlansRepository;
     }
@@ -71,9 +72,20 @@ public class TrainingPlansService : ITrainingPlansService
         return await _trainingPlansRepository.GetById(trainingPlanId);
     }
 
-    public async Task<TrainingPlan?> GetByName(string? authorName, string? name)
+    public async Task<TrainingPlan?> GetByName(string? authorName, string? title)
     {
-        return await _trainingPlansRepository.GetByName(authorName, name);
+        return (await _trainingPlansRepository.GetAll(
+                new FilterModel
+                {
+                    {FilterOptionNames.TrainingPlan.AuthorNameEquals, authorName},
+                    {FilterOptionNames.TrainingPlan.TitleEquals, title}
+                }, null, new PageModel{PageSize = 1}))
+            .FirstOrDefault();
+    }
+
+    public async Task<int> Count(FilterModel? filterModel = null)
+    {
+        return await _trainingPlansRepository.Count(filterModel);
     }
 
     public async Task<OperationResult> Create(TrainingPlan plan)

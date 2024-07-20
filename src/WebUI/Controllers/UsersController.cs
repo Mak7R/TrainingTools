@@ -9,7 +9,6 @@ using Microsoft.AspNetCore.Mvc;
 using WebUI.Extensions;
 using WebUI.Filters;
 using WebUI.Mapping.Mappers;
-using WebUI.ModelBinding.ModelBinders;
 using WebUI.Models.Shared;
 using WebUI.Models.User;
 
@@ -32,8 +31,9 @@ public class UsersController : Controller
     
     [HttpGet("")]
     [QueryValuesReader<DefaultOrderOptions>]
-    public async Task<IActionResult> GetAll([FromQuery] OrderModel? orderModel, [FilterModelBinder] FilterModel? filterModel)
+    public async Task<IActionResult> GetAll(OrderModel? orderModel, FilterModel? filterModel, PageModel? pageModel)
     {
+        // todo paging
         var user = await _userManager.GetUserAsync(User);
         if (user is null) return RedirectToAction("Login", "Accounts", new {ReturnUrl = "/users"});
         
