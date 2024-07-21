@@ -76,7 +76,7 @@ public class TrainingPlansRepository : IRepository<TrainingPlan, Guid>
             if (pageModel is not null)
                 query = pageModel.TakePage(query);
             
-            return await query.Select(entity => _mapper.Map<TrainingPlan>(entity)).ToListAsync();
+            return (await query.ToListAsync()).Select(entity => _mapper.Map<TrainingPlan>(entity));
         }
         catch (Exception e)
         {
@@ -89,15 +89,16 @@ public class TrainingPlansRepository : IRepository<TrainingPlan, Guid>
     {
         try
         {
-            return await _dbContext.TrainingPlans
+            var plan = await _dbContext.TrainingPlans
                 .AsNoTracking()
                 .Include(plan => plan.Author)
                 .Include(plan => plan.TrainingPlanBlocks)
                 .ThenInclude(block => block.TrainingPlanBlockEntries)
                 .ThenInclude(e => e.Group)
                 
-                .Select(plan => _mapper.Map<TrainingPlan>(plan))
                 .FirstOrDefaultAsync(plan => plan.Id == id);
+
+            return plan == null ? null : _mapper.Map<TrainingPlan>(plan);
         }
         catch (Exception e)
         {

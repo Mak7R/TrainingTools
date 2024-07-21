@@ -15,7 +15,7 @@ public class GroupsService : IGroupsService
         _groupsRepository = groupsRepository;
     }
     
-    public async Task<IEnumerable<Group>> GetAll(OrderModel? orderModel = null, FilterModel? filterModel = null, PageModel? pageModel = null)
+    public async Task<IEnumerable<Group>> GetAll(FilterModel? filterModel = null, OrderModel? orderModel = null, PageModel? pageModel = null)
     {
         return await _groupsRepository.GetAll(filterModel, orderModel, pageModel);
     }

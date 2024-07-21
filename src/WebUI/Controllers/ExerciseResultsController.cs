@@ -1,7 +1,10 @@
 ﻿using System.Globalization;
+using Application.Constants;
 using Application.Interfaces.Services;
 using Application.Models.Shared;
+using AutoMapper;
 using Domain.Enums;
+using Domain.Exceptions;
 using Domain.Identity;
 using Domain.Models;
 using Microsoft.AspNetCore.Authorization;
@@ -10,7 +13,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WebUI.Extensions;
 using WebUI.Filters;
-using WebUI.Mapping.Mappers;
 using WebUI.Models.Exercise;
 using WebUI.Models.ExerciseResult;
 using WebUI.Models.Group;
@@ -26,12 +28,14 @@ public class ExerciseResultsController : Controller
     private readonly IExerciseResultsService _exerciseResultsService;
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly IFriendsService _friendsService;
+    private readonly IMapper _mapper;
 
-    public ExerciseResultsController(IExerciseResultsService exerciseResultsService, UserManager<ApplicationUser> userManager, IFriendsService friendsService)
+    public ExerciseResultsController(IExerciseResultsService exerciseResultsService, UserManager<ApplicationUser> userManager, IFriendsService friendsService, IMapper mapper)
     {
         _exerciseResultsService = exerciseResultsService;
         _userManager = userManager;
         _friendsService = friendsService;
+        _mapper = mapper;
     }
 
     [HttpGet("")]
@@ -41,9 +45,21 @@ public class ExerciseResultsController : Controller
         var user = await _userManager.GetUserAsync(HttpContext.User);
         if (user is null) return RedirectToAction("Login", "Accounts", new {returnUrl = "/exercises/results"});
         
+        pageModel ??= new PageModel();
+        if (pageModel.PageSize is PageModel.DefaultPageSize or <= 0)
+        {
+            int defaultPageSize = 9;
+            pageModel.PageSize = defaultPageSize;
+            ViewBag.DefaultPageSize = defaultPageSize;
+        }
+
+        filterModel ??= new FilterModel();
+        filterModel[FilterOptionNames.ExerciseResults.OwnerNameEquals] = user.UserName;
+        ViewBag.ExerciseResultsCount = await _exerciseResultsService.Count(filterModel);
+        
         var results = await _exerciseResultsService.GetForUser(user.UserName ?? string.Empty, filterModel, orderModel, pageModel);
         
-        return View(results.Select(r => r.ToExerciseResultViewModel()));
+        return View(results.Select(r => _mapper.Map<ExerciseResultViewModel>(r)));
     }
     
     [HttpGet("as-exel")]
@@ -65,7 +81,7 @@ public class ExerciseResultsController : Controller
     {
         var user = await _userManager.GetUserAsync(HttpContext.User);
         if (user is null) return RedirectToAction("Login", "Accounts", new {returnUrl = $"/exercises/results/for-exercise/{exerciseId}"});
-
+        
         var exercise = await exercisesService.GetById(exerciseId);
 
         if (exercise is null)
@@ -77,8 +93,19 @@ public class ExerciseResultsController : Controller
             Group = new GroupViewModel { Id = exercise.Group.Id, Name = exercise.Group.Name }
         };
         
+        pageModel ??= new PageModel();
+        if (pageModel.PageSize is PageModel.DefaultPageSize or <= 0)
+        {
+            int defaultPageSize = 9;
+            pageModel.PageSize = defaultPageSize;
+            ViewBag.DefaultPageSize = defaultPageSize;
+        } 
+        filterModel ??= new FilterModel();
+        filterModel[FilterOptionNames.ExerciseResults.FullNameEquals] = $"{exercise.Group.Name}/{exercise.Name}";
+        ViewBag.ExerciseResultsCount = await _exerciseResultsService.Count(filterModel);
+        
         var results = await _exerciseResultsService.GetOnlyUserAndFriendsResultForExercise(user, exercise.Group.Name ?? string.Empty, exercise.Name ?? string.Empty, filterModel, orderModel, pageModel);
-        return View(results.Select(r => r.ToExerciseResultViewModel()));
+        return View(results.Select(r => _mapper.Map<ExerciseResultViewModel>(r)));
     }  
     
     [HttpGet("for-user/{userName}")]
@@ -110,9 +137,21 @@ public class ExerciseResultsController : Controller
         if (searchableUser is null)
             return this.NotFoundView("User was not found");
         
+        pageModel ??= new PageModel();
+        if (pageModel.PageSize is PageModel.DefaultPageSize or <= 0)
+        {
+            int defaultPageSize = 9;
+            pageModel.PageSize = defaultPageSize;
+            ViewBag.DefaultPageSize = defaultPageSize;
+        }
+
+        filterModel ??= new FilterModel();
+        filterModel[FilterOptionNames.ExerciseResults.OwnerNameEquals] = searchableUser.UserName;
+        ViewBag.ExerciseResultsCount = await _exerciseResultsService.Count(filterModel);
+        
         var results = await _exerciseResultsService.GetForUser(searchableUser.UserName ?? string.Empty, filterModel, orderModel, pageModel);
         ViewBag.UserName = userName;
-        return View("GetUserResults", results.Select(r => r.ToExerciseResultViewModel()));
+        return View("GetUserResults", results.Select(r => _mapper.Map<ExerciseResultViewModel>(r)));
     }
 
     [HttpGet("add/{exerciseId:guid}")]
@@ -123,11 +162,18 @@ public class ExerciseResultsController : Controller
         
         var result = await _exerciseResultsService.Create(new ExerciseResult
             { Owner = user, Exercise = new Exercise { Id = exerciseId } });
-        
-        if (!result.IsSuccessful) return this.BadRequestView(result.Errors);
-        if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl)) 
-            return LocalRedirect(returnUrl);
-        return RedirectToAction("GetUserResults");
+
+        if (result.IsSuccessful)
+        {
+            if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl)) 
+                return LocalRedirect(returnUrl);
+            return RedirectToAction("GetUserResults");
+        }
+
+        if (result.Exception is AlreadyExistsException)
+            return this.BadRequestView(result.Errors);
+
+        return this.ErrorView(500, result.Errors);
     }
     
     [HttpGet("delete/{exerciseId:guid}")]
@@ -138,7 +184,13 @@ public class ExerciseResultsController : Controller
         
         var result = await _exerciseResultsService.Delete(user.Id, exerciseId);
 
-        return result.IsSuccessful ? RedirectToAction("GetUserResults") : this.BadRequestView(result.Errors);
+        if (result.IsSuccessful)
+            return RedirectToAction("GetUserResults");
+
+        if (result.Exception is NotFoundException)
+            return this.NotFoundView(result.Errors);
+        
+        return  this.ErrorView(500, result.Errors);
     }
     
     [HttpGet("update/{exerciseId:guid}")]
@@ -150,12 +202,13 @@ public class ExerciseResultsController : Controller
         var result = await _exerciseResultsService.GetById(user.Id, exerciseId);
         if (result is null) return this.NotFoundView("Result was not found");
 
-        return View(result.ToExerciseResultViewModel());
+        return View(_mapper.Map<ExerciseResultViewModel>(result));
     }
     
     [HttpPost("update/{exerciseId:guid}")]
     public async Task<IActionResult> Update(Guid exerciseId, [FromForm] UpdateResultsModel updateResultsModel)
     {
+        // todo custom model binder and validator for update results model
         int i = 0;
         foreach (var approach in updateResultsModel.ApproachInfos)
         {
@@ -180,22 +233,24 @@ public class ExerciseResultsController : Controller
         var user = await _userManager.GetUserAsync(User);
         if (user is null) return RedirectToAction("Login", "Accounts", new {returnUrl = $"/exercises/results/update/{exerciseId}"});
         
-        var result = new ExerciseResult
+        var exerciseResult = new ExerciseResult
         {
             Owner = user,
             Exercise = new Exercise { Id = exerciseId },
             ApproachInfos = updateResultsModel.ApproachInfos.Select(ai => new Approach(ai.Weight, ai.Count, ai.Comment)).ToList()
         };
         
-        var operationResult = await _exerciseResultsService.Update(result);
+        var result = await _exerciseResultsService.Update(exerciseResult);
 
-        if (operationResult.IsSuccessful)
-        {
+        if (result.IsSuccessful)
             return RedirectToAction("GetUserResults");
-        }
-        else
-        {
-            return this.ErrorView(StatusCodes.Status500InternalServerError, operationResult.Errors);
-        }
+
+        if (result.Exception is NotFoundException)
+            return this.NotFoundView(result.Errors);
+
+        if (result.Exception is AlreadyExistsException)
+            return this.BadRequestView(result.Errors);
+        
+        return this.ErrorView(StatusCodes.Status500InternalServerError, result.Errors);
     }
 }

@@ -20,7 +20,7 @@ public class AddAvailableGroupsAttribute : ActionFilterAttribute
         {
             var groupsService = controller.HttpContext.RequestServices.GetRequiredService<IGroupsService>();
             var mapper = controller.HttpContext.RequestServices.GetRequiredService<IMapper>();
-            controller.ViewBag.AvailableGroups = mapper.Map<List<GroupViewModel>>(await groupsService.GetAll(DefaultOrder));
+            controller.ViewBag.AvailableGroups = mapper.Map<List<GroupViewModel>>(await groupsService.GetAll(orderModel: DefaultOrder));
         }
     }
 }

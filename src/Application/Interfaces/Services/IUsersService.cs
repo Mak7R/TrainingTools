@@ -14,6 +14,7 @@ public interface IUsersService
     Task<UserInfo?> GetByName(ApplicationUser? currentUser, string? userName);
     Task<UserInfo?> GetByEmail(ApplicationUser? currentUser, string? email);
 
+    Task<int> Count(ApplicationUser? currentUser, FilterModel? filterModel);
 
     Task<OperationResult> Create(ApplicationUser? currentUser, CreateUserDto createUserDto);
     Task<OperationResult> Update(ApplicationUser? currentUser, UpdateUserDto updateUserDto);

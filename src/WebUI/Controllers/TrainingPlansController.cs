@@ -1,6 +1,8 @@
 ﻿using Application.Constants;
 using Application.Interfaces.Services;
 using Application.Models.Shared;
+using Application.Services.ViewRender;
+using AutoMapper;
 using Domain.Exceptions;
 using Domain.Identity;
 using Domain.Models;
@@ -8,12 +10,10 @@ using Domain.Models.TrainingPlan;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Rotativa.AspNetCore;
-using Rotativa.AspNetCore.Options;
 using WebUI.Extensions;
 using WebUI.Filters;
-using WebUI.Mapping.Mappers;
 using WebUI.ModelBinding.ModelBinders;
+using WebUI.Models.Shared;
 using WebUI.Models.TrainingPlan;
 
 namespace WebUI.Controllers;
@@ -26,14 +26,17 @@ public class TrainingPlansController : Controller
 {
     private readonly ITrainingPlansService _trainingPlansService;
     private readonly UserManager<ApplicationUser> _userManager;
+    private readonly IMapper _mapper;
 
-    public TrainingPlansController(ITrainingPlansService trainingPlansService, UserManager<ApplicationUser> userManager)
+    public TrainingPlansController(ITrainingPlansService trainingPlansService, UserManager<ApplicationUser> userManager, IMapper mapper)
     {
         _trainingPlansService = trainingPlansService;
         _userManager = userManager;
+        _mapper = mapper;
     }
 
     [HttpGet("")]
+    [QueryValuesReader<DefaultOrderOptions>]
     public async Task<IActionResult> GetAll(
         OrderModel? orderModel,
         FilterModel? filterModel,
@@ -42,10 +45,11 @@ public class TrainingPlansController : Controller
         filterModel ??= new FilterModel();
         filterModel[FilterOptionNames.TrainingPlan.PublicOnly] = "true";
         var plans = await _trainingPlansService.GetAll(filterModel, orderModel, pageModel);
-        return View(plans.Select(p => p.ToTrainingPlanViewModel()));
+        return View(plans.Select(p => _mapper.Map<TrainingPlanViewModel>(p)));
     }
 
     [HttpGet("for-user")]
+    [QueryValuesReader<DefaultOrderOptions>]
     public async Task<IActionResult> GetUserTrainingPlans(
         OrderModel? orderModel,
         FilterModel? filterModel,
@@ -59,7 +63,7 @@ public class TrainingPlansController : Controller
         filterModel[FilterOptionNames.TrainingPlan.AuthorName] = user.UserName;
 
         var plans = await _trainingPlansService.GetAll(filterModel, orderModel, pageModel);
-        return View(plans.Select(p => p.ToTrainingPlanViewModel()));
+        return View(plans.Select(p => _mapper.Map<TrainingPlanViewModel>(p)));
     }
 
     [HttpGet("{author}/{title}")]
@@ -74,11 +78,11 @@ public class TrainingPlansController : Controller
         if (trainingPlan is null  || (!trainingPlan.IsPublic && trainingPlan.Author.Id != user.Id))
             return this.NotFoundView(new []{"Training plan was not found"});
         
-        return View(trainingPlan.ToTrainingPlanViewModel());
+        return View(_mapper.Map<TrainingPlanViewModel>(trainingPlan));
     }
 
     [HttpGet("{author}/{title}/as-pdf")]
-    public async Task<IActionResult> GetTrainingPlanAsPdf(string author, string title)
+    public async Task<IActionResult> GetTrainingPlanAsPdf(string author, string title, [FromServices] IViewRenderer<PdfOptions> pdfRenderer)
     {
         var user = await _userManager.GetUserAsync(User);
         if (user is null)
@@ -89,12 +93,26 @@ public class TrainingPlansController : Controller
         if (trainingPlan is null  || (!trainingPlan.IsPublic && trainingPlan.Author.Id != user.Id))
             return this.NotFoundView(new []{"Training plan was not found"});
 
-        return new ViewAsPdf("GetTrainingPlanAsPDF", trainingPlan.ToTrainingPlanViewModel(), ViewData)
-        {
-            PageMargins = new Margins(10, 5, 20, 5),
-            PageSize = Size.A4,
-            IsLowQuality = false,
-        };
+        var pdfStream = await pdfRenderer.RenderViewToStreamAsync("GetTrainingPlanAsPDF", _mapper.Map<TrainingPlanViewModel>(trainingPlan), new PdfOptions());
+        
+        return File(pdfStream, "application/pdf", "TrainingPlan.pdf");
+    }
+    
+    [HttpGet("{author}/{title}/as-img")]
+    public async Task<IActionResult> GetTrainingPlanAsImg(string author, string title, [FromServices] IViewRenderer<ImageOptions> imageRenderer)
+    {
+        var user = await _userManager.GetUserAsync(User);
+        if (user is null)
+            return RedirectToAction("Login", "Accounts", new { returnUrl = $"/training-plans/{author}/{title}" });
+        
+        var trainingPlan = await _trainingPlansService.GetByName(author, title);
+
+        if (trainingPlan is null  || (!trainingPlan.IsPublic && trainingPlan.Author.Id != user.Id))
+            return this.NotFoundView(new []{"Training plan was not found"});
+
+        var imageStream = await imageRenderer.RenderViewToStreamAsync("GetTrainingPlanAsPDF", _mapper.Map<TrainingPlanViewModel>(trainingPlan), new ImageOptions());
+        
+        return File(imageStream, "image/png", "TrainingPlan.png");
     }
 
     [HttpGet("create")]
@@ -159,6 +177,7 @@ public class TrainingPlansController : Controller
         {
             Id = trainingPlan.Id,
             NewTitle = trainingPlan.Title,
+            AuthorName = trainingPlan.Author.UserName,
             IsPublic = trainingPlan.IsPublic,
             Blocks = trainingPlan.TrainingPlanBlocks.Select(b => new UpdateTrainingPlanBlockModel
             {

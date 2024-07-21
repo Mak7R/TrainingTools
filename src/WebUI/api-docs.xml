@@ -4,12 +4,13 @@
         <name>WebUI</name>
     </assembly>
     <members>
-        <member name="M:WebUI.Controllers.Api.v1.GroupsController.GetAll(Application.Models.Shared.OrderModel,Application.Models.Shared.FilterModel)">
+        <member name="M:WebUI.Controllers.Api.v1.GroupsController.GetAll(Application.Models.Shared.OrderModel,Application.Models.Shared.FilterModel,Application.Models.Shared.PageModel)">
             <summary>
             Gets all groups. Can be filtered with FilterModel and Ordered with order model
             </summary>
             <param name="orderModel">provides order for list of groups</param>
             <param name="filterModel">provides filters for filtering groups</param>
+            <param name="pageModel">provides page settings for paging groups</param>
             <returns>List of groups</returns>
         </member>
         <member name="M:WebUI.Controllers.Api.v1.GroupsController.Create(WebUI.Models.Group.CreateGroupModel)">

@@ -1,10 +1,11 @@
 ﻿using Application.Interfaces.Services;
+using AutoMapper;
 using Domain.Identity;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using WebUI.Extensions;
-using WebUI.Mapping.Mappers;
+using WebUI.Models.Friend;
 
 namespace WebUI.Controllers;
 
@@ -17,12 +18,14 @@ public class FriendsController : Controller
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly IFriendsService _friendsService;
     private readonly ILogger<FriendsController> _logger;
+    private readonly IMapper _mapper;
 
-    public FriendsController(UserManager<ApplicationUser> userManager, IFriendsService friendsService, ILogger<FriendsController> logger)
+    public FriendsController(UserManager<ApplicationUser> userManager, IFriendsService friendsService, ILogger<FriendsController> logger, IMapper mapper)
     {
         _userManager = userManager;
         _friendsService = friendsService;
         _logger = logger;
+        _mapper = mapper;
     }
 
     [HttpGet("invite")]
@@ -157,10 +160,10 @@ public class FriendsController : Controller
         var user = await _userManager.GetUserAsync(HttpContext.User);
         if (user is null) return RedirectToAction("Login", "Accounts");
 
-        var invitationsFor = await _friendsService.GetInvitationsFor(user);
         var friends = await _friendsService.GetFriendsFor(user);
+        var invitationsFor = await _friendsService.GetInvitationsFor(user);
         var invitationsOf = await _friendsService.GetInvitationsOf(user);
 
-        return View(friends.ToFriendRelationshipsInfoViewModel(invitationsFor: invitationsFor, invitationsOf: invitationsOf));
+        return View(_mapper.Map<FriendRelationshipsInfoViewModel>((friends, invitationsFor, invitationsOf)));
     }
 }

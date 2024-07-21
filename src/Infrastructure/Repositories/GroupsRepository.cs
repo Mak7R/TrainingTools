@@ -55,7 +55,7 @@ public class GroupsRepository : IRepository<Group, Guid>
             if (pageModel is not null)
                 query = pageModel.TakePage(query);
             
-            return await query.Select(g => _mapper.Map<Group>(g)).ToListAsync();
+            return (await query.ToListAsync()).Select(g => _mapper.Map<Group>(g));
         }
         catch (Exception e)
         {
@@ -86,11 +86,12 @@ public class GroupsRepository : IRepository<Group, Guid>
     {
         try
         {
-            return await _dbContext.Groups
+            var group = await _dbContext.Groups
                 .AsNoTracking()
                 
-                .Select(g => _mapper.Map<Group>(g))
                 .FirstOrDefaultAsync(g => g.Id == id);
+
+            return group == null ? null : _mapper.Map<Group>(group);
         }
         catch (Exception e)
         {

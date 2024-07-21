@@ -30,13 +30,14 @@ public class GroupsController : ApiController
     /// </summary>
     /// <param name="orderModel">provides order for list of groups</param>
     /// <param name="filterModel">provides filters for filtering groups</param>
+    /// <param name="pageModel">provides page settings for paging groups</param>
     /// <returns>List of groups</returns>
     [HttpGet("")]
     [QueryValuesReader<DefaultOrderOptions>]
     [AllowAnonymous]
-    public async Task<ActionResult<IEnumerable<GroupViewModel>>> GetAll(OrderModel? orderModel,[FilterModelBinder] FilterModel? filterModel)
+    public async Task<ActionResult<IEnumerable<GroupViewModel>>> GetAll([FromQuery] OrderModel? orderModel, [FromQuery] FilterModel? filterModel, [FromQuery] PageModel? pageModel)
     {
-        var groups = await _groupsService.GetAll(orderModel, filterModel);
+        var groups = await _groupsService.GetAll(filterModel, orderModel, pageModel);
 
         return _mapper.Map<List<GroupViewModel>>(groups);
     }

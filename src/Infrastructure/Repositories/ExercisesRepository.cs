@@ -58,7 +58,7 @@ public class ExercisesRepository : IRepository<Exercise, Guid>
             if (pageModel is not null)
                 query = pageModel.TakePage(query);
             
-            return await query.Select(e => _mapper.Map<Exercise>(e)).ToListAsync();
+            return (await query.ToListAsync()).Select(e => _mapper.Map<Exercise>(e));
         }
         catch (Exception e)
         {
@@ -71,12 +71,13 @@ public class ExercisesRepository : IRepository<Exercise, Guid>
     {
         try
         {
-            return await _dbContext.Exercises
+            var exercise = await _dbContext.Exercises
                 .AsNoTracking()
                 .Include(e => e.Group)
                 
-                .Select(e => _mapper.Map<Exercise>(e))
                 .FirstOrDefaultAsync(e => e.Id == id);
+
+            return exercise == null ? null : _mapper.Map<Exercise>(exercise);
         }
         catch (Exception e)
         {

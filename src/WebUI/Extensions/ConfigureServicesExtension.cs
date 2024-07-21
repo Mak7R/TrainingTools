@@ -3,6 +3,7 @@ using Application.Interfaces.Repositories;
 using Application.Interfaces.Services;
 using Application.Services;
 using Application.Services.ReferencedContentProviders;
+using Application.Services.ViewRender;
 using Domain.Identity;
 using Domain.Models;
 using Domain.Models.Friendship;
@@ -14,9 +15,11 @@ using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.AspNetCore.Mvc.Versioning;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using WebUI.Mapping.Profiles;
 using WebUI.ModelBinding.Providers;
 
@@ -29,11 +32,14 @@ public static class ConfigureServicesExtension
         services.AddLocalization(options => options.ResourcesPath = "Resources");
         
         var activeConnection = configuration["ActiveConnection"] ?? "DefaultConnection";
-        var connectionString = configuration.GetConnectionString(activeConnection) ?? throw new InvalidOperationException($"Connection string '{activeConnection}' not found.");
+        var sqlServerConnectionString = configuration.GetConnectionString(activeConnection) ?? throw new InvalidOperationException($"Connection string '{activeConnection}' not found.");
 
         services.AddDbContext<ApplicationDbContext>(options =>
-            options.UseSqlServer(connectionString)
+            options.UseSqlServer(sqlServerConnectionString)
         );
+
+        services.AddHealthChecks()
+            .AddSqlServer(sqlServerConnectionString, name: "SQL Server");
         
         services.AddControllersWithViews(options =>
         {
@@ -47,6 +53,7 @@ public static class ConfigureServicesExtension
             .AddRazorRuntimeCompilation();
 
         services.AddHttpContextAccessor();
+        services.TryAddSingleton<IActionContextAccessor, ActionContextAccessor>();
 
         services.Configure<RequestLocalizationOptions>(options =>
         {
@@ -145,5 +152,8 @@ public static class ConfigureServicesExtension
         
         services.AddScoped<IReferencedContentProvider, ImagesAndVideosReferencedContentProvider>();
         services.AddTransient<IExerciseResultsToExсelExporter, ExerciseResultsToExcelExporter>();
+        
+        services.AddScoped<IViewRenderer<PdfOptions>, PdfViewRenderer>();
+        services.AddScoped<IViewRenderer<ImageOptions>, ImageViewRenderer>();
     }
 }

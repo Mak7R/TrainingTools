@@ -35,7 +35,7 @@ public class ExerciseResultsService : IExerciseResultsService
     public async Task<IEnumerable<ExerciseResult>> GetForUser(string ownerUserName, FilterModel? filterModel = null, OrderModel? orderModel = null, PageModel? pageModel = null)
     {
         filterModel ??= new FilterModel();
-        filterModel[FilterOptionNames.ExerciseResults.OwnerName] = ownerUserName;
+        filterModel[FilterOptionNames.ExerciseResults.OwnerNameEquals] = ownerUserName;
         return await _exerciseResultsRepository.GetAll(filterModel, orderModel, pageModel);
     }
 

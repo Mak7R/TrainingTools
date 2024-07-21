@@ -150,6 +150,18 @@ public class UsersService : IUsersService
             result = pageModel.TakePage(result);
         return result.ToList();
     }
+
+    public async Task<int> Count(ApplicationUser? currentUser, FilterModel? filterModel)
+    {
+        ArgumentNullException.ThrowIfNull(currentUser);
+        var roles = await _userManager.GetRolesAsync(currentUser);
+        
+        var query = _userManager.Users.AsNoTracking();
+        filterModel ??= new FilterModel();
+        if (!(roles.Contains(nameof(Role.Root)) || roles.Contains(nameof(Role.Admin))))
+            filterModel[FilterOptionNames.User.PublicOnly] = "true";
+        return await query.CountAsync();
+    }
     
     public async Task<Stream> GetAllUsersAsCsv()
     {

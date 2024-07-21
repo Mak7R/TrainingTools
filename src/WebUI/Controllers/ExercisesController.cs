@@ -39,7 +39,16 @@ public class ExercisesController : Controller
         [FromServices] IExerciseResultsService resultsService, 
         [FromServices] UserManager<ApplicationUser> userManager)
     {
-        var exercises = await _exercisesService.GetAll(orderModel, filterModel);
+        pageModel ??= new PageModel();
+        if (pageModel.PageSize is PageModel.DefaultPageSize or <= 0)
+        {
+            int defaultPageSize = 10;
+            pageModel.PageSize = defaultPageSize;
+            ViewBag.DefaultPageSize = defaultPageSize;
+        } 
+        ViewBag.ExercisesCount = await _exercisesService.Count(filterModel);
+        
+        var exercises = await _exercisesService.GetAll(filterModel, orderModel, pageModel);
 
         var user = await userManager.GetUserAsync(User);
 

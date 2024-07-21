@@ -29,13 +29,15 @@ public class InfrastructureApplicationMappingProfile : Profile
 
     private void CreateExerciseMaps()
     {
-        CreateMap<Exercise, ExerciseEntity>();
+        CreateMap<Exercise, ExerciseEntity>()
+            .ForMember(dest => dest.Group, opt => opt.Ignore());
         CreateMap<ExerciseEntity, Exercise>();
     }
 
     private void CreateExerciseResultsMaps()
     {
         CreateMap<ExerciseResult, ExerciseResultEntity>()
+            .ForMember(dest => dest.Exercise, opt => opt.Ignore())
             .AfterMap((src, dest) =>
             {
                 dest.Weights = string.Join(SpecialConstants.DefaultSeparator, src.ApproachInfos.Select(ai => Math.Round(ai.Weight, 3)));

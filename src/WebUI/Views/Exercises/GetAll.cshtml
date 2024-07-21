@@ -20,7 +20,7 @@
 <div class="container">
     <h2 class="text-center">Exercises</h2>
 
-    <form class="d-flex justify-content-end" method="get">
+    <form class="d-flex justify-content-end" method="get" onsubmit="addQueryParametersFromForm(event)">
         <div class="input-group mb-1">
             <label for="filter-by-group-input" hidden></label>
             
@@ -44,9 +44,6 @@
             <input id="filter-by-name-input" class="form-control me-1" name="@Filters.Name.AsFilterName()" value="@ViewData[Filters.Name.AsFilterName()]" placeholder="search"/>
             
             <button type="submit" class="btn btn-primary rounded-end-5"><img style="width: 2em;height: 2em;" src="/img/icons/search.svg" alt="Search"/></button>
-            
-            <input name="order" value="@(ViewData["current_order"] ?? "")" hidden/>
-            <input name="order_by" value="@(ViewData["order_by"])" hidden/>
         </div>
     </form>
 
@@ -54,26 +51,10 @@
         <thead>
         <tr>
             <th class="col-3 fs-5">
-                <form method="get" onclick="this.submit()" class="cursor-pointer non-selectable">
-                    Exercise name
-                    @{
-                        await Html.RenderPartialAsync("Partials/DefaultOrderFormPartialView", Orders.Name);
-                    }
-
-                    <input name="@Filters.Name.AsFilterName()" value="@ViewData[Filters.Name.AsFilterName()]" hidden/>
-                    <input name="@Filters.GroupId.AsFilterName()" value="@ViewData[Filters.GroupId.AsFilterName()]" hidden/>
-                </form>
+                @await Html.PartialAsync("Partials/DefaultOrderFormPartialView", (Orders.Name, "Exercise name"))
             </th>
             <th class="col-2 fs-5">
-                <form method="get" onclick="this.submit()" class="cursor-pointer non-selectable">
-                    Group name
-                    @{
-                        await Html.RenderPartialAsync("Partials/DefaultOrderFormPartialView", Orders.GroupName);
-                    }
-                    
-                    <input name="@Filters.Name.AsFilterName()" value="@ViewData[Filters.Name.AsFilterName()]" hidden/>
-                    <input name="@Filters.GroupId.AsFilterName()" value="@ViewData[Filters.GroupId.AsFilterName()]" hidden/>
-                </form>
+                @await Html.PartialAsync("Partials/DefaultOrderFormPartialView", (Orders.GroupName, "Group name"))
             </th>
             @if (isUserAuthenticated)
             {
@@ -96,7 +77,7 @@
                     <td>
                         @if (exerciseResults.FirstOrDefault(r => r.Exercise.Id == exercise.Id) is null)
                         {
-                            <a class="btn btn-success" asp-controller="ExerciseResults" asp-action="Create" asp-route-exerciseId="@exercise.Id" asp-route-returnUrl="/exercises">Create Results</a>
+                            <a class="btn btn-success" asp-controller="ExerciseResults" asp-action="Create" asp-route-exerciseId="@exercise.Id" asp-route-returnUrl="@Context.Request.Path@Context.Request.QueryString">Create Results</a>
                         }
                         else
                         {
@@ -109,6 +90,8 @@
         </tbody>
     </table>
 
+    @await Html.PartialAsync("Partials/DefaultPagingFormPartialView", ViewBag.ExercisesCount, ViewData)
+    
     @if (isUserAdmin || isUserRoot)
     {
         <a class="btn btn-success w-100 d-block" asp-controller="Exercises" asp-action="Create">Add new exercise</a>

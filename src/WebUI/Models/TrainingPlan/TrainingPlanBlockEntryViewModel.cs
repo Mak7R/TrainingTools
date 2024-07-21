@@ -5,5 +5,5 @@ namespace WebUI.Models.TrainingPlan;
 public class TrainingPlanBlockEntryViewModel
 {
     public GroupViewModel Group { get; set; }
-    public string Description { get; set; }
+    public string? Description { get; set; }
 }

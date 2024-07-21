@@ -1,5 +1,4 @@
 ﻿@using Paging = Application.Constants.PagingOptionNames;
-@* Models Count *@
 @model int  
 
 @{
@@ -28,7 +27,7 @@
     }
 }
 
-<ul class="pagination">
+<ul class="pagination justify-content-center">
     @if (currentPage > 0)
     {
         <form method="get" onsubmit="addQueryParametersFromForm(event)" class="cursor-pointer non-selectable">
@@ -47,7 +46,7 @@
             </a>
         </li>
     }
-    
+
 
     @for (int i = 0; i < pagesCount; i++)
     {

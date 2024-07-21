@@ -61,7 +61,7 @@ public class FriendshipsRepository : IRepository<Friendship, (Guid FirstFriendId
             if (pageModel is not null)
                 query = pageModel.TakePage(query);
             
-            return await query.Select(e => _mapper.Map<Friendship>(e)).ToListAsync();
+            return (await query.ToListAsync()).Select(e => _mapper.Map<Friendship>(e));
         }
         catch (Exception e)
         {

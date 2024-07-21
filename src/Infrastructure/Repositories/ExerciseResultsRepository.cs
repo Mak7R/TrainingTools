@@ -84,7 +84,7 @@ public class ExerciseResultsRepository : IRepository<ExerciseResult, (Guid Owner
             if (pageModel is not null)
                 query = pageModel.TakePage(query);
             
-            return await query.Select(e => _mapper.Map<ExerciseResult>(e)).ToListAsync();
+            return (await query.ToListAsync()).Select(e => _mapper.Map<ExerciseResult>(e));
         }
         catch (Exception e)
         {
@@ -139,8 +139,19 @@ public class ExerciseResultsRepository : IRepository<ExerciseResult, (Guid Owner
 
         try
         {
+            var existResult = await _dbContext.ExerciseResults.FirstOrDefaultAsync(r =>
+                r.ExerciseId == result.Exercise.Id && r.OwnerId == result.Owner.Id);
+
+            if (existResult is not null)
+                throw new AlreadyExistsException("This result already exists");
+
             await _dbContext.ExerciseResults.AddAsync(exerciseResultEntity);
             await _dbContext.SaveChangesAsync();
+        }
+        catch (AlreadyExistsException alreadyExistsException)
+        {
+            _logger.LogInformation(alreadyExistsException, "Exercise results already exist with ownerId: '{ownerId}' and exerciseId: {exerciseId}", result.Owner.Id, result.Exercise.Id);
+            return DefaultOperationResult.FromException(alreadyExistsException);
         }
         catch (Exception e)
         {

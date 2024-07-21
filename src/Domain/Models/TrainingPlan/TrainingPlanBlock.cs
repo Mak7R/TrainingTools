@@ -2,6 +2,6 @@
 
 public class TrainingPlanBlock
 {
-    public string Title { get; set; }
+    public string Title { get; set; } = string.Empty;
     public IList<TrainingPlanBlockEntry> TrainingPlanBlockEntries { get; set; }
 }

@@ -12,6 +12,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="AspNetCore.HealthChecks.SqlServer" Version="8.0.2" />
         <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.1" />
         <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="8.0.6" />
         <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.6" />
@@ -23,7 +24,7 @@
           <PrivateAssets>all</PrivateAssets>
           <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Rotativa.AspNetCore" Version="1.3.2" />
+        <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks" Version="8.0.7" />
         <PackageReference Include="Serilog" Version="4.0.0" />
         <PackageReference Include="Serilog.AspNetCore" Version="8.0.1" />
         <PackageReference Include="Serilog.Extensions.Hosting" Version="8.0.0" />
@@ -43,6 +44,7 @@
 
     <ItemGroup>
       <_ContentIncludedByDefault Remove="Areas\Admin\Views\AdminHome\Index.cshtml" />
+      <_ContentIncludedByDefault Remove="wwwroot\Rotativa\wkhtmltopdf.exe" />
     </ItemGroup>
 
     <ItemGroup>

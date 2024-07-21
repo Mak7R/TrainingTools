@@ -24,7 +24,7 @@ using (var scope = app.Services.GetRequiredService<IServiceScopeFactory>().Creat
     await scope.ServiceProvider.InitializeRootAdminFromConfiguration(builder.Configuration);
 }
 
-app.UseRequestLocalization(app.Services.GetRequiredService<IOptions<RequestLocalizationOptions>>().Value);
+app.UseHealthChecks("/health");
 
 if (app.Environment.IsDevelopment())
 {
@@ -36,9 +36,9 @@ else
     app.UseHsts();
 }
 
-app.UseExceptionHandlingMiddleware();
+app.UseRequestLocalization(app.Services.GetRequiredService<IOptions<RequestLocalizationOptions>>().Value);
 
-Rotativa.AspNetCore.RotativaConfiguration.Setup("wwwroot");
+app.UseExceptionHandlingMiddleware();
 
 app.UseSerilogRequestLogging();
 app.UseHttpLogging();

@@ -15,9 +15,9 @@ public class ExercisesService : IExercisesService
         _exercisesRepository = exercisesRepository;
     }
 
-    public async Task<IEnumerable<Exercise>> GetAll(OrderModel? orderModel = null, FilterModel? filterModel = null)
+    public async Task<IEnumerable<Exercise>> GetAll(FilterModel? filterModel = null, OrderModel? orderModel = null, PageModel? pageModel = null)
     {
-        return await _exercisesRepository.GetAll(filterModel);
+        return await _exercisesRepository.GetAll(filterModel, orderModel, pageModel);
     }
 
     public async Task<Exercise?> GetByName(string? name)

@@ -40,10 +40,10 @@ public class GroupsController : Controller
             pageModel.PageSize = defaultPageSize;
             ViewBag.DefaultPageSize = defaultPageSize;
         } 
-            
-        
-        var groups = await _groupsService.GetAll(orderModel, filterModel, pageModel);
         ViewBag.GroupsCount = await _groupsService.Count(filterModel);
+        
+        var groups = await _groupsService.GetAll(filterModel, orderModel, pageModel);
+        
         return View(_mapper.Map<List<GroupViewModel>>(groups));
     }
 

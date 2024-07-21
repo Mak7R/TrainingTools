@@ -62,7 +62,7 @@ public class FriendInvitationsRepository : IRepository<FriendInvitation, (Guid I
             if (pageModel is not null)
                 query = pageModel.TakePage(query);
             
-            return await query.Select(e => _mapper.Map<FriendInvitation>(e)).ToListAsync();
+            return (await query.ToListAsync()).Select(e => _mapper.Map<FriendInvitation>(e));
         }
         catch (Exception e)
         {

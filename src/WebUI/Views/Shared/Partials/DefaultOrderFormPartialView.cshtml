@@ -1,7 +1,7 @@
 @model (string? OrderBy, string? FormInner)
 
 <form method="get" onclick="addQueryParametersFromForm(event)" class="cursor-pointer non-selectable">
-    <text>@Model.FormInner</text>
+    @Html.Raw(Model.FormInner)
     @if (ViewData["order_by"] as string == Model.OrderBy)
     {
         <input name="order" value="@(ViewData["order"] ?? SharedOrderOptions.Ascending)" hidden/>

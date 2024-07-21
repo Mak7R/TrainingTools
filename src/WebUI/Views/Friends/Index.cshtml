@@ -65,9 +65,9 @@
                 {
                     <div class="list-group-item list-group-item-action mb-2">
                         <div class="row">
-                            <a class="col fs-5 text-truncate" asp-controller="Users" asp-action="Get" asp-route-userName="@invitation.Target.UserName">@invitation.Target.UserName</a>
+                            <a class="col fs-5 text-truncate" asp-controller="Users" asp-action="Get" asp-route-userName="@invitation.Invited.UserName">@invitation.Invited.UserName</a>
 
-                            <a class="col-auto btn btn-danger" asp-controller="Friends" asp-action="Cancel" asp-route-userName="@invitation.Target.UserName" asp-route-returnUrl="@Context.Request.Path.Value">Cancel</a>
+                            <a class="col-auto btn btn-danger" asp-controller="Friends" asp-action="Cancel" asp-route-userName="@invitation.Invited.UserName" asp-route-returnUrl="@Context.Request.Path.Value">Cancel</a>
                         </div>
                     </div>
                     userInvitations++;

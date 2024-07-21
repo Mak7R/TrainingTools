@@ -1,6 +1,7 @@
 ﻿using System.Net.Mime;
 using Application.Interfaces.Services;
 using Application.Models.Shared;
+using AutoMapper;
 using Domain.Enums;
 using Domain.Identity;
 using Microsoft.AspNetCore.Authorization;
@@ -8,7 +9,6 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using WebUI.Extensions;
 using WebUI.Filters;
-using WebUI.Mapping.Mappers;
 using WebUI.Models.Shared;
 using WebUI.Models.User;
 
@@ -22,24 +22,34 @@ public class UsersController : Controller
 {
     private readonly IUsersService _usersService;
     private readonly UserManager<ApplicationUser> _userManager;
+    private readonly IMapper _mapper;
 
-    public UsersController(IUsersService usersService, UserManager<ApplicationUser> userManager)
+    public UsersController(IUsersService usersService, UserManager<ApplicationUser> userManager, IMapper mapper)
     {
         _usersService = usersService;
         _userManager = userManager;
+        _mapper = mapper;
     }
     
     [HttpGet("")]
     [QueryValuesReader<DefaultOrderOptions>]
     public async Task<IActionResult> GetAll(OrderModel? orderModel, FilterModel? filterModel, PageModel? pageModel)
     {
-        // todo paging
         var user = await _userManager.GetUserAsync(User);
         if (user is null) return RedirectToAction("Login", "Accounts", new {ReturnUrl = "/users"});
         
+        pageModel ??= new PageModel();
+        if (pageModel.PageSize is PageModel.DefaultPageSize or <= 0)
+        {
+            int defaultPageSize = 10;
+            pageModel.PageSize = defaultPageSize;
+            ViewBag.DefaultPageSize = defaultPageSize;
+        } 
+        ViewBag.UsersCount = (await _usersService.Count(user, filterModel)) - 1;
+        
         var userInfos = await _usersService.GetAll(user, filterModel, orderModel, pageModel);
         
-        return View(userInfos.Select(userInfo => userInfo.ToUserInfoViewModel()));
+        return View(userInfos.Select(userInfo => _mapper.Map<UserInfoViewModel>(userInfo)));
     }
     
     [HttpGet("as-csv")]
@@ -68,7 +78,7 @@ public class UsersController : Controller
         var userInfo = await _usersService.GetByName(user, userName);
         if (userInfo is null) return this.NotFoundView("User with this username was not found");
         
-        return View(userInfo.ToUserInfoViewModel());
+        return View(_mapper.Map<UserInfoViewModel>(userInfo));
     }
     
     [Authorize(Roles = "Admin,Root")]

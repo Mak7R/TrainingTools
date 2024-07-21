@@ -4,43 +4,40 @@
     ViewBag.Title = $"Update training plan {Model.NewTitle}";
 }
 
-<div class="container">
+<div class="container mt-2">
+    <h3 class="text-center">Update training plan @Model.AuthorName/@Model.NewTitle</h3>
     <div class="form-horizontal">
-        <div class="form-group">
-            <input asp-for="Id" value="@Model.Id" hidden/>
-        </div>
-        
-        <div class="form-group">
-            <label asp-for="NewTitle" class="control-label col-md-2">Title</label>
-            <div class="col-md-10">
-                <input asp-for="NewTitle" class="form-control" oninput="trainingPlan.editTrainingPlan(this.value, null)"/>
-                <span asp-validation-for="NewTitle" class="text-danger"></span>
-            </div>
+        <input asp-for="Id" value="@Model.Id" hidden/>
+
+        <div class="form-group mb-2">
+            <label asp-for="NewTitle" class="control-label">Title</label>
+            <input asp-for="NewTitle" class="form-control" oninput="trainingPlan.editTrainingPlan(this.value, null)"/>
+            <span asp-validation-for="NewTitle" class="text-danger"></span>
         </div>
 
-        <div class="form-group">
-            <label asp-for="IsPublic" class="control-label col-md-2">Public: </label>
+        <div class="form-group mb-2">
+            <label asp-for="IsPublic" class="control-label">Public: </label>
             <input asp-for="IsPublic" type="checkbox" class="form-check-input" onclick="trainingPlan.editTrainingPlan(null, this.checked)"/>
         </div>
 
-        <div class="form-group">
+        <div class="form-group mb-2">
             <table id="training-plan-table" class="table table-bordered">
-                
+
             </table>
         </div>
 
-        <div class="form-group">
-            <div class="col-md-offset-2 col-md-10">
-                <button onclick="trainingPlan.submit()" class="btn btn-primary">Update</button>
-            </div>
+        <div class="form-group mb-2">
+            <button onclick="trainingPlan.submit()" class="btn btn-primary">Update</button>
+
+            <a class="btn btn-secondary" asp-controller="TrainingPlans" asp-action="GetTrainingPlan" asp-route-author="@Model.AuthorName" asp-route-title="@Model.NewTitle">Cancel</a>
         </div>
-        
+
         <div class="form-group">
             <ul class="text-danger" id="update-errors">
-                
+
             </ul>
         </div>
-        
+
     </div>
 </div>
 
@@ -144,7 +141,6 @@
                 // Table body for entries
                 const tbody = document.createElement('tbody');
                 
-                const blocksCount = this.blocks.length;
                 const maxEntries = this.blocks.length === 0 ? 0: Math.max(...this.blocks.map(block => block.entries.length));
 
                 for (let i = 0; i <= maxEntries; i++) {
@@ -220,8 +216,7 @@
                     if (!response.ok) {
                         return response.json().then(errorData => {
                             const errors = errorData.errors || [];
-                            const errorList = errors.map(error => `<li>${error}</li>`).join('');
-                            document.getElementById('update-errors').innerHTML = errorList;
+                            document.getElementById('update-errors').innerHTML = errors.map(error => `<li>${error}</li>`).join('');
                             throw new Error("BadResponse");
                         });
                     }
