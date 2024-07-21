@@ -3,7 +3,6 @@ using Application.Interfaces.Repositories;
 using Application.Interfaces.Services;
 using Application.Services;
 using Application.Services.ReferencedContentProviders;
-using Application.Services.ViewRender;
 using Domain.Identity;
 using Domain.Models;
 using Domain.Models.Friendship;
@@ -152,8 +151,5 @@ public static class ConfigureServicesExtension
         
         services.AddScoped<IReferencedContentProvider, ImagesAndVideosReferencedContentProvider>();
         services.AddTransient<IExerciseResultsToExсelExporter, ExerciseResultsToExcelExporter>();
-        
-        services.AddScoped<IViewRenderer<PdfOptions>, PdfViewRenderer>();
-        services.AddScoped<IViewRenderer<ImageOptions>, ImageViewRenderer>();
     }
 }

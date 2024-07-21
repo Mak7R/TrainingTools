@@ -1,7 +1,6 @@
 ﻿using Application.Constants;
 using Application.Interfaces.Services;
 using Application.Models.Shared;
-using Application.Services.ViewRender;
 using AutoMapper;
 using Domain.Exceptions;
 using Domain.Identity;
@@ -79,40 +78,6 @@ public class TrainingPlansController : Controller
             return this.NotFoundView(new []{"Training plan was not found"});
         
         return View(_mapper.Map<TrainingPlanViewModel>(trainingPlan));
-    }
-
-    [HttpGet("{author}/{title}/as-pdf")]
-    public async Task<IActionResult> GetTrainingPlanAsPdf(string author, string title, [FromServices] IViewRenderer<PdfOptions> pdfRenderer)
-    {
-        var user = await _userManager.GetUserAsync(User);
-        if (user is null)
-            return RedirectToAction("Login", "Accounts", new { returnUrl = $"/training-plans/{author}/{title}" });
-        
-        var trainingPlan = await _trainingPlansService.GetByName(author, title);
-
-        if (trainingPlan is null  || (!trainingPlan.IsPublic && trainingPlan.Author.Id != user.Id))
-            return this.NotFoundView(new []{"Training plan was not found"});
-
-        var pdfStream = await pdfRenderer.RenderViewToStreamAsync("GetTrainingPlanAsPDF", _mapper.Map<TrainingPlanViewModel>(trainingPlan), new PdfOptions());
-        
-        return File(pdfStream, "application/pdf", "TrainingPlan.pdf");
-    }
-    
-    [HttpGet("{author}/{title}/as-img")]
-    public async Task<IActionResult> GetTrainingPlanAsImg(string author, string title, [FromServices] IViewRenderer<ImageOptions> imageRenderer)
-    {
-        var user = await _userManager.GetUserAsync(User);
-        if (user is null)
-            return RedirectToAction("Login", "Accounts", new { returnUrl = $"/training-plans/{author}/{title}" });
-        
-        var trainingPlan = await _trainingPlansService.GetByName(author, title);
-
-        if (trainingPlan is null  || (!trainingPlan.IsPublic && trainingPlan.Author.Id != user.Id))
-            return this.NotFoundView(new []{"Training plan was not found"});
-
-        var imageStream = await imageRenderer.RenderViewToStreamAsync("GetTrainingPlanAsPDF", _mapper.Map<TrainingPlanViewModel>(trainingPlan), new ImageOptions());
-        
-        return File(imageStream, "image/png", "TrainingPlan.png");
     }
 
     [HttpGet("create")]
