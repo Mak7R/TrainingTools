@@ -11,5 +11,5 @@ public class TrainingPlanBlockEntity
 
     [StringLength(MaxBlockNameSize)] public string Title { get; set; } = string.Empty;
 
-    public List<TrainingPlanBlockEntryEntity> TrainingPlanBlockEntries { get; set; } = new List<TrainingPlanBlockEntryEntity>();
+    public IList<TrainingPlanBlockEntryEntity> TrainingPlanBlockEntries { get; set; } = new List<TrainingPlanBlockEntryEntity>();
 }

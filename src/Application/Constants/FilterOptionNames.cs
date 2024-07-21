@@ -45,6 +45,11 @@ public static class FilterOptionNames
     public static class User
     {
         /// <summary>
+        /// Id is the same as value
+        /// </summary>
+        public const string Id = "id";
+        
+        /// <summary>
         /// Name contains value
         /// </summary>
         public const string Name = "name";
@@ -53,6 +58,11 @@ public static class FilterOptionNames
         /// Name equals value
         /// </summary>
         public const string NameEquals = "name-equals";
+        
+        /// <summary>
+        /// If Public Only value equals to true returns only public values
+        /// </summary>
+        public const string PublicOnly = "public-only";
         
         /// <summary>
         /// Has role
@@ -76,6 +86,11 @@ public static class FilterOptionNames
         /// Exercise full name equals value
         /// </summary>
         public const string FullNameEquals = "full-name-equals";
+        
+        /// <summary>
+        /// Owner id is the same as value
+        /// </summary>
+        public const string OwnerId = "owner-id";
         
         /// <summary>
         /// Owner name contains value

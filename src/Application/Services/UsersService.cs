@@ -1,9 +1,9 @@
-﻿using System.Globalization;
+﻿using System.Collections.ObjectModel;
+using System.Globalization;
 using System.Linq.Expressions;
 using Application.Constants;
 using Application.Dtos;
 using Application.Enums;
-using Application.Interfaces.ServiceInterfaces;
 using Application.Interfaces.Services;
 using Application.Models.Shared;
 using Domain.Defaults;
@@ -14,6 +14,7 @@ using Domain.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 using CsvHelper;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 
 namespace Application.Services;
@@ -33,101 +34,28 @@ public class UsersService : IUsersService
         _localizer = localizer;
     }
 
-    public async Task<IEnumerable<UserInfo>> GetAll(ApplicationUser? currentUser, OrderModel? orderModel = null, FilterModel? filterModel = null)
-    {
-        ArgumentNullException.ThrowIfNull(currentUser);
-        
-        var roles = await _userManager.GetRolesAsync(currentUser);
-
-        var query = _userManager.Users;
-        
-        if ((filterModel?.TryGetValue(FilterOptionNames.User.Name, out var namePart) ?? false) &&
-            !string.IsNullOrWhiteSpace(namePart))
+    private static readonly ReadOnlyDictionary<string, Func<string, Expression<Func<ApplicationUser, bool>>>> ApplicationUserFilters =
+        new(new Dictionary<string, Func<string, Expression<Func<ApplicationUser, bool>>>>
         {
-            query = query.Where(u => u.UserName != null && u.UserName.Contains(namePart));
-        }
-            
-        query = roles.Contains(nameof(Role.Root)) || roles.Contains(nameof(Role.Admin))
-                ? query.Where(u => u.Id != currentUser.Id)
-                : query.Where(u => u.Id != currentUser.Id && u.IsPublic);
-
-        var users = query.ToArray();
-        
-        var friends = (await _friendsService.GetFriendsFor(currentUser)).ToDictionary(f => f.Id);
-        var inviters = (await _friendsService.GetInvitationsFor(currentUser)).Select(i => i.Invitor).ToDictionary(f => f.Id);
-        var invited = (await _friendsService.GetInvitationsOf(currentUser)).Select(i => i.Invited).ToDictionary(f => f.Id);
-        
-        var userInfos = new List<UserInfo>();
-
-        foreach (var applicationUser in users)
-            userInfos.Add(await CreateUserInfo(friends, inviters, invited, applicationUser));
-
-        IEnumerable<UserInfo> userInfosAsEnumerable = userInfos;
-        
-        if ((filterModel?.TryGetValue(FilterOptionNames.User.Role, out var filterRole) ?? false) &&
-            !string.IsNullOrWhiteSpace(filterRole))
-        {
-            if (string.Equals(filterRole, nameof(Role.Root), StringComparison.CurrentCultureIgnoreCase))
-            {
-                return Array.Empty<UserInfo>();
-            }
-            else if (string.Equals(filterRole, nameof(Role.User), StringComparison.CurrentCultureIgnoreCase))
-            {
-                userInfosAsEnumerable = userInfosAsEnumerable
-                    .Where(u => u.Roles.Count() == 1)
-                    .Where(u => u.Roles.Contains(filterRole, StringComparer.CurrentCultureIgnoreCase));
-            }
-            else
-            {
-                userInfosAsEnumerable = userInfosAsEnumerable.Where(u => u.Roles.Contains(filterRole, StringComparer.CurrentCultureIgnoreCase));
-            }
-        }
-        
-        if ((filterModel?.TryGetValue(FilterOptionNames.User.RelationshipsState, out var filterRelationship) ?? false) &&
-            !string.IsNullOrWhiteSpace(filterRelationship))
-        {
-            userInfosAsEnumerable = userInfosAsEnumerable.Where(u => u.RelationshipState.ToString().Equals(filterRelationship, StringComparison.CurrentCultureIgnoreCase));
-        }
-        
-        
-        if (orderModel is null || string.IsNullOrWhiteSpace(orderModel.OrderBy)) return userInfosAsEnumerable;
-        if (orderModel.OrderBy.Equals(OrderOptionNames.User.Name, StringComparison.CurrentCultureIgnoreCase))
-        {
-            if (orderModel.OrderOption?.Equals(OrderOptionNames.Shared.Descending, StringComparison.CurrentCultureIgnoreCase) ?? false)
-            {
-                userInfosAsEnumerable = userInfosAsEnumerable.OrderByDescending(i => i.User.UserName);
-            }
-            else
-            {
-                userInfosAsEnumerable = userInfosAsEnumerable.OrderBy(i => i.User.UserName);
-            }
-        }
-        else if (orderModel.OrderBy.Equals(OrderOptionNames.User.Role, StringComparison.CurrentCultureIgnoreCase))
-        {
-            if (orderModel.OrderOption?.Equals(OrderOptionNames.Shared.Descending, StringComparison.CurrentCultureIgnoreCase) ?? false)
-            {
-                userInfosAsEnumerable = userInfosAsEnumerable.OrderByDescending(i => i.Roles, new RolesComparer());
-            }
-            else
-            {
-                userInfosAsEnumerable = userInfosAsEnumerable.OrderBy(i => i.Roles, new RolesComparer());
-            }
-        }
-        else if (orderModel.OrderBy.Equals(OrderOptionNames.User.RelationshipsState, StringComparison.CurrentCultureIgnoreCase))
-        {
-            if (orderModel.OrderOption?.Equals(OrderOptionNames.Shared.Descending, StringComparison.CurrentCultureIgnoreCase) ?? false)
-            {
-                userInfosAsEnumerable = userInfosAsEnumerable.OrderByDescending(i => i.RelationshipState, new RelationshipStateComparer());
-            }
-            else
-            {
-                userInfosAsEnumerable = userInfosAsEnumerable.OrderBy(i => i.RelationshipState, new RelationshipStateComparer());
-            }
-        }
-        
-        return userInfosAsEnumerable;
-    }
+            {FilterOptionNames.User.Name, value => u => u.UserName != null && u.UserName.Contains(value) },
+            {FilterOptionNames.User.PublicOnly, value => value == "true" ? u => u.IsPublic : _ => true},
+            {FilterOptionNames.User.Id, value => Guid.TryParse(value, out var id) ? u => u.Id == id : _ => false}
+        });
     
+    private static readonly ReadOnlyDictionary<string, Func<string, Func<UserInfo, bool>>> UserInfoFilters =
+        new(new Dictionary<string, Func<string, Func<UserInfo, bool>>>
+        {
+            {FilterOptionNames.User.Role, value =>
+            {
+                if (string.Equals(value, nameof(Role.Root), StringComparison.CurrentCultureIgnoreCase))
+                    return _ => false;
+                if (string.Equals(value, nameof(Role.User), StringComparison.CurrentCultureIgnoreCase))
+                    return u => u.Roles.Count() == 1 && u.Roles.Contains(value, StringComparer.CurrentCultureIgnoreCase);
+                return u => u.Roles.Contains(value, StringComparer.CurrentCultureIgnoreCase);
+            } },
+            {FilterOptionNames.User.RelationshipsState, value => u => u.RelationshipState.ToString().Equals(value, StringComparison.CurrentCultureIgnoreCase)}
+        });
+
     private class RolesComparer : IComparer<IEnumerable<string>>
     {
         private static readonly Dictionary<string, int> RolePriorities = new Dictionary<string, int>
@@ -176,6 +104,51 @@ public class UsersService : IUsersService
                 _ => 0
             };
         }
+    }
+    
+    private static readonly
+        ReadOnlyDictionary<OrderModel, Func<IEnumerable<UserInfo>, IEnumerable<UserInfo>>> UserInfosOrders =
+            new(new Dictionary<OrderModel, Func<IEnumerable<UserInfo>, IEnumerable<UserInfo>>>
+            {
+                {new OrderModel{OrderBy = OrderOptionNames.User.Name, OrderOption = OrderOptionNames.Shared.Ascending}, query => query.OrderBy(i => i.User.UserName)},
+                {new OrderModel{OrderBy = OrderOptionNames.User.Name, OrderOption = OrderOptionNames.Shared.Descending}, query => query.OrderByDescending(i => i.User.UserName)},
+                {new OrderModel{OrderBy = OrderOptionNames.User.Role, OrderOption = OrderOptionNames.Shared.Ascending}, query => query.OrderBy(i => i.Roles, new RolesComparer())},
+                {new OrderModel{OrderBy = OrderOptionNames.User.Role, OrderOption = OrderOptionNames.Shared.Descending}, query => query.OrderByDescending(i => i.Roles, new RolesComparer())},
+                {new OrderModel{OrderBy = OrderOptionNames.User.RelationshipsState, OrderOption = OrderOptionNames.Shared.Ascending}, query => query.OrderBy(i => i.RelationshipState, new RelationshipStateComparer())},
+                {new OrderModel{OrderBy = OrderOptionNames.User.RelationshipsState, OrderOption = OrderOptionNames.Shared.Descending}, query => query.OrderByDescending(i => i.RelationshipState, new RelationshipStateComparer())},
+            });
+    public async Task<IEnumerable<UserInfo>> GetAll(ApplicationUser? currentUser, FilterModel? filterModel = null, OrderModel? orderModel = null, PageModel? pageModel = null)
+    {
+        ArgumentNullException.ThrowIfNull(currentUser);
+        
+        var roles = await _userManager.GetRolesAsync(currentUser);
+
+        var query = _userManager.Users.AsNoTracking();
+        
+        filterModel ??= new FilterModel();
+        if (!(roles.Contains(nameof(Role.Root)) || roles.Contains(nameof(Role.Admin))))
+            filterModel[FilterOptionNames.User.PublicOnly] = "true";
+        query = filterModel.Filter(query.Where(u => u.Id != currentUser.Id), ApplicationUserFilters);
+
+        var users = await query.ToListAsync();
+        
+        var friends = (await _friendsService.GetFriendsFor(currentUser)).ToDictionary(f => f.Id);
+        var inviters = (await _friendsService.GetInvitationsFor(currentUser)).Select(i => i.Invitor).ToDictionary(f => f.Id);
+        var invited = (await _friendsService.GetInvitationsOf(currentUser)).Select(i => i.Invited).ToDictionary(f => f.Id);
+        
+        var userInfos = new List<UserInfo>();
+
+        foreach (var applicationUser in users)
+            userInfos.Add(await CreateUserInfo(friends, inviters, invited, applicationUser));
+
+        var result = filterModel.Filter(userInfos, UserInfoFilters);
+        
+        if (orderModel is not null)
+            result = orderModel.Order(result, UserInfosOrders);
+
+        if (pageModel is not null)
+            result = pageModel.TakePage(result);
+        return result.ToList();
     }
     
     public async Task<Stream> GetAllUsersAsCsv()

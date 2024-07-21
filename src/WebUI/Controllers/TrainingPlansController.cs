@@ -1,5 +1,4 @@
 ﻿using Application.Constants;
-using Application.Interfaces.ServiceInterfaces;
 using Application.Interfaces.Services;
 using Application.Models.Shared;
 using Domain.Exceptions;
@@ -36,35 +35,30 @@ public class TrainingPlansController : Controller
 
     [HttpGet("")]
     public async Task<IActionResult> GetAll(
-        [FromQuery] OrderModel? orderModel,
-        [FilterModelBinder] FilterModel? filterModel)
+        OrderModel? orderModel,
+        FilterModel? filterModel,
+        PageModel? pageModel)
     {
         filterModel ??= new FilterModel();
         filterModel[FilterOptionNames.TrainingPlan.PublicOnly] = "true";
-        var plans = await _trainingPlansService.GetAll(orderModel, filterModel);
+        var plans = await _trainingPlansService.GetAll(filterModel, orderModel, pageModel);
         return View(plans.Select(p => p.ToTrainingPlanViewModel()));
     }
 
     [HttpGet("for-user")]
     public async Task<IActionResult> GetUserTrainingPlans(
-        [FromQuery] OrderModel? orderModel,
-        [FilterModelBinder] FilterModel? filterModel)
+        OrderModel? orderModel,
+        FilterModel? filterModel,
+        PageModel? pageModel)
     {
         var user = await _userManager.GetUserAsync(User);
         if (user is null)
             return RedirectToAction("Login", "Accounts", new { returnUrl = "/training-plans/for-user" });
-        
-        if (filterModel is null)
-        {
-            filterModel = new FilterModel
-            {
-                { FilterOptionNames.TrainingPlan.AuthorName, user.UserName }
-            };
-        }
-        else
-            filterModel[FilterOptionNames.TrainingPlan.AuthorName] = user.UserName;
 
-        var plans = await _trainingPlansService.GetAll(orderModel, filterModel);
+        filterModel ??= new FilterModel();
+        filterModel[FilterOptionNames.TrainingPlan.AuthorName] = user.UserName;
+
+        var plans = await _trainingPlansService.GetAll(filterModel, orderModel, pageModel);
         return View(plans.Select(p => p.ToTrainingPlanViewModel()));
     }
 

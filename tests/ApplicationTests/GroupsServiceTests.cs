@@ -1,6 +1,5 @@
 ﻿using Application.Constants;
 using Application.Interfaces.Repositories;
-using Application.Interfaces.ServiceInterfaces;
 using Application.Interfaces.Services;
 using Application.Models.Shared;
 using Application.Services;

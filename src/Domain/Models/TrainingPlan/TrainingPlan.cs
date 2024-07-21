@@ -8,5 +8,5 @@ public class TrainingPlan
     public string Title { get; set; }
     public ApplicationUser Author { get; set; }
     public bool IsPublic { get; set; }
-    public List<TrainingPlanBlock> TrainingPlanBlocks { get; set; }
+    public IList<TrainingPlanBlock> TrainingPlanBlocks { get; set; }
 }

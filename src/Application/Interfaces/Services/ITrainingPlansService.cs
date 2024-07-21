@@ -2,11 +2,11 @@
 using Domain.Models;
 using Domain.Models.TrainingPlan;
 
-namespace Application.Interfaces.ServiceInterfaces;
+namespace Application.Interfaces.Services;
 
 public interface ITrainingPlansService
 {
-    Task<IEnumerable<TrainingPlan>> GetAll(OrderModel? orderModel = null, FilterModel? filterModel = null);
+    Task<IEnumerable<TrainingPlan>> GetAll(FilterModel? filterModel = null, OrderModel? orderModel = null, PageModel? pageModel = null);
     Task<TrainingPlan?> GetById(Guid trainingPlanId);
     Task<TrainingPlan?> GetByName(string? authorName, string? title);
     Task<int> Count(FilterModel? filterModel = null);

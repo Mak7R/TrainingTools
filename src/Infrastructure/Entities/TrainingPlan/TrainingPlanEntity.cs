@@ -18,5 +18,5 @@ public class TrainingPlanEntity
     
     public bool IsPublic { get; set; }
 
-    public List<TrainingPlanBlockEntity> TrainingPlanBlocks { get; set; } = new List<TrainingPlanBlockEntity>();
+    public IList<TrainingPlanBlockEntity> TrainingPlanBlocks { get; set; } = new List<TrainingPlanBlockEntity>();
 }

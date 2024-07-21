@@ -1,7 +1,7 @@
 ﻿using Application.Models.Shared;
 using Domain.Models;
 
-namespace Application.Interfaces.ServiceInterfaces;
+namespace Application.Interfaces.Services;
 
 public interface IExercisesService
 {

@@ -47,7 +47,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, Applicati
 
         builder.Entity<ExerciseResultEntity>()
             .ToTable("ExerciseResult")
-            .HasKey(er => new { UserId = er.OwnerId, er.ExerciseId });
+            .HasKey(er => new { er.OwnerId, er.ExerciseId });
 
         
         // -------------------- Friendship -------------------- //

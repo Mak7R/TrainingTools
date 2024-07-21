@@ -11,7 +11,7 @@ public interface IRepository<TModel, TKey>
     /// <param name="filterModel">Represents filters which must be applied to elements</param>
     /// <param name="orderModel">Represents order for ordering elements</param>
     /// <param name="pageModel">Represents page settings for model</param>
-    /// <returns></returns>
+    /// <returns>IEnumerable of models</returns>
     Task<IEnumerable<TModel>> GetAll(FilterModel? filterModel = null, OrderModel? orderModel = null, PageModel? pageModel = null);
     Task<TModel?> GetById(TKey id);
     Task<int> Count(FilterModel? filterModel = null);

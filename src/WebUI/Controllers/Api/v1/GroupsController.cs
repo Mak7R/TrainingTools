@@ -1,5 +1,4 @@
-﻿using Application.Interfaces.ServiceInterfaces;
-using Application.Interfaces.Services;
+﻿using Application.Interfaces.Services;
 using Application.Models.Shared;
 using AutoMapper;
 using Domain.Exceptions;

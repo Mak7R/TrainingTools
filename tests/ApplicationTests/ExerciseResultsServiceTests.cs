@@ -1,6 +1,6 @@
 ﻿using Application.Constants;
 using Application.Interfaces.Repositories;
-using Application.Interfaces.ServiceInterfaces;
+using Application.Interfaces.Services;
 using Application.Models.Shared;
 using Application.Services;
 using AutoFixture;
@@ -285,7 +285,7 @@ public class ExerciseResultsServiceTests
         _exerciseResultsRepositoryMock.Setup(repo => repo.Get(ownerId, exerciseId)).ReturnsAsync(exerciseResult);
 
         // Act
-        var result = await _exerciseResultsService.Get(ownerId, exerciseId);
+        var result = await _exerciseResultsService.GetById(ownerId, exerciseId);
 
         // Assert
         result.Should().BeEquivalentTo(result);
@@ -300,7 +300,7 @@ public class ExerciseResultsServiceTests
         _exerciseResultsRepositoryMock.Setup(repo => repo.Get(ownerId, exerciseId)).ReturnsAsync((ExerciseResult)null);
 
         // Act
-        var result = await _exerciseResultsService.Get(ownerId, exerciseId);
+        var result = await _exerciseResultsService.GetById(ownerId, exerciseId);
 
         // Assert
         result.Should().BeNull();

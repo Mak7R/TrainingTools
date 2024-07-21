@@ -1,5 +1,5 @@
 ﻿using System.Net.Mime;
-using Application.Interfaces.ServiceInterfaces;
+using Application.Interfaces.Services;
 using Application.Models.Shared;
 using Domain.Enums;
 using Domain.Identity;
@@ -37,7 +37,7 @@ public class UsersController : Controller
         var user = await _userManager.GetUserAsync(User);
         if (user is null) return RedirectToAction("Login", "Accounts", new {ReturnUrl = "/users"});
         
-        var userInfos = await _usersService.GetAll(user, orderModel, filterModel);
+        var userInfos = await _usersService.GetAll(user, filterModel, orderModel, pageModel);
         
         return View(userInfos.Select(userInfo => userInfo.ToUserInfoViewModel()));
     }

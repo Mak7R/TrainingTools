@@ -1,6 +1,5 @@
 ﻿using System.Globalization;
 using Application.Interfaces.Repositories;
-using Application.Interfaces.ServiceInterfaces;
 using Application.Interfaces.Services;
 using Application.Services;
 using Application.Services.ReferencedContentProviders;
@@ -81,7 +80,7 @@ public static class ConfigureServicesExtension
                 options.User.AllowedUserNameCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.!#$%^&*()_-+=";
                 options.User.RequireUniqueEmail = true;
             })
-            .AddUserManager<SpecializedUserManager>()
+            .AddUserManager<MsSqlSpecificUserManager>()
             .AddEntityFrameworkStores<ApplicationDbContext>()
             .AddUserStore<UserStore<ApplicationUser, ApplicationRole, ApplicationDbContext, Guid>>()
             .AddRoleStore<RoleStore<ApplicationRole, ApplicationDbContext, Guid>>();
@@ -135,8 +134,7 @@ public static class ConfigureServicesExtension
         services.AddScoped<IRepository<TrainingPlan, Guid>, TrainingPlansRepository>();
         services.AddScoped<IRepository<FriendInvitation, (Guid, Guid)>, FriendInvitationsRepository>();
         services.AddScoped<IRepository<Friendship, (Guid, Guid)>, FriendshipsRepository>();
-        
-        services.AddScoped<IExerciseResultsRepository, ExerciseResultsRepository>();
+        services.AddScoped<IRepository<ExerciseResult, (Guid, Guid)>, ExerciseResultsRepository>();
         
         services.AddScoped<IGroupsService, GroupsService>();
         services.AddScoped<IUsersService, UsersService>();

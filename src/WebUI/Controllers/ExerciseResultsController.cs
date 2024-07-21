@@ -1,5 +1,4 @@
 ﻿using System.Globalization;
-using Application.Interfaces.ServiceInterfaces;
 using Application.Interfaces.Services;
 using Application.Models.Shared;
 using Domain.Enums;
@@ -12,7 +11,6 @@ using Microsoft.EntityFrameworkCore;
 using WebUI.Extensions;
 using WebUI.Filters;
 using WebUI.Mapping.Mappers;
-using WebUI.ModelBinding.ModelBinders;
 using WebUI.Models.Exercise;
 using WebUI.Models.ExerciseResult;
 using WebUI.Models.Group;
@@ -38,12 +36,12 @@ public class ExerciseResultsController : Controller
 
     [HttpGet("")]
     [QueryValuesReader<DefaultOrderOptions>]
-    public async Task<IActionResult> GetUserResults(OrderModel? orderModel,[FilterModelBinder] FilterModel? filterModel)
+    public async Task<IActionResult> GetUserResults(OrderModel? orderModel, FilterModel? filterModel, PageModel? pageModel)
     {
         var user = await _userManager.GetUserAsync(HttpContext.User);
         if (user is null) return RedirectToAction("Login", "Accounts", new {returnUrl = "/exercises/results"});
         
-        var results = await _exerciseResultsService.GetForUser(user.Id, orderModel, filterModel);
+        var results = await _exerciseResultsService.GetForUser(user.UserName ?? string.Empty, filterModel, orderModel, pageModel);
         
         return View(results.Select(r => r.ToExerciseResultViewModel()));
     }
@@ -54,7 +52,7 @@ public class ExerciseResultsController : Controller
         var user = await _userManager.GetUserAsync(HttpContext.User);
         if (user is null) return RedirectToAction("Login", "Accounts", new {returnUrl = "/exercises/results"});
         
-        var results = await _exerciseResultsService.GetForUser(user.Id);
+        var results = await _exerciseResultsService.GetForUser(user.UserName ?? string.Empty);
         var stream = await exсelExporter.ToExсel(results);
         
         return File(stream, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "results.xlsx");
@@ -63,7 +61,7 @@ public class ExerciseResultsController : Controller
     [HttpGet("for-exercise/{exerciseId:guid}")]
     [QueryValuesReader<DefaultOrderOptions>]
     public async Task<IActionResult> GetFriendsResultsForExercise(Guid exerciseId, [FromServices] IExercisesService exercisesService,
-        OrderModel? orderModel,[FilterModelBinder] FilterModel? filterModel)
+        FilterModel? filterModel, OrderModel? orderModel, PageModel? pageModel)
     {
         var user = await _userManager.GetUserAsync(HttpContext.User);
         if (user is null) return RedirectToAction("Login", "Accounts", new {returnUrl = $"/exercises/results/for-exercise/{exerciseId}"});
@@ -79,13 +77,13 @@ public class ExerciseResultsController : Controller
             Group = new GroupViewModel { Id = exercise.Group.Id, Name = exercise.Group.Name }
         };
         
-        var results = await _exerciseResultsService.GetOnlyUserAndFriendsResultForExercise(user.Id, exerciseId, orderModel, filterModel);
+        var results = await _exerciseResultsService.GetOnlyUserAndFriendsResultForExercise(user, exercise.Group.Name ?? string.Empty, exercise.Name ?? string.Empty, filterModel, orderModel, pageModel);
         return View(results.Select(r => r.ToExerciseResultViewModel()));
     }  
     
     [HttpGet("for-user/{userName}")]
     [QueryValuesReader<DefaultOrderOptions>]
-    public async Task<IActionResult> GetResultsForUser(string userName, OrderModel? orderModel,[FilterModelBinder] FilterModel? filterModel)
+    public async Task<IActionResult> GetResultsForUser(string userName, FilterModel? filterModel, OrderModel? orderModel, PageModel? pageModel)
     {
         var user = await _userManager.GetUserAsync(HttpContext.User);
         if (user is null) return RedirectToAction("Login", "Accounts", new {returnUrl = "/exercises/results"});
@@ -112,7 +110,7 @@ public class ExerciseResultsController : Controller
         if (searchableUser is null)
             return this.NotFoundView("User was not found");
         
-        var results = await _exerciseResultsService.GetForUser(searchableUser.Id, orderModel, filterModel);
+        var results = await _exerciseResultsService.GetForUser(searchableUser.UserName ?? string.Empty, filterModel, orderModel, pageModel);
         ViewBag.UserName = userName;
         return View("GetUserResults", results.Select(r => r.ToExerciseResultViewModel()));
     }
@@ -149,7 +147,7 @@ public class ExerciseResultsController : Controller
         var user = await _userManager.GetUserAsync(User);
         if (user is null) return RedirectToAction("Login", "Accounts", new {returnUrl = $"/exercises/results/update/{exerciseId}"});
 
-        var result = await _exerciseResultsService.Get(user.Id, exerciseId);
+        var result = await _exerciseResultsService.GetById(user.Id, exerciseId);
         if (result is null) return this.NotFoundView("Result was not found");
 
         return View(result.ToExerciseResultViewModel());

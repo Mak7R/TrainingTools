@@ -1,11 +1,9 @@
-﻿using System.Collections.ObjectModel;
-using Application.Constants;
+﻿using Application.Constants;
 using Application.Interfaces.Repositories;
-using Application.Interfaces.ServiceInterfaces;
+using Application.Interfaces.Services;
 using Application.Models.Shared;
 using Domain.Models;
 using Domain.Models.TrainingPlan;
-using OrderOptionNames = Application.Constants.OrderOptionNames.TrainingPlan;
 
 namespace Application.Services;
 
@@ -18,53 +16,9 @@ public class TrainingPlansService : ITrainingPlansService
         _trainingPlansRepository = trainingPlansRepository;
     }
 
-
-    private readonly ReadOnlyDictionary<OrderModel, Func<IEnumerable<TrainingPlan>, IEnumerable<TrainingPlan>>> _orders =
-        new (
-            new Dictionary<OrderModel, Func<IEnumerable<TrainingPlan>, IEnumerable<TrainingPlan>>>()
-            {
-                {
-                    new OrderModel
-                    {
-                        OrderBy = OrderOptionNames.Title,
-                        OrderOption = Constants.OrderOptionNames.Shared.Ascending
-                    },
-                    enumerable => enumerable.OrderBy(p => p.Title)
-                        .ThenBy(p => p.Author.UserName)
-                },
-                {
-                    new OrderModel
-                    {
-                        OrderBy = OrderOptionNames.Title,
-                        OrderOption = Constants.OrderOptionNames.Shared.Descending
-                    },
-                    enumerable => enumerable.OrderByDescending(p => p.Title)
-                        .ThenByDescending(p => p.Author.UserName)
-                },
-                {
-                    new OrderModel
-                    {
-                        OrderBy = OrderOptionNames.AuthorName,
-                        OrderOption = Constants.OrderOptionNames.Shared.Ascending
-                    },
-                    enumerable => enumerable.OrderBy(p => p.Author.UserName)
-                        .ThenBy(p => p.Title)
-                },
-                {
-                    new OrderModel
-                    {
-                        OrderBy = OrderOptionNames.AuthorName,
-                        OrderOption = Constants.OrderOptionNames.Shared.Descending
-                    },
-                    enumerable => enumerable.OrderByDescending(p => p.Author.UserName)
-                        .ThenByDescending(p => p.Title)
-                }
-            });
-
-    public async Task<IEnumerable<TrainingPlan>> GetAll(OrderModel? orderModel = null, FilterModel? filterModel = null)
+    public async Task<IEnumerable<TrainingPlan>> GetAll(FilterModel? filterModel = null, OrderModel? orderModel = null, PageModel? pageModel = null)
     {
-        var trainingPlans = await _trainingPlansRepository.GetAll(filterModel);
-        return orderModel?.Order(trainingPlans, _orders) ?? trainingPlans;
+        return await _trainingPlansRepository.GetAll(filterModel, orderModel, pageModel);
     }
 
     public async Task<TrainingPlan?> GetById(Guid trainingPlanId)

@@ -2,6 +2,7 @@
 using Domain.Models;
 using Domain.Models.Friendship;
 using Domain.Models.TrainingPlan;
+using Domain.Rules;
 using Infrastructure.Entities;
 using Infrastructure.Entities.Friendship;
 using Infrastructure.Entities.TrainingPlan;
@@ -14,6 +15,7 @@ public class InfrastructureApplicationMappingProfile : Profile
     {
         CreateGroupMaps();
         CreateExerciseMaps();
+        CreateExerciseResultsMaps();
         CreateFriendInvitationMaps();
         CreateFriendshipMaps();
         CreateTrainingPlanMaps();
@@ -29,6 +31,26 @@ public class InfrastructureApplicationMappingProfile : Profile
     {
         CreateMap<Exercise, ExerciseEntity>();
         CreateMap<ExerciseEntity, Exercise>();
+    }
+
+    private void CreateExerciseResultsMaps()
+    {
+        CreateMap<ExerciseResult, ExerciseResultEntity>()
+            .AfterMap((src, dest) =>
+            {
+                dest.Weights = string.Join(SpecialConstants.DefaultSeparator, src.ApproachInfos.Select(ai => Math.Round(ai.Weight, 3)));
+                dest.Counts = string.Join(SpecialConstants.DefaultSeparator, src.ApproachInfos.Select(ai => ai.Count));
+                dest.Comments = string.Join(SpecialConstants.DefaultSeparator, src.ApproachInfos.Select(ai => ai.Comment));
+            });
+        CreateMap<ExerciseResultEntity, ExerciseResult>()
+            .AfterMap((src, dest) =>
+            {
+                var weights = src.Weights?.Split(SpecialConstants.DefaultSeparator).Select(decimal.Parse).ToArray() ?? [];
+                var counts = src.Counts?.Split(SpecialConstants.DefaultSeparator).Select(int.Parse).ToArray() ?? [];
+                var comments = src.Comments?.Split(SpecialConstants.DefaultSeparator).ToArray() ?? [];
+
+                dest.ApproachInfos = weights.Select((t, i) => new Approach(t, counts[i], comments[i])).ToList();
+            });
     }
     
     private void CreateFriendInvitationMaps()

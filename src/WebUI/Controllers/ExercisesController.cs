@@ -1,4 +1,4 @@
-﻿using Application.Interfaces.ServiceInterfaces;
+﻿using Application.Interfaces.Services;
 using Application.Models.Shared;
 using AutoMapper;
 using Domain.Exceptions;
@@ -9,7 +9,6 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using WebUI.Extensions;
 using WebUI.Filters;
-using WebUI.ModelBinding.ModelBinders;
 using WebUI.Models.Exercise;
 using WebUI.Models.Shared;
 
@@ -33,8 +32,9 @@ public class ExercisesController : Controller
     [QueryValuesReader<DefaultOrderOptions>]
     [AddAvailableGroups]
     public async Task<IActionResult> GetAll(
-        [FromQuery] OrderModel? orderModel,
-        [FilterModelBinder] FilterModel? filterModel, 
+        OrderModel? orderModel,
+        FilterModel? filterModel, 
+        PageModel? pageModel,
         
         [FromServices] IExerciseResultsService resultsService, 
         [FromServices] UserManager<ApplicationUser> userManager)
@@ -44,7 +44,7 @@ public class ExercisesController : Controller
         var user = await userManager.GetUserAsync(User);
 
         if (user is not null)
-            ViewBag.UserResults = await resultsService.GetForUser(user.Id);
+            ViewBag.UserResults = await resultsService.GetForUser(user.UserName ?? string.Empty);
         
         return View(_mapper.Map<List<ExerciseViewModel>>(exercises));
     }

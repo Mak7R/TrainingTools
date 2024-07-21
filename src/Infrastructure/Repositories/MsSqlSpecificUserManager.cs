@@ -6,14 +6,14 @@ using Microsoft.Extensions.Options;
 
 namespace Infrastructure.Repositories;
 
-public class SpecializedUserManager : UserManager<ApplicationUser>
+public class MsSqlSpecificUserManager : UserManager<ApplicationUser>
 {
     private readonly ApplicationDbContext _context;
 
-    public SpecializedUserManager(IUserStore<ApplicationUser> store, IOptions<IdentityOptions> optionsAccessor,
+    public MsSqlSpecificUserManager(IUserStore<ApplicationUser> store, IOptions<IdentityOptions> optionsAccessor,
         IPasswordHasher<ApplicationUser> passwordHasher, IEnumerable<IUserValidator<ApplicationUser>> userValidators,
         IEnumerable<IPasswordValidator<ApplicationUser>> passwordValidators, ILookupNormalizer keyNormalizer,
-        IdentityErrorDescriber errors, IServiceProvider services, ILogger<SpecializedUserManager> logger,
+        IdentityErrorDescriber errors, IServiceProvider services, ILogger<MsSqlSpecificUserManager> logger,
         ApplicationDbContext context)
         : base(store, optionsAccessor, passwordHasher, userValidators, passwordValidators, keyNormalizer, errors, services, logger)
     {
