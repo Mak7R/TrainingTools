@@ -12,7 +12,7 @@
     <link rel="alternate" hreflang="en" href="@Context.Request.Scheme://@Context.Request.Host@Context.Request.Path"/>
     <link rel="alternate" hreflang="uk" href="@Context.Request.Scheme://@Context.Request.Host@Context.Request.Path"/>
     <title>@ViewData["Title"]</title>
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="/lib/bootstrap/dist/css/bootstrap.min.css"/>
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true"/>
     <link rel="stylesheet" href="~/css/referenced-sources.css" asp-append-version="true"/>
     @await RenderSectionAsync("Styles", required: false)
@@ -30,20 +30,20 @@
                     <a class="nav-link" asp-controller="Home" asp-action="Index">Home</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" asp-controller="Exercises" asp-action="GetAll">Exercises</a>
+                    <a class="nav-link" asp-controller="Groups" asp-action="GetAll">Groups</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" asp-controller="Groups" asp-action="GetAll">Groups</a>
+                    <a class="nav-link" asp-controller="Exercises" asp-action="GetAll">Exercises</a>
                 </li>
                 @if (Context.User.Identity?.IsAuthenticated is true)
                 {
                     <li class="nav-item">
-                        <a class="nav-link" asp-controller="Users" asp-action="GetAll">Users</a>
-                    </li>
-                    <li class="nav-item">
                         <a class="nav-link" asp-controller="TrainingPlans" asp-action="GetAll">
                             Training Plans
                         </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" asp-controller="Users" asp-action="GetAll">Users</a>
                     </li>
                 }
                 <li class="nav-item">
@@ -113,14 +113,13 @@
     </div>
     <div class="container">
         <div class="row">
-            <p class="text-center m-3 col"><a href="/swagger">OpenApi (Swagger) for developers</a></p>
+            <p class="text-center m-3 col"><a href="/api-docs">Api documentation for developers</a></p>
             <p class="text-center m-3 col">&copy; 2024 - WebUI - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a></p>
         </div>
-        
     </div>
 </footer>
-<script src="~/lib/jquery/dist/jquery.min.js"></script>
-<script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/lib/jquery/dist/jquery.min.js"></script>
+<script src="/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
 <script src="~/js/site.js" asp-append-version="true"></script>
 <script type="application/ld+json">
     {

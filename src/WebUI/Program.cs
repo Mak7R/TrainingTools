@@ -46,13 +46,17 @@ app.UseHttpLogging();
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
-app.UseSwagger();
+app.UseSwagger(options => {
+    options.RouteTemplate = "api/{documentName}/index.json";
+});
 app.UseSwaggerUI(options =>
 {
-    options.SwaggerEndpoint("/swagger/v1/swagger.json", "1.0");
+    options.SwaggerEndpoint("/api/v1/index.json", "API V1");
+    options.RoutePrefix = "api-docs";
 });
 
 app.UseRouting();
+app.UseCors();
 
 app.UseAuthentication();
 app.UseAuthorization();

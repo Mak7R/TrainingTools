@@ -4,7 +4,7 @@
         <name>WebUI</name>
     </assembly>
     <members>
-        <member name="M:WebUI.Controllers.Api.v1.GroupsController.GetAll(Application.Models.Shared.OrderModel,Application.Models.Shared.FilterModel,Application.Models.Shared.PageModel)">
+        <member name="M:WebUI.Controllers.Api.v1.GroupsController.GetAll(Application.Models.Shared.FilterModel,WebUI.Models.Shared.OrderViewModel,WebUI.Models.Shared.PageViewModel)">
             <summary>
             Gets all groups. Can be filtered with FilterModel and Ordered with order model
             </summary>
@@ -26,7 +26,7 @@
             Recommends to user this attribute for actions which can provide some secret data or can change data and actions is accessible only for some user roles. 
             </summary>
         </member>
-        <member name="T:WebUI.ModelBinding.Providers.FOPModelBindersProvider">
+        <member name="T:WebUI.ModelBinding.Providers.FilterModelBinderProvider">
             <summary>
             Model binder provider for such models as FilterModel, OrderModel, PageModel (FOP)
             </summary>

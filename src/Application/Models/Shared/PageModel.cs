@@ -6,9 +6,8 @@ namespace Application.Models.Shared;
 public class PageModel
 {
     public const int DefaultPageSize = int.MaxValue;
-    public int CurrentPage { get; set; } = 0;
-    public int PageSize { get; set; } = DefaultPageSize;
-    public int PagesCount { get; set; } = 1;
+    public virtual int CurrentPage { get; set; } = 0;
+    public virtual int PageSize { get; set; } = DefaultPageSize;
 
     public IEnumerable<T> TakePage<T>(IEnumerable<T> enumerable)
     {
@@ -17,7 +16,7 @@ public class PageModel
         if (CurrentPage > 0 && PageSize > 0)
             result = result.Skip(CurrentPage * PageSize);
         if (PageSize > 0)
-            result = result.Take(PageSize * PagesCount);
+            result = result.Take(PageSize);
 
         return result;
     }
@@ -29,7 +28,7 @@ public class PageModel
         if (CurrentPage > 0 && PageSize > 0)
             result = result.Skip(CurrentPage * PageSize);
         if (PageSize > 0)
-            result = result.Take(PageSize * PagesCount);
+            result = result.Take(PageSize);
 
         return result;
     }

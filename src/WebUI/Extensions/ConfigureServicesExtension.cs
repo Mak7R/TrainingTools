@@ -19,6 +19,7 @@ using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.AspNetCore.Mvc.Versioning;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.OpenApi.Models;
 using WebUI.Mapping.Profiles;
 using WebUI.ModelBinding.Providers;
 
@@ -43,7 +44,7 @@ public static class ConfigureServicesExtension
         services.AddControllersWithViews(options =>
         {
             options.ModelBinderProviders.Insert(0, new UpdateTrainingPlanModelBinderProvider());
-            options.ModelBinderProviders.Insert(0, new FOPModelBindersProvider());
+            options.ModelBinderProviders.Insert(0, new FilterModelBinderProvider());
             
             // option.Filters
         })
@@ -108,15 +109,25 @@ public static class ConfigureServicesExtension
             config.AssumeDefaultVersionWhenUnspecified = true;
         });
 
+        services.AddCors(options =>
+        {
+            options.AddDefaultPolicy(builder =>
+            {
+                builder.WithOrigins(configuration.GetSection("AllowedOrigins").Get<string[]>() ?? throw new InvalidOperationException("AllowedOrigins was not found"));
+                builder.WithHeaders(configuration.GetSection("AllowedHeaders").Get<string[]>() ?? throw new InvalidOperationException("AllowedHeaders was not found"));
+                builder.WithMethods(configuration.GetSection("AllowedMethods").Get<string[]>() ?? throw new InvalidOperationException("AllowedMethods was not found"));
+            });
+        });
+
         // setup swagger
         services.AddEndpointsApiExplorer();
         services.AddSwaggerGen(options => {
             options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, "api-docs.xml"));
             
-            options.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo{ Title = "Training Tools Web API", Version = "1.0" });
+            options.SwaggerDoc("v1", new OpenApiInfo{ Title = "Training Tools Web API V1", Version = "1.0" });
         });
         services.AddVersionedApiExplorer(options => {
-            options.GroupNameFormat = "'v'VVV"; //v1
+            options.GroupNameFormat = "'v'VVV";
             options.SubstituteApiVersionInUrl = true;
         });
 
@@ -128,7 +139,7 @@ public static class ConfigureServicesExtension
         services.AddHttpLogging(options =>
         {
             options.LoggingFields = HttpLoggingFields.RequestPath | HttpLoggingFields.ResponseStatusCode;
-        }); // required for http logging
+        });
         
         return services;
     }

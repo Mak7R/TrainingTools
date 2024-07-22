@@ -5,6 +5,8 @@
 }
 
 <div class="container mt-3">
+    <h2 class="text-center">Register</h2>
+    
     <form method="post" asp-controller="Accounts" asp-action="Register" asp-route-returnUrl="@Context.Request.Query["ReturnUrl"]">
         <div class="col">
             <div class="mb-3">
@@ -43,7 +45,7 @@
             <input asp-for="ConfirmPassword" class="form-control"/>
             <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
         </div>
-        
+
         <div class="mb-3">
             <label asp-for="IsPublic" class="form-label">Is Profile Public: </label>
             <input asp-for="IsPublic" class="form-check-input"/>
