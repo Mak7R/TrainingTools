@@ -20,8 +20,16 @@ var app = builder.Build();
 
 using (var scope = app.Services.GetRequiredService<IServiceScopeFactory>().CreateScope())
 {
-    await scope.ServiceProvider.InitializeDataBase<ApplicationDbContext>(Enum.GetNames<Role>());
-    await scope.ServiceProvider.InitializeRootAdminFromConfiguration(builder.Configuration);
+    try
+    {
+        await scope.ServiceProvider.InitializeDataBase<ApplicationDbContext>(Enum.GetNames<Role>());
+        await scope.ServiceProvider.InitializeRootAdminFromConfiguration(builder.Configuration);
+    }
+    catch (Exception e)
+    {
+        var logger = scope.ServiceProvider.GetRequiredService<ILogger<WebApplication>>();
+        logger.LogCritical(e, "Error when db initialize");
+    }
 }
 
 app.UseHealthChecks("/health");
