@@ -1,6 +1,7 @@
 ﻿using Application.Interfaces.Services;
 using Application.Models.Shared;
 using AutoMapper;
+using Domain.Enums;
 using Domain.Exceptions;
 using Domain.Identity;
 using Domain.Models;
@@ -15,7 +16,6 @@ using WebUI.Models.Shared;
 namespace WebUI.Controllers;
 
 [Controller]
-[AllowAnonymous]
 [Route("exercises")]
 public class ExercisesController : Controller
 {
@@ -31,15 +31,16 @@ public class ExercisesController : Controller
     [HttpGet("")]
     [QueryValuesReader<DefaultOrderOptions>]
     [AddAvailableGroups]
+    [AllowAnonymous]
     public async Task<IActionResult> GetAll(
         OrderModel? orderModel,
         FilterModel? filterModel, 
-        PageModel? pageModel,
+        PageViewModel? pageModel,
         
         [FromServices] IExerciseResultsService resultsService, 
         [FromServices] UserManager<ApplicationUser> userManager)
     {
-        pageModel ??= new PageModel();
+        pageModel ??= new PageViewModel();
         if (pageModel.PageSize is PageModel.DefaultPageSize or <= 0)
         {
             int defaultPageSize = 10;
@@ -59,6 +60,7 @@ public class ExercisesController : Controller
     }
 
     [HttpGet("{exerciseId:guid}")]
+    [AllowAnonymous]
     public async Task<IActionResult> Get(Guid exerciseId)
     {
         var exercise = await _exercisesService.GetById(exerciseId);
@@ -70,22 +72,22 @@ public class ExercisesController : Controller
     }
 
     [HttpPost("render-about-preview")]
+    [AllowAnonymous]
     public async Task<IActionResult> RenderAboutPreview(string? about, [FromServices] IReferencedContentProvider referencedContentProvider)
     {
         return Content(await referencedContentProvider.ParseContentAsync(about));
     }
 
     [HttpGet("create")]
-    [Authorize(Roles = "Admin,Root")]
+    [AuthorizeVerifiedRoles(Role.Root, Role.Admin)]
     [AddAvailableGroups]
     public IActionResult Create()
     {
         return View();
     }
 
-    [Authorize(Roles = "Admin,Root")]
+    [AuthorizeVerifiedRoles(Role.Root, Role.Admin)]
     [HttpPost("create")]
-    [ConfirmUser]
     [AddAvailableGroups]
     public async Task<IActionResult> Create([FromForm] CreateExerciseModel createExerciseModel)
     {
@@ -103,7 +105,7 @@ public class ExercisesController : Controller
         return View(createExerciseModel);
     }
 
-    [Authorize(Roles = "Admin,Root")]
+    [AuthorizeVerifiedRoles(Role.Root, Role.Admin)]
     [HttpGet("{exerciseId:guid}/update")]
     [AddAvailableGroups]
     public async Task<IActionResult> Update(Guid exerciseId)
@@ -115,8 +117,7 @@ public class ExercisesController : Controller
         return View(_mapper.Map<UpdateExerciseModel>(exercise));
     }
 
-    [Authorize(Roles = "Admin,Root")]
-    [ConfirmUser]
+    [AuthorizeVerifiedRoles(Role.Root, Role.Admin)]
     [HttpPost("{exerciseId:guid}/update")]
     [AddAvailableGroups]
     public async Task<IActionResult> Update(Guid exerciseId, [FromForm] UpdateExerciseModel updateExerciseModel)
@@ -138,8 +139,7 @@ public class ExercisesController : Controller
         return View(updateExerciseModel);
     }
 
-    [Authorize(Roles = "Admin,Root")]
-    [ConfirmUser]
+    [AuthorizeVerifiedRoles(Role.Root, Role.Admin)]
     [HttpGet("delete")]
     public async Task<IActionResult> DeleteExercise([FromQuery] Guid exerciseId)
     {

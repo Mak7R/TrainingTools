@@ -4,8 +4,8 @@ using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 namespace WebUI.Controllers;
 
-[Route("help")]
 [Controller]
+[Route("help")]
 [AllowAnonymous]
 public class HelpController : Controller
 {

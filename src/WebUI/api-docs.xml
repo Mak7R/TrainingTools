@@ -20,15 +20,51 @@
             <param name="createGroupModel">group model to create</param>
             <returns>Created if group was successfully created otherwise returns problem</returns>
         </member>
-        <member name="T:WebUI.Filters.ConfirmUserAttribute">
-            <summary>
-            Confirm user is confirming is user really exists in database and has rights as it is in identity claims.
-            Recommends to user this attribute for actions which can provide some secret data or can change data and actions is accessible only for some user roles. 
-            </summary>
-        </member>
         <member name="T:WebUI.ModelBinding.Providers.FilterModelBinderProvider">
             <summary>
             Model binder provider for such models as FilterModel, OrderModel, PageModel (FOP)
+            </summary>
+        </member>
+        <member name="T:WebUI.Resources.Views.Groups.GetAll_en_US">
+            <summary>
+              A strongly-typed resource class, for looking up localized strings, etc.
+            </summary>
+        </member>
+        <member name="P:WebUI.Resources.Views.Groups.GetAll_en_US.ResourceManager">
+            <summary>
+              Returns the cached ResourceManager instance used by this class.
+            </summary>
+        </member>
+        <member name="P:WebUI.Resources.Views.Groups.GetAll_en_US.Culture">
+            <summary>
+              Overrides the current thread's CurrentUICulture property for all
+              resource lookups using this strongly typed resource class.
+            </summary>
+        </member>
+        <member name="P:WebUI.Resources.Views.Groups.GetAll_en_US.groups">
+            <summary>
+              Looks up a localized string similar to Muscle groups.
+            </summary>
+        </member>
+        <member name="T:WebUI.Resources.Views.Groups.GetAll_uk_UA">
+            <summary>
+              A strongly-typed resource class, for looking up localized strings, etc.
+            </summary>
+        </member>
+        <member name="P:WebUI.Resources.Views.Groups.GetAll_uk_UA.ResourceManager">
+            <summary>
+              Returns the cached ResourceManager instance used by this class.
+            </summary>
+        </member>
+        <member name="P:WebUI.Resources.Views.Groups.GetAll_uk_UA.Culture">
+            <summary>
+              Overrides the current thread's CurrentUICulture property for all
+              resource lookups using this strongly typed resource class.
+            </summary>
+        </member>
+        <member name="P:WebUI.Resources.Views.Groups.GetAll_uk_UA.groups">
+            <summary>
+              Looks up a localized string similar to Группи м&apos;язів.
             </summary>
         </member>
         <member name="T:WebUI.Resources.Views.Home.Index_en_US">
@@ -81,6 +117,198 @@
         <member name="P:WebUI.Resources.Views.Home.Index_uk_UA.welcome">
             <summary>
               Looks up a localized string similar to Ласкаво просимо.
+            </summary>
+        </member>
+        <member name="T:WebUI.Resources.Views.Shared._Layout_en_US">
+            <summary>
+              A strongly-typed resource class, for looking up localized strings, etc.
+            </summary>
+        </member>
+        <member name="P:WebUI.Resources.Views.Shared._Layout_en_US.ResourceManager">
+            <summary>
+              Returns the cached ResourceManager instance used by this class.
+            </summary>
+        </member>
+        <member name="P:WebUI.Resources.Views.Shared._Layout_en_US.Culture">
+            <summary>
+              Overrides the current thread's CurrentUICulture property for all
+              resource lookups using this strongly typed resource class.
+            </summary>
+        </member>
+        <member name="P:WebUI.Resources.Views.Shared._Layout_en_US.description">
+            <summary>
+              Looks up a localized string similar to TrainingTools allows you to manage the results of sports exercises and create training plans. You can also view the results of your friends and use many other training tools..
+            </summary>
+        </member>
+        <member name="P:WebUI.Resources.Views.Shared._Layout_en_US.Exercises">
+            <summary>
+              Looks up a localized string similar to Exercises.
+            </summary>
+        </member>
+        <member name="P:WebUI.Resources.Views.Shared._Layout_en_US.Friends">
+            <summary>
+              Looks up a localized string similar to Friends.
+            </summary>
+        </member>
+        <member name="P:WebUI.Resources.Views.Shared._Layout_en_US.Groups">
+            <summary>
+              Looks up a localized string similar to Muscle groups.
+            </summary>
+        </member>
+        <member name="P:WebUI.Resources.Views.Shared._Layout_en_US.Help">
+            <summary>
+              Looks up a localized string similar to Help.
+            </summary>
+        </member>
+        <member name="P:WebUI.Resources.Views.Shared._Layout_en_US.Home">
+            <summary>
+              Looks up a localized string similar to Home.
+            </summary>
+        </member>
+        <member name="P:WebUI.Resources.Views.Shared._Layout_en_US.Login">
+            <summary>
+              Looks up a localized string similar to Log in.
+            </summary>
+        </member>
+        <member name="P:WebUI.Resources.Views.Shared._Layout_en_US.Logout">
+            <summary>
+              Looks up a localized string similar to Logout.
+            </summary>
+        </member>
+        <member name="P:WebUI.Resources.Views.Shared._Layout_en_US.MyTrainingPlans">
+            <summary>
+              Looks up a localized string similar to My TrainingPlans.
+            </summary>
+        </member>
+        <member name="P:WebUI.Resources.Views.Shared._Layout_en_US.OpenApi">
+            <summary>
+              Looks up a localized string similar to Api documentation for developers.
+            </summary>
+        </member>
+        <member name="P:WebUI.Resources.Views.Shared._Layout_en_US.Privacy">
+            <summary>
+              Looks up a localized string similar to Privacy.
+            </summary>
+        </member>
+        <member name="P:WebUI.Resources.Views.Shared._Layout_en_US.Profile">
+            <summary>
+              Looks up a localized string similar to Profile.
+            </summary>
+        </member>
+        <member name="P:WebUI.Resources.Views.Shared._Layout_en_US.Register">
+            <summary>
+              Looks up a localized string similar to Register.
+            </summary>
+        </member>
+        <member name="P:WebUI.Resources.Views.Shared._Layout_en_US.Results">
+            <summary>
+              Looks up a localized string similar to My Results.
+            </summary>
+        </member>
+        <member name="P:WebUI.Resources.Views.Shared._Layout_en_US.TrainingPlans">
+            <summary>
+              Looks up a localized string similar to Training plans.
+            </summary>
+        </member>
+        <member name="P:WebUI.Resources.Views.Shared._Layout_en_US.Users">
+            <summary>
+              Looks up a localized string similar to Users.
+            </summary>
+        </member>
+        <member name="T:WebUI.Resources.Views.Shared._Layout_uk_UA">
+            <summary>
+              A strongly-typed resource class, for looking up localized strings, etc.
+            </summary>
+        </member>
+        <member name="P:WebUI.Resources.Views.Shared._Layout_uk_UA.ResourceManager">
+            <summary>
+              Returns the cached ResourceManager instance used by this class.
+            </summary>
+        </member>
+        <member name="P:WebUI.Resources.Views.Shared._Layout_uk_UA.Culture">
+            <summary>
+              Overrides the current thread's CurrentUICulture property for all
+              resource lookups using this strongly typed resource class.
+            </summary>
+        </member>
+        <member name="P:WebUI.Resources.Views.Shared._Layout_uk_UA.description">
+            <summary>
+              Looks up a localized string similar to TrainingTools дозволяє керувати результатами спортивних вправ і створювати плани тренувань. Ви також можете переглядати результати своїх друзів і використовувати багато інших інструментів навчання..
+            </summary>
+        </member>
+        <member name="P:WebUI.Resources.Views.Shared._Layout_uk_UA.Exercises">
+            <summary>
+              Looks up a localized string similar to Вправи.
+            </summary>
+        </member>
+        <member name="P:WebUI.Resources.Views.Shared._Layout_uk_UA.Friends">
+            <summary>
+              Looks up a localized string similar to Друзі.
+            </summary>
+        </member>
+        <member name="P:WebUI.Resources.Views.Shared._Layout_uk_UA.Groups">
+            <summary>
+              Looks up a localized string similar to Групи м&apos;язів.
+            </summary>
+        </member>
+        <member name="P:WebUI.Resources.Views.Shared._Layout_uk_UA.Help">
+            <summary>
+              Looks up a localized string similar to Допомога.
+            </summary>
+        </member>
+        <member name="P:WebUI.Resources.Views.Shared._Layout_uk_UA.Home">
+            <summary>
+              Looks up a localized string similar to Головна.
+            </summary>
+        </member>
+        <member name="P:WebUI.Resources.Views.Shared._Layout_uk_UA.Login">
+            <summary>
+              Looks up a localized string similar to Увійти.
+            </summary>
+        </member>
+        <member name="P:WebUI.Resources.Views.Shared._Layout_uk_UA.Logout">
+            <summary>
+              Looks up a localized string similar to Вийти.
+            </summary>
+        </member>
+        <member name="P:WebUI.Resources.Views.Shared._Layout_uk_UA.MyTrainingPlans">
+            <summary>
+              Looks up a localized string similar to Мої плани тренувань.
+            </summary>
+        </member>
+        <member name="P:WebUI.Resources.Views.Shared._Layout_uk_UA.OpenApi">
+            <summary>
+              Looks up a localized string similar to Документація API для розробників.
+            </summary>
+        </member>
+        <member name="P:WebUI.Resources.Views.Shared._Layout_uk_UA.Privacy">
+            <summary>
+              Looks up a localized string similar to Конфіденційність.
+            </summary>
+        </member>
+        <member name="P:WebUI.Resources.Views.Shared._Layout_uk_UA.Profile">
+            <summary>
+              Looks up a localized string similar to Профіль.
+            </summary>
+        </member>
+        <member name="P:WebUI.Resources.Views.Shared._Layout_uk_UA.Register">
+            <summary>
+              Looks up a localized string similar to Зареєструватися.
+            </summary>
+        </member>
+        <member name="P:WebUI.Resources.Views.Shared._Layout_uk_UA.Results">
+            <summary>
+              Looks up a localized string similar to Мої результати.
+            </summary>
+        </member>
+        <member name="P:WebUI.Resources.Views.Shared._Layout_uk_UA.TrainingPlans">
+            <summary>
+              Looks up a localized string similar to Плани тренувань.
+            </summary>
+        </member>
+        <member name="P:WebUI.Resources.Views.Shared._Layout_uk_UA.Users">
+            <summary>
+              Looks up a localized string similar to Користувачі.
             </summary>
         </member>
     </members>

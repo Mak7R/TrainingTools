@@ -21,7 +21,7 @@ using WebUI.Models.Shared;
 namespace WebUI.Controllers;
 
 [Controller]
-[Authorize]
+[AuthorizeVerifiedRoles]
 [Route("exercises/results")]
 public class ExerciseResultsController : Controller
 {
@@ -40,12 +40,12 @@ public class ExerciseResultsController : Controller
 
     [HttpGet("")]
     [QueryValuesReader<DefaultOrderOptions>]
-    public async Task<IActionResult> GetUserResults(OrderModel? orderModel, FilterModel? filterModel, PageModel? pageModel)
+    public async Task<IActionResult> GetUserResults(OrderModel? orderModel, FilterModel? filterModel, PageViewModel? pageModel)
     {
         var user = await _userManager.GetUserAsync(HttpContext.User);
         if (user is null) return RedirectToAction("Login", "Accounts", new {returnUrl = "/exercises/results"});
         
-        pageModel ??= new PageModel();
+        pageModel ??= new PageViewModel();
         if (pageModel.PageSize is PageModel.DefaultPageSize or <= 0)
         {
             int defaultPageSize = 9;
@@ -77,7 +77,7 @@ public class ExerciseResultsController : Controller
     [HttpGet("for-exercise/{exerciseId:guid}")]
     [QueryValuesReader<DefaultOrderOptions>]
     public async Task<IActionResult> GetFriendsResultsForExercise(Guid exerciseId, [FromServices] IExercisesService exercisesService,
-        FilterModel? filterModel, OrderModel? orderModel, PageModel? pageModel)
+        FilterModel? filterModel, OrderModel? orderModel, PageViewModel? pageModel)
     {
         var user = await _userManager.GetUserAsync(HttpContext.User);
         if (user is null) return RedirectToAction("Login", "Accounts", new {returnUrl = $"/exercises/results/for-exercise/{exerciseId}"});
@@ -93,7 +93,7 @@ public class ExerciseResultsController : Controller
             Group = new GroupViewModel { Id = exercise.Group.Id, Name = exercise.Group.Name }
         };
         
-        pageModel ??= new PageModel();
+        pageModel ??= new PageViewModel();
         if (pageModel.PageSize is PageModel.DefaultPageSize or <= 0)
         {
             int defaultPageSize = 9;

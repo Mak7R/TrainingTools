@@ -4,7 +4,6 @@ using Application.Models.Shared;
 using AutoMapper;
 using Domain.Enums;
 using Domain.Identity;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using WebUI.Extensions;
@@ -17,7 +16,6 @@ namespace WebUI.Controllers;
 
 [Controller]
 [Route("users")]
-[Authorize]
 public class UsersController : Controller
 {
     private readonly IUsersService _usersService;
@@ -33,12 +31,13 @@ public class UsersController : Controller
     
     [HttpGet("")]
     [QueryValuesReader<DefaultOrderOptions>]
-    public async Task<IActionResult> GetAll(OrderModel? orderModel, FilterModel? filterModel, PageModel? pageModel)
+    [AuthorizeVerifiedRoles]
+    public async Task<IActionResult> GetAll(OrderModel? orderModel, FilterModel? filterModel, PageViewModel? pageModel)
     {
         var user = await _userManager.GetUserAsync(User);
         if (user is null) return RedirectToAction("Login", "Accounts", new {ReturnUrl = "/users"});
         
-        pageModel ??= new PageModel();
+        pageModel ??= new PageViewModel();
         if (pageModel.PageSize is PageModel.DefaultPageSize or <= 0)
         {
             int defaultPageSize = 10;
@@ -53,8 +52,7 @@ public class UsersController : Controller
     }
     
     [HttpGet("as-csv")]
-    [Authorize(Roles = "Admin,Root")]
-    [ConfirmUser]
+    [AuthorizeVerifiedRoles(Role.Root, Role.Admin)]
     public async Task<IActionResult> GetAllAsCsv()
     {
         var stream = await _usersService.GetAllUsersAsCsv();
@@ -63,7 +61,7 @@ public class UsersController : Controller
     }
 
     [HttpGet("{userName}")]
-    [ConfirmUser]
+    [AuthorizeVerifiedRoles]
     public async Task<IActionResult> Get(string? userName)
     {
         if (string.IsNullOrWhiteSpace(userName))
@@ -81,16 +79,16 @@ public class UsersController : Controller
         return View(_mapper.Map<UserInfoViewModel>(userInfo));
     }
     
-    [Authorize(Roles = "Admin,Root")]
+    
     [HttpGet("create")]
+    [AuthorizeVerifiedRoles(Role.Root, Role.Admin)]
     public IActionResult Create()
     {
         return View();
     }
     
-    [Authorize(Roles = "Admin,Root")]
-    [ConfirmUser]
     [HttpPost("create")]
+    [AuthorizeVerifiedRoles(Role.Root, Role.Admin)]
     public async Task<IActionResult> Create(CreateUserModel createUserModel)
     {
         var user = await _userManager.GetUserAsync(User);
@@ -117,8 +115,8 @@ public class UsersController : Controller
         return RedirectToAction("Get", new {userName = createUserModel.UserName});
     }
 
-    [Authorize(Roles = "Admin,Root")]
     [HttpGet("{userName}/update")]
+    [AuthorizeVerifiedRoles(Role.Root, Role.Admin)]
     public async Task<IActionResult> Update(string? userName)
     {
         if (string.IsNullOrWhiteSpace(userName))
@@ -142,9 +140,9 @@ public class UsersController : Controller
         return View(updateUserModel);
     }
     
-    [Authorize(Roles = "Admin,Root")]
-    [ConfirmUser]
+    
     [HttpPost("{userName}/update")]
+    [AuthorizeVerifiedRoles(Role.Root, Role.Admin)]
     public async Task<IActionResult> Update([FromRoute] string? userName, [FromForm] UpdateUserModel updateUserModel)
     {
         if (string.IsNullOrWhiteSpace(userName))
@@ -176,10 +174,9 @@ public class UsersController : Controller
 
         return RedirectToAction("Get", new { userName });
     }
-
-    [Authorize(Roles = "Admin,Root")]
-    [ConfirmUser]
+    
     [HttpGet("{userName}/delete")]
+    [AuthorizeVerifiedRoles(Role.Root, Role.Admin)]
     public async Task<IActionResult> Delete([FromRoute] string? userName)
     {
         if (string.IsNullOrWhiteSpace(userName))

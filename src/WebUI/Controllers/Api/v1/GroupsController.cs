@@ -1,6 +1,7 @@
 ﻿using Application.Interfaces.Services;
 using Application.Models.Shared;
 using AutoMapper;
+using Domain.Enums;
 using Domain.Exceptions;
 using Domain.Models;
 using Microsoft.AspNetCore.Authorization;
@@ -42,6 +43,7 @@ public class GroupsController : ApiController
     }
 
     [HttpGet("{groupId:guid}")]
+    [AllowAnonymous]
     public async Task<ActionResult<GroupViewModel>> Get(Guid groupId)
     {
         var group = await _groupsService.GetById(groupId);
@@ -57,7 +59,7 @@ public class GroupsController : ApiController
     /// <param name="createGroupModel">group model to create</param>
     /// <returns>Created if group was successfully created otherwise returns problem</returns>
     [HttpPost("")]
-    [Authorize(Roles = "Root,Admin")]
+    [AuthorizeVerifiedRoles(Role.Admin, Role.Root)]
     public async Task<IActionResult> Create(CreateGroupModel createGroupModel)
     {
         var result = await _groupsService.Create(_mapper.Map<Group>(createGroupModel));
@@ -82,7 +84,7 @@ public class GroupsController : ApiController
     }
 
     [HttpPut("")]
-    [Authorize(Roles = "Root,Admin")]
+    [AuthorizeVerifiedRoles(Role.Admin, Role.Root)]
     public async Task<IActionResult> Update([FromForm] UpdateGroupModel updateGroupModel)
     {
         var result = await _groupsService.Update(_mapper.Map<Group>(updateGroupModel));
@@ -106,7 +108,7 @@ public class GroupsController : ApiController
     }
 
     [HttpDelete("{groupId:guid}")]
-    [Authorize(Roles = "Root,Admin")]
+    [AuthorizeVerifiedRoles(Role.Admin, Role.Root)]
     public async Task<IActionResult> Delete(Guid groupId)
     {
         var result = await _groupsService.Delete(groupId);

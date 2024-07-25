@@ -22,7 +22,7 @@ public class GroupsService : IGroupsService
     
     public async Task<Group?> GetByName(string? name)
     {
-        return (await _groupsRepository.GetAll(new FilterModel{{FilterOptionNames.Group.NameEquals, name}}, null, new PageModel{PageSize = 1})).FirstOrDefault();
+        return (await _groupsRepository.GetAll(new FilterModel{{FilterOptionNames.Group.NameEquals, name}}, null, new PageModel{PageSize = 1})).SingleOrDefault();
     }
 
     public async Task<Group?> GetById(Guid id)

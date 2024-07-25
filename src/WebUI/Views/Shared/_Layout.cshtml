@@ -1,11 +1,13 @@
 ﻿@using System.Globalization
 
+@inject IViewLocalizer Localizer
+
 <!doctype html>
 <html lang="@CultureInfo.CurrentUICulture.Name">
 <head>
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <meta name="description" content="TrainingTools allows you to manage the results of sports exercises and create training plans. You can also view the results of your friends and use many other training tools.">
+    <meta name="description" content="@Localizer["description"]">
     <meta name="keywords" content="training tools, training plans, training results">
     <link rel="icon" href="~/favicon.ico" type="image/x-icon"/>
     <link rel="canonical" href="@Context.Request.Scheme://@Context.Request.Host@Context.Request.Path"/>
@@ -19,7 +21,7 @@
 </head>
 <body>
 <main style="min-height: 94vh; width: 100%;background-color: #f4f0fa">
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark p-2">
+    <nav class="navbar navbar-expand-xxl navbar-dark bg-dark p-2">
         <a class="navbar-brand" href="">Training Tools</a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="true" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
@@ -27,57 +29,57 @@
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav me-auto">
                 <li class="nav-item">
-                    <a class="nav-link" asp-controller="Home" asp-action="Index">Home</a>
+                    <a class="nav-link" asp-controller="Home" asp-action="Index">@Localizer["Home"]</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" asp-controller="Groups" asp-action="GetAll">Groups</a>
+                    <a class="nav-link" asp-controller="Groups" asp-action="GetAll">@Localizer["Groups"]</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" asp-controller="Exercises" asp-action="GetAll">Exercises</a>
+                    <a class="nav-link" asp-controller="Exercises" asp-action="GetAll">@Localizer["Exercises"]</a>
                 </li>
                 @if (Context.User.Identity?.IsAuthenticated is true)
                 {
                     <li class="nav-item">
                         <a class="nav-link" asp-controller="TrainingPlans" asp-action="GetAll">
-                            Training Plans
+                            @Localizer["TrainingPlans"]
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" asp-controller="Users" asp-action="GetAll">Users</a>
+                        <a class="nav-link" asp-controller="Users" asp-action="GetAll">@Localizer["Users"]</a>
                     </li>
                 }
                 <li class="nav-item">
-                    <a class="nav-link" asp-controller="Help" asp-action="Index">Help</a>
+                    <a class="nav-link" asp-controller="Help" asp-action="Index">@Localizer["Help"]</a>
                 </li>
             </ul>
             <ul class="navbar-nav">
                 @if (Context.User.Identity?.IsAuthenticated is true)
                 {
                     <li class="nav-item">
-                        <a class="nav-link" asp-controller="Friends" asp-action="Index">Friends</a>
+                        <a class="nav-link" asp-controller="Friends" asp-action="Index">@Localizer["Friends"]</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" asp-controller="ExerciseResults" asp-action="GetUserResults">My Results</a>
+                        <a class="nav-link" asp-controller="ExerciseResults" asp-action="GetUserResults">@Localizer["Results"]</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" asp-controller="TrainingPlans" asp-action="GetUserTrainingPlans">
-                            My Training Plans
+                            @Localizer["MyTrainingPlans"]
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" asp-controller="Accounts" asp-action="Profile">Profile</a>
+                        <a class="nav-link" asp-controller="Accounts" asp-action="Profile">@Localizer["Profile"]</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" asp-controller="Accounts" asp-action="Logout">Logout</a>
+                        <a class="nav-link" asp-controller="Accounts" asp-action="Logout">@Localizer["Logout"]</a>
                     </li>
                 }
                 else
                 {
                     <li class="nav-item">
-                        <a class="nav-link" asp-controller="Accounts" asp-action="Login">Login</a>
+                        <a class="nav-link" asp-controller="Accounts" asp-action="Login">@Localizer["Login"]</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" asp-controller="Accounts" asp-action="Register">Register</a>
+                        <a class="nav-link" asp-controller="Accounts" asp-action="Register">@Localizer["Register"]</a>
                     </li>
                 }
                 <li class="nav-item dropdown">
@@ -113,8 +115,8 @@
     </div>
     <div class="container">
         <div class="row">
-            <p class="text-center m-3 col"><a href="/api-docs">Api documentation for developers</a></p>
-            <p class="text-center m-3 col">&copy; 2024 - WebUI - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a></p>
+            <p class="text-center m-3 col"><a href="/api-docs">@Localizer["OpenApi"]</a></p>
+            <p class="text-center m-3 col">&copy; 2024 - Training Tools - <a asp-area="" asp-controller="Home" asp-action="Privacy">@Localizer["Privacy"]</a></p>
         </div>
     </div>
 </footer>

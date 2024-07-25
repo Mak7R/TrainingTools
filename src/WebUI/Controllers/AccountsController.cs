@@ -5,13 +5,13 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using WebUI.Extensions;
+using WebUI.Filters;
 using WebUI.Models.Account;
 
 namespace WebUI.Controllers;
 
 [Controller]
 [Route("[controller]/[action]")]
-[AllowAnonymous]
 public class AccountsController : Controller
 {
     private readonly UserManager<ApplicationUser> _userManager;
@@ -102,15 +102,15 @@ public class AccountsController : Controller
         return View(loginDto);
     }
 
-    [Authorize]
+    [AuthorizeVerifiedRoles]
     [Route("/logout")]
     public async Task<IActionResult> Logout()
     {
         await _signInManager.SignOutAsync();
         return LocalRedirect("/");
     }
-
-    [Authorize]
+    
+    [AuthorizeVerifiedRoles]
     [HttpGet("/profile")]
     public async Task<IActionResult> Profile()
     {
@@ -122,7 +122,7 @@ public class AccountsController : Controller
         return View(profile);
     }
     
-    [Authorize]
+    [AuthorizeVerifiedRoles]
     [HttpGet("/profile/update")]
     public async Task<IActionResult> UpdateProfile()
     {
@@ -135,7 +135,7 @@ public class AccountsController : Controller
         return View(updateProfileDto);
     }
 
-    [Authorize]
+    [AuthorizeVerifiedRoles]
     [HttpPost("/profile/update")]
     public async Task<IActionResult> UpdateProfile([FromForm] UpdateProfileDto? updateProfileDto)
     {
@@ -188,6 +188,7 @@ public class AccountsController : Controller
     }
     
     [HttpPost]
+    [AuthorizeVerifiedRoles]
     public async Task<IActionResult> DeleteAccount([FromForm] string? password)
     {
         var user = await _userManager.GetUserAsync(HttpContext.User);

@@ -1,17 +1,17 @@
 ﻿using Application.Interfaces.Services;
 using AutoMapper;
 using Domain.Identity;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using WebUI.Extensions;
+using WebUI.Filters;
 using WebUI.Models.Friend;
 
 namespace WebUI.Controllers;
 
 
 [Controller]
-[Authorize]
+[AuthorizeVerifiedRoles]
 [Route("friends")]
 public class FriendsController : Controller
 {

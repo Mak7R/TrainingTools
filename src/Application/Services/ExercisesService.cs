@@ -22,7 +22,7 @@ public class ExercisesService : IExercisesService
 
     public async Task<Exercise?> GetByName(string? name)
     {
-        return (await _exercisesRepository.GetAll(new FilterModel{{FilterOptionNames.Exercise.NameEquals, name}}, null, new PageModel{PageSize = 1})).FirstOrDefault();
+        return (await _exercisesRepository.GetAll(new FilterModel{{FilterOptionNames.Exercise.NameEquals, name}}, null, new PageModel{PageSize = 1})).SingleOrDefault();
     }
 
     public async Task<Exercise?> GetById(Guid id)

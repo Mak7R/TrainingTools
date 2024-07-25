@@ -1,14 +1,16 @@
-﻿@using Filters = Application.Constants.FilterOptionNames.Group
+﻿
+@using Filters = Application.Constants.FilterOptionNames.Group
 @using Orders = Application.Constants.OrderOptionNames.Group
+@inject IViewLocalizer Localizer
 @model IEnumerable<GroupViewModel>
 
 @{
-    ViewBag.Title = "Groups";
+    ViewBag.Title = Localizer["groups"];
     var isUserAdmin = User.IsInRole("Admin") || User.IsInRole("Root");
 }
 
 <div class="container">
-    <h2 class="text-center mb-2">Groups</h2>
+    <h2 class="text-center mb-2">@(Localizer["groups"].Value.ToTitleCase())</h2>
 
     <form class="d-flex justify-content-end" method="get" onsubmit="addQueryParametersFromForm(event)">
         <div class="input-group mb-1">

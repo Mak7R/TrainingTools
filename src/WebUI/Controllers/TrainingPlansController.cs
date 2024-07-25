@@ -20,7 +20,7 @@ namespace WebUI.Controllers;
 
 [Controller]
 [Route("training-plans")]
-[Authorize]
+[AuthorizeVerifiedRoles]
 public class TrainingPlansController : Controller
 {
     private readonly ITrainingPlansService _trainingPlansService;
@@ -39,7 +39,7 @@ public class TrainingPlansController : Controller
     public async Task<IActionResult> GetAll(
         OrderModel? orderModel,
         FilterModel? filterModel,
-        PageModel? pageModel)
+        PageViewModel? pageModel)
     {
         filterModel ??= new FilterModel();
         filterModel[FilterOptionNames.TrainingPlan.PublicOnly] = "true";
@@ -52,7 +52,7 @@ public class TrainingPlansController : Controller
     public async Task<IActionResult> GetUserTrainingPlans(
         OrderModel? orderModel,
         FilterModel? filterModel,
-        PageModel? pageModel)
+        PageViewModel? pageModel)
     {
         var user = await _userManager.GetUserAsync(User);
         if (user is null)

@@ -14,6 +14,7 @@
     <ItemGroup>
         <PackageReference Include="AspNetCore.HealthChecks.SqlServer" Version="8.0.2" />
         <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.1" />
+        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.7" />
         <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="8.0.6" />
         <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.6" />
         <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="8.0.6" />
@@ -33,7 +34,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Areas\" />
       <Folder Include="logs\" />
     </ItemGroup>
 
@@ -64,6 +64,22 @@
         <Generator>ResXFileCodeGenerator</Generator>
         <LastGenOutput>UsersService.uk-UA.Designer.cs</LastGenOutput>
       </EmbeddedResource>
+      <EmbeddedResource Update="Resources\Views\Groups\GetAll.en-US.resx">
+        <Generator>ResXFileCodeGenerator</Generator>
+        <LastGenOutput>GetAll.en-US.Designer.cs</LastGenOutput>
+      </EmbeddedResource>
+      <EmbeddedResource Update="Resources\Views\Groups\GetAll.uk-UA.resx">
+        <Generator>ResXFileCodeGenerator</Generator>
+        <LastGenOutput>GetAll.uk-UA.Designer.cs</LastGenOutput>
+      </EmbeddedResource>
+      <EmbeddedResource Update="Resources\Views\Shared\_Layout.en-US.resx">
+        <Generator>ResXFileCodeGenerator</Generator>
+        <LastGenOutput>_Layout.en-US.Designer.cs</LastGenOutput>
+      </EmbeddedResource>
+      <EmbeddedResource Update="Resources\Views\Shared\_Layout.uk-UA.resx">
+        <Generator>ResXFileCodeGenerator</Generator>
+        <LastGenOutput>_Layout.uk-UA.Designer.cs</LastGenOutput>
+      </EmbeddedResource>
     </ItemGroup>
 
     <ItemGroup>
@@ -76,6 +92,26 @@
         <DesignTime>True</DesignTime>
         <AutoGen>True</AutoGen>
         <DependentUpon>Index.uk-UA.resx</DependentUpon>
+      </Compile>
+      <Compile Update="Resources\Views\Groups\GetAll.en-US.Designer.cs">
+        <DesignTime>True</DesignTime>
+        <AutoGen>True</AutoGen>
+        <DependentUpon>GetAll.en-US.resx</DependentUpon>
+      </Compile>
+      <Compile Update="Resources\Views\Groups\GetAll.uk-UA.Designer.cs">
+        <DesignTime>True</DesignTime>
+        <AutoGen>True</AutoGen>
+        <DependentUpon>GetAll.uk-UA.resx</DependentUpon>
+      </Compile>
+      <Compile Update="Resources\Views\Shared\_Layout.en-US.Designer.cs">
+        <DesignTime>True</DesignTime>
+        <AutoGen>True</AutoGen>
+        <DependentUpon>_Layout.en-US.resx</DependentUpon>
+      </Compile>
+      <Compile Update="Resources\Views\Shared\_Layout.uk-UA.Designer.cs">
+        <DesignTime>True</DesignTime>
+        <AutoGen>True</AutoGen>
+        <DependentUpon>_Layout.uk-UA.resx</DependentUpon>
       </Compile>
     </ItemGroup>
 
