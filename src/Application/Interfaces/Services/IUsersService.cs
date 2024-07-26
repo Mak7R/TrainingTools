@@ -18,5 +18,5 @@ public interface IUsersService
 
     Task<OperationResult> Create(ApplicationUser? currentUser, CreateUserDto createUserDto);
     Task<OperationResult> Update(ApplicationUser? currentUser, UpdateUserDto updateUserDto);
-    Task<OperationResult> Delete(ApplicationUser? currentUser, string userName);
+    Task<OperationResult> Delete(ApplicationUser? currentUser, Guid userId);
 }

@@ -4,17 +4,12 @@ using WebUI.ModelBinding.ModelBinders;
 
 namespace WebUI.ModelBinding.Providers;
 
-
-/// <summary>
-/// Model binder provider for such models as FilterModel, OrderModel, PageModel (FOP)
-/// </summary>
 public class FilterModelBinderProvider : IModelBinderProvider
 {
     public IModelBinder GetBinder(ModelBinderProviderContext context)
     {
         ArgumentNullException.ThrowIfNull(context);
-
-        if (context.Metadata.ModelType == typeof(FilterModel))
+        if (context.Metadata.ModelType.IsAssignableTo(typeof(FilterModel)))
         {
             return new FilterModelBinderAttribute();
         }

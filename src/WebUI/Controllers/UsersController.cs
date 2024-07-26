@@ -1,4 +1,5 @@
 ﻿using System.Net.Mime;
+using Application.Dtos;
 using Application.Interfaces.Services;
 using Application.Models.Shared;
 using AutoMapper;
@@ -32,7 +33,7 @@ public class UsersController : Controller
     [HttpGet("")]
     [QueryValuesReader<DefaultOrderOptions>]
     [AuthorizeVerifiedRoles]
-    public async Task<IActionResult> GetAll(OrderModel? orderModel, FilterModel? filterModel, PageViewModel? pageModel)
+    public async Task<IActionResult> GetAll(FilterViewModel? filterModel, OrderViewModel? orderModel, PageViewModel? pageModel)
     {
         var user = await _userManager.GetUserAsync(User);
         if (user is null) return RedirectToAction("Login", "Accounts", new {ReturnUrl = "/users"});
@@ -65,7 +66,7 @@ public class UsersController : Controller
     public async Task<IActionResult> Get(string? userName)
     {
         if (string.IsNullOrWhiteSpace(userName))
-            return this.BadRequestView(new [] {"UserName was empty"});
+            return this.BadRequestRedirect(new [] {"UserName was empty"});
         
         var user = await _userManager.GetUserAsync(User);
         if (user is null) return RedirectToAction("Login", "Accounts", new {ReturnUrl = $"/users/{userName}"});
@@ -74,7 +75,23 @@ public class UsersController : Controller
             return RedirectToAction("Profile", "Accounts");
         
         var userInfo = await _usersService.GetByName(user, userName);
-        if (userInfo is null) return this.NotFoundView("User with this username was not found");
+        if (userInfo is null) return this.NotFoundRedirect(["User with this username was not found"]);
+        
+        return View(_mapper.Map<UserInfoViewModel>(userInfo));
+    }
+    
+    [HttpGet("{userId:guid}")]
+    [AuthorizeVerifiedRoles]
+    public async Task<IActionResult> Get(Guid userId)
+    {
+        var user = await _userManager.GetUserAsync(User);
+        if (user is null) return RedirectToAction("Login", "Accounts", new {ReturnUrl = $"/users/{userId}"});
+
+        if (user.Id == userId)
+            return RedirectToAction("Profile", "Accounts");
+        
+        var userInfo = await _usersService.GetById(user, userId);
+        if (userInfo is null) return this.NotFoundRedirect(["User with this id was not found"]);
         
         return View(_mapper.Map<UserInfoViewModel>(userInfo));
     }
@@ -97,7 +114,7 @@ public class UsersController : Controller
         if (!ModelState.IsValid)
             return View(createUserModel);
 
-        var appCreateUserDto = new Application.Dtos.CreateUserDto
+        var appCreateUserDto = new CreateUserDto
         {
             Username = createUserModel.UserName,
             Email = createUserModel.Email,
@@ -110,57 +127,54 @@ public class UsersController : Controller
         var result = await _usersService.Create(user, appCreateUserDto);
 
         if (!result.IsSuccessful)
-            this.BadRequestView(result.Errors);
+            this.BadRequestRedirect(result.Errors);
 
         return RedirectToAction("Get", new {userName = createUserModel.UserName});
     }
 
-    [HttpGet("{userName}/update")]
+    [HttpGet("{userId:guid}/update")]
     [AuthorizeVerifiedRoles(Role.Root, Role.Admin)]
-    public async Task<IActionResult> Update(string? userName)
+    public async Task<IActionResult> Update(Guid userId)
     {
-        if (string.IsNullOrWhiteSpace(userName))
-            return this.BadRequestView(new[] { "User name was empty" });
-        
         var currentUser = await _userManager.GetUserAsync(User);
-        if (currentUser is null) return RedirectToAction("Login", "Accounts", new {ReturnUrl = $"/users/{userName}/update"});
-        
-        var user = await _usersService.GetByName(currentUser, userName);
-        if (user is null) return this.NotFoundView("User was not found");
-        
+        if (currentUser is null) return RedirectToAction("Login", "Accounts", new {ReturnUrl = $"/users/{userId}/update"});
+
+        var user = await _userManager.FindByIdAsync(userId.ToString());
+        if (user is null) return this.NotFoundRedirect(["User was not found"]);
+
+        var roles = await _userManager.GetRolesAsync(user);
         var updateUserModel= new UpdateUserModel
         {
-            UserName = userName,
-            IsAdmin = user.Roles.Contains(nameof(Role.Admin)),
+            Id = userId,
+            UserName = user.UserName,
+            IsAdmin = roles.Contains(nameof(Role.Admin)),
             ClearAbout = false,
             SetPrivate = false,
-            IsTrainer = user.Roles.Contains(nameof(Role.Trainer))
+            IsTrainer = roles.Contains(nameof(Role.Trainer))
         };
         
         return View(updateUserModel);
     }
     
     
-    [HttpPost("{userName}/update")]
+    [HttpPost("{userId:guid}/update")]
     [AuthorizeVerifiedRoles(Role.Root, Role.Admin)]
-    public async Task<IActionResult> Update([FromRoute] string? userName, [FromForm] UpdateUserModel updateUserModel)
+    public async Task<IActionResult> Update([FromRoute] Guid userId, [FromForm] UpdateUserModel updateUserModel)
     {
-        if (string.IsNullOrWhiteSpace(userName))
-            return this.BadRequestView(new[] { "User name was empty" });
-        
         var user = await _userManager.GetUserAsync(User);
         if (user is null) 
-            return RedirectToAction("Login", "Accounts", new {ReturnUrl = $"/users/{userName}/update"});
+            return RedirectToAction("Login", "Accounts", new {ReturnUrl = $"/users/{userId}/update"});
         
         if (!ModelState.IsValid)
         {
-            updateUserModel.UserName = userName;
+            updateUserModel.Id = userId;
+            updateUserModel.UserName = updateUserModel.UserName;
             return View(updateUserModel);
         }
         
-        var appUpdateUserDto = new Application.Dtos.UpdateUserDto
+        var appUpdateUserDto = new UpdateUserDto
         {
-            UserName = userName,
+            UserId = userId,
             ClearAbout = updateUserModel.ClearAbout,
             IsAdmin = updateUserModel.IsAdmin,
             SetPrivate = updateUserModel.SetPrivate,
@@ -170,23 +184,20 @@ public class UsersController : Controller
         var result = await _usersService.Update(user, appUpdateUserDto);
         
         if (!result.IsSuccessful)
-            this.BadRequestView(result.Errors);
+            this.BadRequestRedirect(result.Errors);
 
-        return RedirectToAction("Get", new { userName });
+        return RedirectToAction("Get", new { userId });
     }
     
-    [HttpGet("{userName}/delete")]
+    [HttpGet("{userId:guid}/delete")]
     [AuthorizeVerifiedRoles(Role.Root, Role.Admin)]
-    public async Task<IActionResult> Delete([FromRoute] string? userName)
+    public async Task<IActionResult> Delete([FromRoute] Guid userId)
     {
-        if (string.IsNullOrWhiteSpace(userName))
-            return this.BadRequestView(new[] { "User name was empty" });
-        
         var user = await _userManager.GetUserAsync(User);
         if (user is null) return RedirectToAction("Login", "Accounts", new {ReturnUrl = "/users"});
         
-        var result = await _usersService.Delete(user, userName);
-        if (!result.IsSuccessful) return this.BadRequestView(result.Errors);
+        var result = await _usersService.Delete(user, userId);
+        if (!result.IsSuccessful) return this.BadRequestRedirect(result.Errors);
         return RedirectToAction("GetAll", "Users");
     }
 }

@@ -306,7 +306,7 @@ public class UsersService : IUsersService
 
         if (currentUserRoles.Contains(nameof(Role.Admin)) || currentUserRoles.Contains(nameof(Role.Root)))
         {
-            var updatingUser = await _userManager.FindByNameAsync(updateUserDto.UserName);
+            var updatingUser = await _userManager.FindByIdAsync(updateUserDto.UserId.ToString());
             if (updatingUser == null) return DefaultOperationResult.FromException(new NotFoundException("User was not found"));
 
             if (await _userManager.IsInRoleAsync(updatingUser, nameof(Role.Root)))
@@ -360,19 +360,18 @@ public class UsersService : IUsersService
         return DefaultOperationResult.FromException(new OperationNotAllowedException("User is not admin or root"));
     }
 
-    public async Task<OperationResult> Delete(ApplicationUser? currentUser, string userName)
+    public async Task<OperationResult> Delete(ApplicationUser? currentUser, Guid userId)
     {
         ArgumentNullException.ThrowIfNull(currentUser);
-        ArgumentException.ThrowIfNullOrWhiteSpace(userName);
         
         var currentUserRoles = await _userManager.GetRolesAsync(currentUser);
         
         if (currentUserRoles.Contains(nameof(Role.Admin)) || currentUserRoles.Contains(nameof(Role.Root)))
         {
-            var user = await _userManager.FindByNameAsync(userName);
+            var user = await _userManager.FindByIdAsync(userId.ToString());
             if (user == null)
             {
-                var message = $"User with name '{userName}' was not found";
+                var message = $"User with id '{userId}' was not found";
                 return DefaultOperationResult.FromException(new NotFoundException(message));
             }
 

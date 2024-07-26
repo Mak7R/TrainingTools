@@ -78,6 +78,11 @@ public static class FilterOptionNames
     public static class ExerciseResults
     {
         /// <summary>
+        /// Exercise id equals value
+        /// </summary>
+        public const string ExerciseId = "exercise-id";
+        
+        /// <summary>
         /// Exercise full name contains value
         /// </summary>
         public const string FullName = "full-name";
@@ -91,6 +96,11 @@ public static class FilterOptionNames
         /// Owner id is the same as value
         /// </summary>
         public const string OwnerId = "owner-id";
+
+        /// <summary>
+        /// Owner id is in value
+        /// </summary>
+        public const string OwnerIds = "owner-ids";
         
         /// <summary>
         /// Owner name contains value

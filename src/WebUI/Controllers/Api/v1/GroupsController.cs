@@ -1,5 +1,4 @@
 ﻿using Application.Interfaces.Services;
-using Application.Models.Shared;
 using AutoMapper;
 using Domain.Enums;
 using Domain.Exceptions;
@@ -35,7 +34,7 @@ public class GroupsController : ApiController
     [HttpGet("")]
     [QueryValuesReader<DefaultOrderOptions>]
     [AllowAnonymous]
-    public async Task<ActionResult<IEnumerable<GroupViewModel>>> GetAll([FromQuery] FilterModel? filterModel, OrderViewModel? orderModel, [FromQuery] PageViewModel? pageModel)
+    public async Task<ActionResult<IEnumerable<GroupViewModel>>> GetAll(FilterViewModel? filterModel, OrderViewModel? orderModel, PageViewModel? pageModel)
     {
         var groups = await _groupsService.GetAll(filterModel, orderModel, pageModel);
 
@@ -83,14 +82,16 @@ public class GroupsController : ApiController
         });
     }
 
-    [HttpPut("")]
+    [HttpPut("{groupId:guid}")]
     [AuthorizeVerifiedRoles(Role.Admin, Role.Root)]
-    public async Task<IActionResult> Update([FromForm] UpdateGroupModel updateGroupModel)
+    public async Task<IActionResult> Update(Guid groupId, UpdateGroupModel updateGroupModel)
     {
-        var result = await _groupsService.Update(_mapper.Map<Group>(updateGroupModel));
+        var group = _mapper.Map<Group>(updateGroupModel);
+        group.Id = groupId;
+        var result = await _groupsService.Update(group);
         
         if (result.IsSuccessful) 
-            return NoContent();
+            return Ok(group);
         
         if (result.Exception is AlreadyExistsException)
             return Problem("Group already exists", statusCode: 400);

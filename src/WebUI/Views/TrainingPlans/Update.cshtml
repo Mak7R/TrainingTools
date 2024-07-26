@@ -29,7 +29,7 @@
         <div class="form-group mb-2">
             <button onclick="trainingPlan.submit()" class="btn btn-primary">Update</button>
 
-            <a class="btn btn-secondary" asp-controller="TrainingPlans" asp-action="GetTrainingPlan" asp-route-author="@Model.AuthorName" asp-route-title="@Model.NewTitle">Cancel</a>
+            <a class="btn btn-secondary" asp-controller="TrainingPlans" asp-action="GetTrainingPlan" asp-route-planId="@Model.Id">Cancel</a>
         </div>
 
         <div class="form-group">

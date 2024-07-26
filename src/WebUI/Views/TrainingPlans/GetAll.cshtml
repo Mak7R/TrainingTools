@@ -45,7 +45,7 @@
                     <a asp-controller="Users" asp-action="Get" asp-route-userName="@plan.Author.UserName">@plan.Author.UserName</a>
                 </td>
                 <td>
-                    <a asp-controller="TrainingPlans" asp-action="GetTrainingPlan" asp-route-author="@plan.Author.UserName" asp-route-title="@plan.Title">@plan.Title</a>
+                    <a asp-controller="TrainingPlans" asp-action="GetTrainingPlan" asp-route-planId="@plan.Id">@plan.Title</a>
                 </td>
                 <td>
 

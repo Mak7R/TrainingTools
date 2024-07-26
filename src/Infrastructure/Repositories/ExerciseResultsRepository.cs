@@ -32,6 +32,7 @@ public class ExerciseResultsRepository : IRepository<ExerciseResult, (Guid Owner
         new(new Dictionary<string, Func<string, Expression<Func<ExerciseResultEntity, bool>>>>
         {
             { FilterOptionNames.ExerciseResults.OwnerName, value => r => r.Owner.UserName != null && r.Owner.UserName.Contains(value) },
+            { FilterOptionNames.ExerciseResults.ExerciseId, value => Guid.TryParse(value, out var exerciseId) ? r => r.ExerciseId == exerciseId : _ => false},
             { FilterOptionNames.ExerciseResults.FullName, value =>
             {
                 var nameParts = value.Split("/");
@@ -53,6 +54,17 @@ public class ExerciseResultsRepository : IRepository<ExerciseResult, (Guid Owner
                 }
             },
             {FilterOptionNames.ExerciseResults.OwnerId, value => Guid.TryParse(value, out var ownerId) ? r => r.Owner.Id == ownerId : _ => false },
+            {FilterOptionNames.ExerciseResults.OwnerIds, value =>
+            {
+                var ids = value.Split(FilterOptionNames.Shared.MultiplyFilterValuesSeparator);
+
+                var guids = new List<Guid>();
+                foreach (var id in ids)
+                    if (Guid.TryParse(id, out var guid))
+                        guids.Add(guid);
+                
+                return r => guids.Contains(r.OwnerId);
+            }},
             {FilterOptionNames.ExerciseResults.OwnerNameEquals, value => er => er.Owner.UserName != null && er.Owner.UserName.Equals(value)}
         });
 
@@ -108,7 +120,7 @@ public class ExerciseResultsRepository : IRepository<ExerciseResult, (Guid Owner
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Exception was thrown while receiving exercise results with ownerId: '{ownerId}' and exerciseId: {exerciseId}", id.OwnerId, id.ExerciseId);
+            _logger.LogError(e, "Exception was thrown while receiving exercise result with ownerId: '{ownerId}' and exerciseId: {exerciseId}", id.OwnerId, id.ExerciseId);
             throw new DataBaseException("Error while receiving exercise results from database", e);
         }
     }

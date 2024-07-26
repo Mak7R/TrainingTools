@@ -30,8 +30,8 @@ public class GroupsController : Controller
     [QueryValuesReader<DefaultOrderOptions>]
     [AllowAnonymous]
     public async Task<IActionResult> GetAll(
-        OrderModel? orderModel, 
-        FilterModel? filterModel,
+        FilterViewModel? filterModel, 
+        OrderViewModel? orderModel, 
         PageViewModel? pageModel)
     {
         pageModel ??= new PageViewModel();
@@ -53,7 +53,7 @@ public class GroupsController : Controller
     public async Task<IActionResult> Create([FromForm] CreateGroupModel createGroupModel)
     {
         if (!ModelState.IsValid)
-            return this.BadRequestView(ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage));
+            return this.BadRequestRedirect(ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage));
         
         var result = await _groupsService.Create(_mapper.Map<Group>(createGroupModel));
         
@@ -61,9 +61,9 @@ public class GroupsController : Controller
             return RedirectToAction("GetAll", "Groups");
         
         if (result.Exception is AlreadyExistsException)
-            return this.BadRequestView(result.Errors);
+            return this.BadRequestRedirect(result.Errors);
         
-        return this.ErrorView(500, result.Errors);
+        return this.ErrorRedirect(500, result.Errors);
     }
 
     [HttpPost("update")]
@@ -71,7 +71,7 @@ public class GroupsController : Controller
     public async Task<IActionResult> Update([FromForm] UpdateGroupModel updateGroupModel)
     {
         if (!ModelState.IsValid)
-            return this.BadRequestView(ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage));
+            return this.BadRequestRedirect(ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage));
         
         var result = await _groupsService.Update(_mapper.Map<Group>(updateGroupModel));
         
@@ -79,12 +79,12 @@ public class GroupsController : Controller
             return RedirectToAction("GetAll", "Groups");
         
         if (result.Exception is AlreadyExistsException)
-            return this.BadRequestView(result.Errors);
+            return this.BadRequestRedirect(result.Errors);
         
         if (result.Exception is NotFoundException)
-            return this.NotFoundView(result.Errors);
+            return this.NotFoundRedirect(result.Errors);
         
-        return this.ErrorView(500, result.Errors);
+        return this.ErrorRedirect(500, result.Errors);
     }
 
     [HttpGet("delete")]
@@ -97,8 +97,8 @@ public class GroupsController : Controller
             return RedirectToAction("GetAll");
 
         if (result.Exception is NotFoundException)
-            return this.NotFoundView(result.Errors);
+            return this.NotFoundRedirect(result.Errors);
         
-        return this.ErrorView(500, result.Errors);
+        return this.ErrorRedirect(500, result.Errors);
     }
 }

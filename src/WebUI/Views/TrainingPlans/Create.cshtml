@@ -1,4 +1,4 @@
-﻿@model WebUI.Models.TrainingPlan.CreateTrainingPlanModel
+﻿@model CreateTrainingPlanModel
 
 @{
     ViewBag.Title = "Create training plan";
@@ -22,6 +22,8 @@
 
         <div class="mb-3">
             <button type="submit" class="btn btn-success">Create</button>
+            
+            <a class="btn btn-secondary" asp-action="GetUserTrainingPlans">Back</a>
         </div>
 
         <div class="mb-3">

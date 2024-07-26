@@ -3,7 +3,6 @@ using Application.Interfaces.Repositories;
 using Application.Interfaces.Services;
 using Application.Models.Shared;
 using Domain.Defaults;
-using Domain.Identity;
 using Domain.Models;
 using Domain.Models.Friendship;
 using Domain.Rules;
@@ -32,39 +31,26 @@ public class ExerciseResultsService : IExerciseResultsService
     }
     
     
-    public async Task<IEnumerable<ExerciseResult>> GetForUser(string ownerUserName, FilterModel? filterModel = null, OrderModel? orderModel = null, PageModel? pageModel = null)
+    public async Task<IEnumerable<ExerciseResult>> GetAll(FilterModel? filterModel = null, OrderModel? orderModel = null, PageModel? pageModel = null)
     {
-        filterModel ??= new FilterModel();
-        filterModel[FilterOptionNames.ExerciseResults.OwnerNameEquals] = ownerUserName;
-        return await _exerciseResultsRepository.GetAll(filterModel, orderModel, pageModel);
-    }
-
-    public async Task<IEnumerable<ExerciseResult>> GetForExercise(string groupName, string exerciseName, FilterModel? filterModel = null, OrderModel? orderModel = null, PageModel? pageModel = null)
-    {
-        filterModel ??= new FilterModel();
-        filterModel[FilterOptionNames.ExerciseResults.FullNameEquals] = $"{groupName}/{exerciseName}";
         return await _exerciseResultsRepository.GetAll(filterModel, orderModel, pageModel);
     }
     
-    public async Task<IEnumerable<ExerciseResult>> GetOnlyUserAndFriendsResultForExercise(ApplicationUser user, string groupName, string exerciseName, FilterModel? filterModel = null, OrderModel? orderModel = null, PageModel? pageModel = null)
+    public async Task<IEnumerable<ExerciseResult>> GetOnlyUserAndFriendsResultForExercise(Guid userId, Guid exerciseId, FilterModel? filterModel = null, OrderModel? orderModel = null, PageModel? pageModel = null)
     {
-        // todo slow bad method
         filterModel ??= new FilterModel();
-        filterModel[FilterOptionNames.ExerciseResults.FullNameEquals] = $"{groupName}/{exerciseName}";
-        var results = await _exerciseResultsRepository.GetAll(filterModel, orderModel);
-
+        filterModel[FilterOptionNames.ExerciseResults.ExerciseId] = exerciseId.ToString();
         var userIds = (await _friendshipsRepository.GetAll(
                 new FilterModel
                 {
-                    { FilterOptionNames.Relationships.Friendship.FriendId, user.Id.ToString() }
+                    { FilterOptionNames.Relationships.Friendship.FriendId, userId.ToString() }
                 }))
-            .Select(f => f.FirstFriend.Id == user.Id ? f.SecondFriend.Id : f.FirstFriend.Id);
+            .Select(f => f.FirstFriend.Id == userId ? f.SecondFriend.Id : f.FirstFriend.Id).ToList();
 
-        results = results.Where(r => r.Owner.Id == user.Id || userIds.Contains(r.Owner.Id)); // must be executed on repository level
-
-        if (pageModel is not null) // also must be executed on repository level, but now it is not impossible because filtering is on service level ^
-            results = pageModel.TakePage(results);
-        return results.ToList();
+        userIds.Add(userId);
+        filterModel[FilterOptionNames.ExerciseResults.OwnerIds] = string.Join(FilterOptionNames.Shared.MultiplyFilterValuesSeparator, userIds); 
+        
+        return await _exerciseResultsRepository.GetAll(filterModel, orderModel, pageModel);
     }
     
     

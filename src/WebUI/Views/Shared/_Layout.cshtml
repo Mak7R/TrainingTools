@@ -23,22 +23,24 @@
 <main style="min-height: 94vh; width: 100%;background-color: #f4f0fa">
     <nav class="navbar navbar-expand-xxl navbar-dark bg-dark p-2">
         <a class="navbar-brand" href="">Training Tools</a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="true" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav me-auto">
-                <li class="nav-item">
-                    <a class="nav-link" asp-controller="Home" asp-action="Index">@Localizer["Home"]</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" asp-controller="Groups" asp-action="GetAll">@Localizer["Groups"]</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" asp-controller="Exercises" asp-action="GetAll">@Localizer["Exercises"]</a>
-                </li>
-                @if (Context.User.Identity?.IsAuthenticated is true)
-                {
+        <div class="offcanvas d-inline-block offcanvas-end text-bg-dark" id="navbarNav" tabindex="-1" data-bs-scroll="true" aria-labelledby="navbarNavLabel">
+            <div class="offcanvas-header">
+                <h5 class="offcanvas-title" id="navbarNavLabel">Training Tools</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+            </div>
+            <div class="offcanvas-body">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" asp-controller="Home" asp-action="Index">@Localizer["Home"]</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" asp-controller="Groups" asp-action="GetAll">@Localizer["Groups"]</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" asp-controller="Exercises" asp-action="GetAll">@Localizer["Exercises"]</a>
+                    </li>
+                    @if (Context.User.Identity?.IsAuthenticated is true)
+                    {
                     <li class="nav-item">
                         <a class="nav-link" asp-controller="TrainingPlans" asp-action="GetAll">
                             @Localizer["TrainingPlans"]
@@ -47,14 +49,15 @@
                     <li class="nav-item">
                         <a class="nav-link" asp-controller="Users" asp-action="GetAll">@Localizer["Users"]</a>
                     </li>
-                }
-                <li class="nav-item">
-                    <a class="nav-link" asp-controller="Help" asp-action="Index">@Localizer["Help"]</a>
-                </li>
-            </ul>
-            <ul class="navbar-nav">
-                @if (Context.User.Identity?.IsAuthenticated is true)
-                {
+                    }
+                    <li class="nav-item">
+                        <a class="nav-link" asp-controller="Help" asp-action="Index">@Localizer["Help"]</a>
+                    </li>
+                </ul>
+
+                <ul class="navbar-nav">
+                    @if (Context.User.Identity?.IsAuthenticated is true)
+                    {
                     <li class="nav-item">
                         <a class="nav-link" asp-controller="Friends" asp-action="Index">@Localizer["Friends"]</a>
                     </li>
@@ -72,38 +75,44 @@
                     <li class="nav-item">
                         <a class="nav-link" asp-controller="Accounts" asp-action="Logout">@Localizer["Logout"]</a>
                     </li>
-                }
-                else
-                {
+                    }
+                    else
+                    {
                     <li class="nav-item">
                         <a class="nav-link" asp-controller="Accounts" asp-action="Login">@Localizer["Login"]</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" asp-controller="Accounts" asp-action="Register">@Localizer["Register"]</a>
                     </li>
+                    }
+                </ul>
+            </div>
+        </div>
+        
+        <div class="nav-item dropdown justify-content-end ms-auto">
+            <button class="btn btn-dark dropdown-toggle" data-bs-toggle="dropdown">
+                @switch (CultureInfo.CurrentUICulture.Name)
+                {
+                    case "en-US":
+                        <span>EN</span>
+                        break;
+                    case "uk-UA":
+                        <span>UA</span>
+                        break;
+                    default:
+                        <span>EN</span>
+                        break;
                 }
-                <li class="nav-item dropdown">
-                    <button class="btn btn-dark dropdown-toggle" data-bs-toggle="dropdown">
-                        @switch (CultureInfo.CurrentUICulture.Name)
-                        {
-                            case "en-US":
-                                <span>EN</span>
-                                break;
-                            case "uk-UA":
-                                <span>UA</span>
-                                break;
-                            default:
-                                <span>EN</span>
-                                break;
-                        }
-                    </button>
-                    <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-start" style="max-width: 4em; min-width: 4em; width: 4em;">
-                        <li><a class="dropdown-item" asp-controller="Home" asp-action="SetLanguage" asp-route-culture="uk-UA" asp-route-returnUrl="@Context.Request.Path">UA</a></li>
-                        <li><a class="dropdown-item" asp-controller="Home" asp-action="SetLanguage" asp-route-culture="en-US" asp-route-returnUrl="@Context.Request.Path">EN</a></li>
-                    </ul>
-                </li>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-start" style="max-width: 4em; min-width: 4em; width: 4em;">
+                <li><a class="dropdown-item" asp-controller="Home" asp-action="SetLanguage" asp-route-culture="uk-UA" asp-route-returnUrl="@Context.Request.Path">UA</a></li>
+                <li><a class="dropdown-item" asp-controller="Home" asp-action="SetLanguage" asp-route-culture="en-US" asp-route-returnUrl="@Context.Request.Path">EN</a></li>
             </ul>
         </div>
+
+        <button class="navbar-toggler ms-2" type="button" data-bs-toggle="offcanvas" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="true" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
     </nav>
     <div class="container-fluid p-2">
         @RenderBody()

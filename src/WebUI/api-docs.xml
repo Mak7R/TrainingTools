@@ -4,7 +4,7 @@
         <name>WebUI</name>
     </assembly>
     <members>
-        <member name="M:WebUI.Controllers.Api.v1.GroupsController.GetAll(Application.Models.Shared.FilterModel,WebUI.Models.Shared.OrderViewModel,WebUI.Models.Shared.PageViewModel)">
+        <member name="M:WebUI.Controllers.Api.v1.GroupsController.GetAll(WebUI.Models.Shared.FilterViewModel,WebUI.Models.Shared.OrderViewModel,WebUI.Models.Shared.PageViewModel)">
             <summary>
             Gets all groups. Can be filtered with FilterModel and Ordered with order model
             </summary>
@@ -19,11 +19,6 @@
             </summary>
             <param name="createGroupModel">group model to create</param>
             <returns>Created if group was successfully created otherwise returns problem</returns>
-        </member>
-        <member name="T:WebUI.ModelBinding.Providers.FilterModelBinderProvider">
-            <summary>
-            Model binder provider for such models as FilterModel, OrderModel, PageModel (FOP)
-            </summary>
         </member>
         <member name="T:WebUI.Resources.Views.Groups.GetAll_en_US">
             <summary>

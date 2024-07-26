@@ -58,8 +58,8 @@ public static class ConfigureServicesExtension
                 // option.Filters
             })
             .AddViewLocalization(LanguageViewLocationExpanderFormat.Suffix)
-            .AddDataAnnotationsLocalization();
-            //.AddRazorRuntimeCompilation();
+            .AddDataAnnotationsLocalization()
+            .AddRazorRuntimeCompilation();
 
         services.AddHttpContextAccessor();
         services.TryAddSingleton<IActionContextAccessor, ActionContextAccessor>();

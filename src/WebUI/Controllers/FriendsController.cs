@@ -32,13 +32,13 @@ public class FriendsController : Controller
     public async Task<IActionResult> Invite(string? userName, string? returnUrl = null)
     {
         if (string.IsNullOrWhiteSpace(userName)) 
-            return this.BadRequestView(new[] { "User name was invalid" });
+            return this.BadRequestRedirect(new[] { "User name was invalid" });
 
         var user = await _userManager.GetUserAsync(HttpContext.User);
         if (user is null) return RedirectToAction("Login", "Accounts");
 
         var targetUser = await _userManager.FindByNameAsync(userName);
-        if (targetUser is null) return this.NotFoundView("User was not found");
+        if (targetUser is null) return this.NotFoundRedirect(["User was not found"]);
 
         var result = await _friendsService.CreateInvitation(user, targetUser);
 
@@ -57,13 +57,13 @@ public class FriendsController : Controller
     public async Task<IActionResult> Accept(string? userName, string? returnUrl)
     {
         if (string.IsNullOrWhiteSpace(userName)) 
-            return this.BadRequestView(new[] { "User name was invalid" });
+            return this.BadRequestRedirect(new[] { "User name was invalid" });
 
         var user = await _userManager.GetUserAsync(HttpContext.User);
         if (user is null) return RedirectToAction("Login", "Accounts");
 
         var invitor = await _userManager.FindByNameAsync(userName);
-        if (invitor is null) return this.NotFoundView("User was not found");
+        if (invitor is null) return this.NotFoundRedirect(["User was not found"]);
 
         var result = await _friendsService.AcceptInvitation(invitor, user);
         
@@ -82,13 +82,13 @@ public class FriendsController : Controller
     public async Task<IActionResult> Refuse(string? userName, string? returnUrl)
     {
         if (string.IsNullOrWhiteSpace(userName)) 
-            return this.BadRequestView(new[] { "User name was invalid" });
+            return this.BadRequestRedirect(new[] { "User name was invalid" });
 
         var user = await _userManager.GetUserAsync(HttpContext.User);
         if (user is null) return RedirectToAction("Login", "Accounts");
 
         var invitor = await _userManager.FindByNameAsync(userName);
-        if (invitor is null) return this.NotFoundView("User was not found");
+        if (invitor is null) return this.NotFoundRedirect(["User was not found"]);
 
         var result = await _friendsService.RemoveInvitation(invitor, user);
         
@@ -107,13 +107,13 @@ public class FriendsController : Controller
     public async Task<IActionResult> Cancel(string? userName, string? returnUrl)
     {
         if (string.IsNullOrWhiteSpace(userName)) 
-            return this.BadRequestView(new[] { "User name was invalid" });
+            return this.BadRequestRedirect(new[] { "User name was invalid" });
 
         var user = await _userManager.GetUserAsync(HttpContext.User);
         if (user is null) return RedirectToAction("Login", "Accounts");
 
         var target = await _userManager.FindByNameAsync(userName);
-        if (target is null) return this.NotFoundView("User was not found");
+        if (target is null) return this.NotFoundRedirect(["User was not found"]);
 
         var result = await _friendsService.RemoveInvitation(user, target);
         
@@ -132,13 +132,13 @@ public class FriendsController : Controller
     public async Task<IActionResult> RemoveFriendship(string? userName, string? returnUrl)
     {
         if (string.IsNullOrWhiteSpace(userName)) 
-            return this.BadRequestView(new[] { "User name was invalid" });
+            return this.BadRequestRedirect(new[] { "User name was invalid" });
 
         var user = await _userManager.GetUserAsync(HttpContext.User);
         if (user is null) return RedirectToAction("Login", "Accounts");
 
         var friend = await _userManager.FindByNameAsync(userName);
-        if (friend is null) return this.NotFoundView("User was not found");
+        if (friend is null) return this.NotFoundRedirect(["User was not found"]);
 
         var result = await _friendsService.RemoveFriendship(user, friend);
         

@@ -1,16 +1,51 @@
 ﻿@model ErrorViewModel
+
 @{
-    ViewData["Title"] = "Error";
+    ViewBag.Title = $"{Context.Response.StatusCode} - Error while processing the request";
 }
 
-<div class="container justify-content-center text-center">
-    <h1 class="text-danger">Error.</h1>
-    <h2 class="text-danger">An error occurred while processing your request.</h2>
-
+<div class="container text-center justify-content-center mt-5">
+    @if (Model.StatusCode < 100)
+    {
+        <h1 class="display-1 text-secondary">@Model.StatusCode</h1>
+    }
+    else if (Model.StatusCode < 200)
+    {
+        <h1 class="display-1 text-info">@Model.StatusCode</h1>
+    }
+    else if (Model.StatusCode < 300)
+    {
+        <h1 class="display-1 text-success">@Model.StatusCode</h1>
+    }
+    else if (Model.StatusCode < 400)
+    {
+        <h1 class="display-1 text-warning">@Model.StatusCode</h1>
+    }
+    else 
+    {
+        <h1 class="display-1 text-danger">@Model.StatusCode</h1>
+    }
+    
+    <h3>Error while processing the request</h3>
     @if (Model.ShowRequestId)
     {
-    <p>
-        <strong>Request ID:</strong> <code>@Model.RequestId</code>
-    </p>
+        <p>
+            <strong>Request ID:</strong> <code>@Model.RequestId</code>
+        </p>
     }
+    <div>
+        @foreach (var error in Model.Errors)
+        {
+            if (Model.StatusCode < 300)
+            {
+                <p class="my-1 text-primary fs-6">@error</p>
+            }
+            else
+            {
+                <p class="my-1 text-danger fs-6">@error</p>
+            }
+        }
+    </div>
 </div>
+
+

@@ -4,7 +4,8 @@ namespace WebUI.Models.User;
 
 public class UpdateUserModel
 {
-    [BindNever] public string? UserName { get; set; }
+    [BindNever] public Guid Id { get; set; }
+    public string? UserName { get; set; }
     public bool SetPrivate { get; set; } = false;
     public bool ClearAbout { get; set; } = false;
     public bool IsAdmin { get; set; } = false;

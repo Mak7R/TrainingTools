@@ -1,4 +1,5 @@
-﻿using Application.Interfaces.Services;
+﻿using Application.Constants;
+using Application.Interfaces.Services;
 using Application.Models.Shared;
 using AutoMapper;
 using Domain.Enums;
@@ -33,8 +34,8 @@ public class ExercisesController : Controller
     [AddAvailableGroups]
     [AllowAnonymous]
     public async Task<IActionResult> GetAll(
-        OrderModel? orderModel,
-        FilterModel? filterModel, 
+        FilterViewModel? filterModel, 
+        OrderViewModel? orderModel,
         PageViewModel? pageModel,
         
         [FromServices] IExerciseResultsService resultsService, 
@@ -54,7 +55,7 @@ public class ExercisesController : Controller
         var user = await userManager.GetUserAsync(User);
 
         if (user is not null)
-            ViewBag.UserResults = await resultsService.GetForUser(user.UserName ?? string.Empty);
+            ViewBag.UserResults = await resultsService.GetAll(new FilterModel{{FilterOptionNames.ExerciseResults.OwnerId, user.Id.ToString()}}); // todo not optimize
         
         return View(_mapper.Map<List<ExerciseViewModel>>(exercises));
     }
@@ -66,7 +67,7 @@ public class ExercisesController : Controller
         var exercise = await _exercisesService.GetById(exerciseId);
 
         if (exercise is null) 
-            return this.NotFoundView("Exercise was not found");
+            return this.NotFoundRedirect(["Exercise was not found"]);
         
         return View(_mapper.Map<ExerciseViewModel>(exercise));
     }
@@ -112,7 +113,7 @@ public class ExercisesController : Controller
     {
         var exercise = await _exercisesService.GetById(exerciseId);
         if (exercise is null) 
-            return this.NotFoundView("Exercise was not found");
+            return this.NotFoundRedirect(["Exercise was not found"]);
         
         return View(_mapper.Map<UpdateExerciseModel>(exercise));
     }
@@ -148,9 +149,9 @@ public class ExercisesController : Controller
         if (result.IsSuccessful) return RedirectToAction("GetAll", "Exercises");
 
         if (result.ResultObject is NotFoundException exception)
-            return this.NotFoundView(exception.Message);
+            return this.NotFoundRedirect([exception.Message]);
         
-        return this.ErrorView(500, result.Errors);
+        return this.ErrorRedirect(500, result.Errors);
     }
 }
 

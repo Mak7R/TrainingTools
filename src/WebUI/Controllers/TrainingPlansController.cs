@@ -1,12 +1,10 @@
 ﻿using Application.Constants;
 using Application.Interfaces.Services;
-using Application.Models.Shared;
 using AutoMapper;
 using Domain.Exceptions;
 using Domain.Identity;
 using Domain.Models;
 using Domain.Models.TrainingPlan;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using WebUI.Extensions;
@@ -37,11 +35,11 @@ public class TrainingPlansController : Controller
     [HttpGet("")]
     [QueryValuesReader<DefaultOrderOptions>]
     public async Task<IActionResult> GetAll(
-        OrderModel? orderModel,
-        FilterModel? filterModel,
+        FilterViewModel? filterModel, 
+        OrderViewModel? orderModel,
         PageViewModel? pageModel)
     {
-        filterModel ??= new FilterModel();
+        filterModel ??= new FilterViewModel();
         filterModel[FilterOptionNames.TrainingPlan.PublicOnly] = "true";
         var plans = await _trainingPlansService.GetAll(filterModel, orderModel, pageModel);
         return View(plans.Select(p => _mapper.Map<TrainingPlanViewModel>(p)));
@@ -50,32 +48,32 @@ public class TrainingPlansController : Controller
     [HttpGet("for-user")]
     [QueryValuesReader<DefaultOrderOptions>]
     public async Task<IActionResult> GetUserTrainingPlans(
-        OrderModel? orderModel,
-        FilterModel? filterModel,
+        FilterViewModel? filterModel, 
+        OrderViewModel? orderModel,
         PageViewModel? pageModel)
     {
         var user = await _userManager.GetUserAsync(User);
         if (user is null)
             return RedirectToAction("Login", "Accounts", new { returnUrl = "/training-plans/for-user" });
 
-        filterModel ??= new FilterModel();
+        filterModel ??= new FilterViewModel();
         filterModel[FilterOptionNames.TrainingPlan.AuthorName] = user.UserName;
 
         var plans = await _trainingPlansService.GetAll(filterModel, orderModel, pageModel);
         return View(plans.Select(p => _mapper.Map<TrainingPlanViewModel>(p)));
     }
 
-    [HttpGet("{author}/{title}")]
-    public async Task<IActionResult> GetTrainingPlan(string author, string title)
+    [HttpGet("{planId:guid}")]
+    public async Task<IActionResult> GetTrainingPlan(Guid planId)
     {
         var user = await _userManager.GetUserAsync(User);
         if (user is null)
-            return RedirectToAction("Login", "Accounts", new { returnUrl = $"/training-plans/{author}/{title}" });
+            return RedirectToAction("Login", "Accounts", new { returnUrl = $"/training-plans/{planId}" });
         
-        var trainingPlan = await _trainingPlansService.GetByName(author, title);
+        var trainingPlan = await _trainingPlansService.GetById(planId);
 
         if (trainingPlan is null  || (!trainingPlan.IsPublic && trainingPlan.Author.Id != user.Id))
-            return this.NotFoundView(new []{"Training plan was not found"});
+            return this.NotFoundRedirect(new []{"Training plan was not found"});
         
         return View(_mapper.Map<TrainingPlanViewModel>(trainingPlan));
     }
@@ -114,28 +112,28 @@ public class TrainingPlansController : Controller
 
         if (!result.IsSuccessful)
         {
-            return this.ErrorView(500, new []{result.Exception?.Message ?? string.Empty });
+            return this.ErrorRedirect(500, new []{result.Exception?.Message ?? string.Empty });
         }
         
         return RedirectToAction("GetUserTrainingPlans", "TrainingPlans");
     }
 
-    [HttpGet("{author}/{title}/update")]
+    [HttpGet("{planId:guid}/update")]
     [AddAvailableGroups]
-    public async Task<IActionResult> Update(string author, string title, [FromServices] IGroupsService groupsService)
+    public async Task<IActionResult> Update(Guid planId)
     {
         var user = await _userManager.GetUserAsync(User);
         if (user is null)
             return RedirectToAction("Login", "Accounts",
-                new { returnUrl = $"/training-plans/{author}/{title}/update" });
+                new { returnUrl = $"/training-plans/{planId}/update" });
         
-        var trainingPlan = await _trainingPlansService.GetByName(author, title);
+        var trainingPlan = await _trainingPlansService.GetById(planId);
         
         if (trainingPlan is null)
-            return this.NotFoundView(new[] { "Training plan was not found" });
+            return this.NotFoundRedirect(new[] { "Training plan was not found" });
 
         if (trainingPlan.Author.Id != user.Id)
-            return this.ErrorView(StatusCodes.Status403Forbidden,
+            return this.ErrorRedirect(StatusCodes.Status403Forbidden,
                 new[] { "Only owner can update his/her training plan" });
         
         return View(new UpdateTrainingPlanModel
@@ -156,8 +154,8 @@ public class TrainingPlansController : Controller
         });
     }
 
-    [HttpPost("{author}/{title}/update")]
-    public async Task<IActionResult> Update(string author, string title, [UpdateTrainingPlanModelBinder] UpdateTrainingPlanModel updateTrainingPlanModel)
+    [HttpPost("{planId:guid}/update")]
+    public async Task<IActionResult> Update(Guid planId, [UpdateTrainingPlanModelBinder] UpdateTrainingPlanModel updateTrainingPlanModel)
     {
         if (!ModelState.IsValid)
         {
@@ -175,9 +173,9 @@ public class TrainingPlansController : Controller
         
         var user = await _userManager.GetUserAsync(User);
         if (user is null)
-            return RedirectToAction("Login", "Accounts", new { returnUrl = $"/training-plans/{author}/{title}/update" });
+            return RedirectToAction("Login", "Accounts", new { returnUrl = $"/training-plans/{planId}/update" });
 
-        var trainingPlan = await _trainingPlansService.GetByName(author, title);
+        var trainingPlan = await _trainingPlansService.GetById(planId);
 
         if (trainingPlan is null)
             return NotFound(new ProblemDetails
@@ -188,7 +186,7 @@ public class TrainingPlansController : Controller
             });
         
         if (user.Id != trainingPlan.Author.Id)
-            return this.ErrorView(StatusCodes.Status403Forbidden, new[] { "Only author can edit training plan" });
+            return this.ErrorRedirect(StatusCodes.Status403Forbidden, new[] { "Only author can edit training plan" });
 
         
 
@@ -244,27 +242,27 @@ public class TrainingPlansController : Controller
         return StatusCode(StatusCodes.Status500InternalServerError, problemDetails);
     }
     
-    [HttpGet("{author}/{title}/delete")]
-    public async Task<IActionResult> Delete(string author, string title)
+    [HttpGet("{planId:guid}/delete")]
+    public async Task<IActionResult> Delete(Guid planId)
     {
         var user = await _userManager.GetUserAsync(User);
         if (user is null)
-            return RedirectToAction("Login", "Accounts", new { returnUrl = $"/training-plans/{author}/{title}/update" });
+            return RedirectToAction("Login", "Accounts", new { returnUrl = $"/training-plans/{planId}/update" });
 
-        var plan = await _trainingPlansService.GetByName(author, title);
+        var plan = await _trainingPlansService.GetById(planId);
 
         if (plan is null)
-            return this.NotFoundView(new[] { "Plan was not found" });
+            return this.NotFoundRedirect(new[] { "Plan was not found" });
 
         if (plan.Author.Id != user.Id)
-            return this.ErrorView(StatusCodes.Status403Forbidden,
+            return this.ErrorRedirect(StatusCodes.Status403Forbidden,
                 new[] { "Only owner can delete his/her training plan" });
 
         var result = await _trainingPlansService.Delete(plan.Id);
 
         if (!result.IsSuccessful)
         {
-            return this.ErrorView(500, new []{result.Exception?.Message ?? string.Empty });
+            return this.ErrorRedirect(500, new []{result.Exception?.Message ?? string.Empty });
         }
 
         return RedirectToAction("GetUserTrainingPlans");

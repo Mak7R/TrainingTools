@@ -45,7 +45,7 @@ public class HomeController : Controller
         }
         catch (Exception e)
         {
-            return this.BadRequestView(new []{e.Message});
+            return this.BadRequestRedirect(new []{e.Message});
         }
         
         if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl)) 
@@ -54,9 +54,20 @@ public class HomeController : Controller
     }
 
     [Route("/error")]
+    [Route("/error/{statusCode:int}")]
     [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-    public IActionResult Error()
+    public IActionResult Error(int statusCode = 500, string[]? errors = null)
     {
-        return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+        if (statusCode is >= 200 and < 600)
+        {
+            Response.StatusCode = statusCode;
+        }
+        
+        return View(new ErrorViewModel
+        {
+            StatusCode = statusCode, 
+            Errors = errors ?? [], 
+            RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier
+        });
     }
 }

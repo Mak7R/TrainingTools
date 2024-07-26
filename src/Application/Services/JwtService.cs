@@ -20,8 +20,6 @@ public class JwtService : IAuthTokenService<TokenGenerationInfo>
     
     public string GenerateToken(TokenGenerationInfo generationInfo)
     {
-        DateTime expiration = DateTime.UtcNow.AddMinutes(Convert.ToDouble(_configuration["Jwt:EXPIRATION_MINUTES"]));
-       
         var claims = new List<Claim> { 
             new (JwtRegisteredClaimNames.Sub, generationInfo.User.Id.ToString()),
             new (JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()), 
@@ -36,6 +34,7 @@ public class JwtService : IAuthTokenService<TokenGenerationInfo>
         var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key));
         var signingCredentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
         
+        var expiration = DateTime.UtcNow.AddMinutes(Convert.ToDouble(_configuration["Jwt:EXPIRATION_MINUTES"]));
         
         var token = new JwtSecurityToken(
             _configuration["Jwt:Issuer"],

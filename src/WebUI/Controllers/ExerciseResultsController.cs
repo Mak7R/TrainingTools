@@ -7,7 +7,6 @@ using Domain.Enums;
 using Domain.Exceptions;
 using Domain.Identity;
 using Domain.Models;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -15,7 +14,6 @@ using WebUI.Extensions;
 using WebUI.Filters;
 using WebUI.Models.Exercise;
 using WebUI.Models.ExerciseResult;
-using WebUI.Models.Group;
 using WebUI.Models.Shared;
 
 namespace WebUI.Controllers;
@@ -40,7 +38,7 @@ public class ExerciseResultsController : Controller
 
     [HttpGet("")]
     [QueryValuesReader<DefaultOrderOptions>]
-    public async Task<IActionResult> GetUserResults(OrderModel? orderModel, FilterModel? filterModel, PageViewModel? pageModel)
+    public async Task<IActionResult> GetUserResults(FilterViewModel? filterModel, OrderViewModel? orderModel, PageViewModel? pageModel)
     {
         var user = await _userManager.GetUserAsync(HttpContext.User);
         if (user is null) return RedirectToAction("Login", "Accounts", new {returnUrl = "/exercises/results"});
@@ -53,64 +51,18 @@ public class ExerciseResultsController : Controller
             ViewBag.DefaultPageSize = defaultPageSize;
         }
 
-        filterModel ??= new FilterModel();
-        filterModel[FilterOptionNames.ExerciseResults.OwnerNameEquals] = user.UserName;
+        filterModel ??= new FilterViewModel();
+        filterModel[FilterOptionNames.ExerciseResults.OwnerId] = user.Id.ToString();
+        
+        var results = await _exerciseResultsService.GetAll(filterModel, orderModel, pageModel);
         ViewBag.ExerciseResultsCount = await _exerciseResultsService.Count(filterModel);
-        
-        var results = await _exerciseResultsService.GetForUser(user.UserName ?? string.Empty, filterModel, orderModel, pageModel);
-        
+
         return View(results.Select(r => _mapper.Map<ExerciseResultViewModel>(r)));
     }
     
-    [HttpGet("as-exel")]
-    public async Task<IActionResult> GetUserResultsAsExcel([FromServices] IExerciseResultsToExсelExporter exсelExporter)
-    {
-        var user = await _userManager.GetUserAsync(HttpContext.User);
-        if (user is null) return RedirectToAction("Login", "Accounts", new {returnUrl = "/exercises/results"});
-        
-        var results = await _exerciseResultsService.GetForUser(user.UserName ?? string.Empty);
-        var stream = await exсelExporter.ToExсel(results);
-        
-        return File(stream, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "results.xlsx");
-    }
-    
-    [HttpGet("for-exercise/{exerciseId:guid}")]
+    [HttpGet("{userName}")]
     [QueryValuesReader<DefaultOrderOptions>]
-    public async Task<IActionResult> GetFriendsResultsForExercise(Guid exerciseId, [FromServices] IExercisesService exercisesService,
-        FilterModel? filterModel, OrderModel? orderModel, PageViewModel? pageModel)
-    {
-        var user = await _userManager.GetUserAsync(HttpContext.User);
-        if (user is null) return RedirectToAction("Login", "Accounts", new {returnUrl = $"/exercises/results/for-exercise/{exerciseId}"});
-        
-        var exercise = await exercisesService.GetById(exerciseId);
-
-        if (exercise is null)
-            return this.NotFoundView("Exercise was not found");
-
-        ViewBag.Exercise = new ExerciseViewModel
-        {
-            Id = exercise.Id, Name = exercise.Name,
-            Group = new GroupViewModel { Id = exercise.Group.Id, Name = exercise.Group.Name }
-        };
-        
-        pageModel ??= new PageViewModel();
-        if (pageModel.PageSize is PageModel.DefaultPageSize or <= 0)
-        {
-            int defaultPageSize = 9;
-            pageModel.PageSize = defaultPageSize;
-            ViewBag.DefaultPageSize = defaultPageSize;
-        } 
-        filterModel ??= new FilterModel();
-        filterModel[FilterOptionNames.ExerciseResults.FullNameEquals] = $"{exercise.Group.Name}/{exercise.Name}";
-        ViewBag.ExerciseResultsCount = await _exerciseResultsService.Count(filterModel);
-        
-        var results = await _exerciseResultsService.GetOnlyUserAndFriendsResultForExercise(user, exercise.Group.Name ?? string.Empty, exercise.Name ?? string.Empty, filterModel, orderModel, pageModel);
-        return View(results.Select(r => _mapper.Map<ExerciseResultViewModel>(r)));
-    }  
-    
-    [HttpGet("for-user/{userName}")]
-    [QueryValuesReader<DefaultOrderOptions>]
-    public async Task<IActionResult> GetResultsForUser(string userName, FilterModel? filterModel, OrderModel? orderModel, PageModel? pageModel)
+    public async Task<IActionResult> GetUserResults(string userName, FilterViewModel? filterModel, OrderViewModel? orderModel, PageModel? pageModel)
     {
         var user = await _userManager.GetUserAsync(HttpContext.User);
         if (user is null) return RedirectToAction("Login", "Accounts", new {returnUrl = "/exercises/results"});
@@ -135,7 +87,7 @@ public class ExerciseResultsController : Controller
         }
 
         if (searchableUser is null)
-            return this.NotFoundView("User was not found");
+            return this.NotFoundRedirect(["User was not found"]);
         
         pageModel ??= new PageModel();
         if (pageModel.PageSize is PageModel.DefaultPageSize or <= 0)
@@ -145,16 +97,66 @@ public class ExerciseResultsController : Controller
             ViewBag.DefaultPageSize = defaultPageSize;
         }
 
-        filterModel ??= new FilterModel();
-        filterModel[FilterOptionNames.ExerciseResults.OwnerNameEquals] = searchableUser.UserName;
+        filterModel ??= new FilterViewModel();
+        filterModel[FilterOptionNames.ExerciseResults.OwnerId] = searchableUser.Id.ToString();
+        
+        var results = await _exerciseResultsService.GetAll(filterModel, orderModel, pageModel);
+        
+        ViewBag.ExerciseResultsCount = await _exerciseResultsService.Count(filterModel);
+        ViewBag.UserName = userName;
+        
+        return View(results.Select(r => _mapper.Map<ExerciseResultViewModel>(r)));
+    }
+    
+    [HttpGet("as-exel")]
+    public async Task<IActionResult> GetUserResultsAsExcel([FromServices] IExerciseResultsToExсelExporter exсelExporter)
+    {
+        var user = await _userManager.GetUserAsync(HttpContext.User);
+        if (user is null) return RedirectToAction("Login", "Accounts", new {returnUrl = "/exercises/results"});
+        
+        var filterModel = new FilterModel
+        {
+            {FilterOptionNames.ExerciseResults.OwnerId, user.Id.ToString()}
+        };
+        var results = await _exerciseResultsService.GetAll(filterModel);
+        var stream = await exсelExporter.ToExсel(results);
+        
+        return File(stream, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "results.xlsx");
+    }
+    
+    [HttpGet("for-exercise/{exerciseId:guid}")]
+    [QueryValuesReader<DefaultOrderOptions>]
+    public async Task<IActionResult> GetFriendsResultsForExercise([FromRoute] Guid exerciseId, 
+        FilterViewModel? filterModel, OrderViewModel? orderModel, PageViewModel? pageModel, 
+        [FromServices] IExercisesService exercisesService)
+    {
+        var user = await _userManager.GetUserAsync(HttpContext.User);
+        if (user is null) return RedirectToAction("Login", "Accounts", new {returnUrl = $"/exercises/results/for-exercise/{exerciseId}"});
+        
+        var exercise = await exercisesService.GetById(exerciseId);
+
+        if (exercise is null)
+            return this.NotFoundRedirect(["Exercise was not found"]);
+
+        ViewBag.Exercise = _mapper.Map<ExerciseViewModel>(exercise);
+        
+        pageModel ??= new PageViewModel();
+        if (pageModel.PageSize is PageModel.DefaultPageSize or <= 0)
+        {
+            int defaultPageSize = 9;
+            pageModel.PageSize = defaultPageSize;
+            ViewBag.DefaultPageSize = defaultPageSize;
+        } 
+        filterModel ??= new FilterViewModel();
+        filterModel[FilterOptionNames.ExerciseResults.ExerciseId] = exerciseId.ToString();
+        
+        var results = await _exerciseResultsService.GetOnlyUserAndFriendsResultForExercise(user.Id, exerciseId, filterModel, orderModel, pageModel);
         ViewBag.ExerciseResultsCount = await _exerciseResultsService.Count(filterModel);
         
-        var results = await _exerciseResultsService.GetForUser(searchableUser.UserName ?? string.Empty, filterModel, orderModel, pageModel);
-        ViewBag.UserName = userName;
-        return View("GetUserResults", results.Select(r => _mapper.Map<ExerciseResultViewModel>(r)));
-    }
+        return View(results.Select(r => _mapper.Map<ExerciseResultViewModel>(r)));
+    }  
 
-    [HttpGet("add/{exerciseId:guid}")]
+    [HttpGet("{exerciseId:guid}/create")]
     public async Task<IActionResult> Create([FromRoute] Guid exerciseId, [FromQuery] string? returnUrl)
     {
         var user = await _userManager.GetUserAsync(HttpContext.User);
@@ -171,12 +173,12 @@ public class ExerciseResultsController : Controller
         }
 
         if (result.Exception is AlreadyExistsException)
-            return this.BadRequestView(result.Errors);
+            return this.BadRequestRedirect(result.Errors);
 
-        return this.ErrorView(500, result.Errors);
+        return this.ErrorRedirect(500, result.Errors);
     }
     
-    [HttpGet("delete/{exerciseId:guid}")]
+    [HttpGet("{exerciseId:guid}/delete")]
     public async Task<IActionResult> Delete(Guid exerciseId)
     {
         var user = await _userManager.GetUserAsync(HttpContext.User);
@@ -188,24 +190,24 @@ public class ExerciseResultsController : Controller
             return RedirectToAction("GetUserResults");
 
         if (result.Exception is NotFoundException)
-            return this.NotFoundView(result.Errors);
+            return this.NotFoundRedirect(result.Errors);
         
-        return  this.ErrorView(500, result.Errors);
+        return  this.ErrorRedirect(500, result.Errors);
     }
     
-    [HttpGet("update/{exerciseId:guid}")]
+    [HttpGet("{exerciseId:guid}/update")]
     public async Task<IActionResult> Update(Guid exerciseId)
     {
         var user = await _userManager.GetUserAsync(User);
         if (user is null) return RedirectToAction("Login", "Accounts", new {returnUrl = $"/exercises/results/update/{exerciseId}"});
 
         var result = await _exerciseResultsService.GetById(user.Id, exerciseId);
-        if (result is null) return this.NotFoundView("Result was not found");
+        if (result is null) return this.NotFoundRedirect(["Result was not found"]);
 
         return View(_mapper.Map<ExerciseResultViewModel>(result));
     }
     
-    [HttpPost("update/{exerciseId:guid}")]
+    [HttpPost("{exerciseId:guid}/update")]
     public async Task<IActionResult> Update(Guid exerciseId, [FromForm] UpdateResultsModel updateResultsModel)
     {
         // todo custom model binder and validator for update results model
@@ -246,11 +248,11 @@ public class ExerciseResultsController : Controller
             return RedirectToAction("GetUserResults");
 
         if (result.Exception is NotFoundException)
-            return this.NotFoundView(result.Errors);
+            return this.NotFoundRedirect(result.Errors);
 
         if (result.Exception is AlreadyExistsException)
-            return this.BadRequestView(result.Errors);
+            return this.BadRequestRedirect(result.Errors);
         
-        return this.ErrorView(StatusCodes.Status500InternalServerError, result.Errors);
+        return this.ErrorRedirect(StatusCodes.Status500InternalServerError, result.Errors);
     }
 }

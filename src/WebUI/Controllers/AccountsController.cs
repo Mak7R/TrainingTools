@@ -145,7 +145,7 @@ public class AccountsController : Controller
             return View(updateProfileDto);
         
         var user = await _userManager.GetUserAsync(HttpContext.User);
-        if (user == null) return this.NotFoundView("User was not found");
+        if (user == null) return this.NotFoundRedirect(["User was not found"]);
 
         user.UserName = updateProfileDto.Username;
         user.Email = updateProfileDto.Email;
@@ -156,12 +156,12 @@ public class AccountsController : Controller
         if (await _userManager.CheckPasswordAsync(user, updateProfileDto.CurrentPassword!))
         {
             var result = await _userManager.UpdateAsync(user);
-            if (!result.Succeeded) return this.BadRequestView(result.Errors.Select(err=>err.Description));
+            if (!result.Succeeded) return this.BadRequestRedirect(result.Errors.Select(err=>err.Description));
             
             if (!string.IsNullOrWhiteSpace(updateProfileDto.NewPassword))
             {
                 var updatePasswordResult = await _userManager.ChangePasswordAsync(user, updateProfileDto.CurrentPassword!, updateProfileDto.NewPassword);
-                if (!updatePasswordResult.Succeeded) return this.BadRequestView(updatePasswordResult.Errors.Select(err=>err.Description));
+                if (!updatePasswordResult.Succeeded) return this.BadRequestRedirect(updatePasswordResult.Errors.Select(err=>err.Description));
             }
             
             var roles = await _userManager.GetRolesAsync(user);
@@ -195,11 +195,11 @@ public class AccountsController : Controller
         if (user == null)
             return RedirectToAction("Login","Accounts");
 
-        if (string.IsNullOrWhiteSpace(password)) return this.BadRequestView(new[] { "Invalid password" });
+        if (string.IsNullOrWhiteSpace(password)) return this.BadRequestRedirect(new[] { "Invalid password" });
 
         if (!await _userManager.CheckPasswordAsync(user, password))
         {
-            return this.BadRequestView(new[] { "Invalid password" });
+            return this.BadRequestRedirect(new[] { "Invalid password" });
         }
         
         var result = await _userManager.DeleteAsync(user);
@@ -208,7 +208,7 @@ public class AccountsController : Controller
             await _signInManager.SignOutAsync();
             return RedirectToAction("Index", "Home");
         }
-        return this.ErrorView(500, result.Errors.Select(err => err.Description));
+        return this.ErrorRedirect(500, result.Errors.Select(err => err.Description));
     }
     
     [AllowAnonymous]
@@ -237,7 +237,6 @@ public class AccountsController : Controller
     [Route("/access-denied")]
     public IActionResult AccessDenied(string? returnUrl)
     {
-        Response.StatusCode = StatusCodes.Status403Forbidden;
-        return View("AccessDenied", returnUrl);
+        return this.ForbiddenRedirect([$"Access denied to url: {returnUrl}"]);
     }
 }

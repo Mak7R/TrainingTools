@@ -105,7 +105,7 @@ public class AccountsController : ApiController
 
     [AuthorizeVerifiedRoles]
     [HttpPost("profile")]
-    public async Task<IActionResult> UpdateProfile([FromBody] UpdateProfileDto? updateProfileDto)
+    public async Task<IActionResult> UpdateProfile(UpdateProfileDto? updateProfileDto)
     {
         ArgumentNullException.ThrowIfNull(updateProfileDto);
         
