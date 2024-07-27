@@ -38,7 +38,6 @@ public class AccountsController : ApiController
         if (result.Succeeded)
         {
             await _userManager.AddToRoleAsync(newUser, nameof(Role.User));
-            //await _signInManager.SignInAsync(newUser, isPersistent: true);
 
             var token = _tokenService.GenerateToken(new TokenGenerationInfo { User = newUser, Roles = [nameof(Role.User)] });
             return Ok(new AuthenticationResponse{UserName = newUser.UserName, Email = newUser.Email, Roles = [nameof(Role.User)], Token = token});
@@ -77,8 +76,6 @@ public class AccountsController : ApiController
             return Problem(detail:"Invalid login or password", statusCode:400);
         }
         
-        //var result = await _signInManager.PasswordSignInAsync(user.UserName!, loginDto.Password!, isPersistent: true, lockoutOnFailure: false);
-        
         if (await _userManager.CheckPasswordAsync(user, loginDto.Password!))
         {
             var roles = await _userManager.GetRolesAsync(user);
@@ -94,7 +91,7 @@ public class AccountsController : ApiController
     public async Task<IActionResult> Profile()
     {
         var user = await _userManager.GetUserAsync(User);
-        if (user == null) return Problem("User was unauthorized", statusCode:StatusCodes.Status401Unauthorized);
+        if (user == null) return Problem("User unauthorized", statusCode:StatusCodes.Status401Unauthorized);
 
         var profile = _mapper.Map<ProfileViewModel>(user);
         profile.Roles = await _userManager.GetRolesAsync(user);
@@ -110,7 +107,7 @@ public class AccountsController : ApiController
         ArgumentNullException.ThrowIfNull(updateProfileDto);
         
         var user = await _userManager.GetUserAsync(HttpContext.User);
-        if (user == null) return Problem("User was unauthorized", statusCode:StatusCodes.Status401Unauthorized);
+        if (user == null) return Problem("User unauthorized", statusCode:StatusCodes.Status401Unauthorized);
 
         user.UserName = updateProfileDto.Username;
         user.Email = updateProfileDto.Email;
@@ -159,7 +156,7 @@ public class AccountsController : ApiController
     {
         var user = await _userManager.GetUserAsync(HttpContext.User);
         if (user == null)
-            return RedirectToAction("Login","Accounts");
+            return Problem("User unauthorized", statusCode:StatusCodes.Status401Unauthorized);
 
         if (string.IsNullOrWhiteSpace(password)) 
             return StatusCode(StatusCodes.Status403Forbidden, new ProblemDetails { Detail = "Invalid password", Status = 403});

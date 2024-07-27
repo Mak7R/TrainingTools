@@ -199,6 +199,7 @@ public class UsersService : IUsersService
         ArgumentNullException.ThrowIfNull(currentUser);
         
         var roles = await _userManager.GetRolesAsync(currentUser);
+        var isCurrentUserAdmin = roles.Contains(nameof(Role.Root)) || roles.Contains(nameof(Role.Admin));
         
         var friends = (await _friendsService.GetFriendsFor(currentUser)).ToDictionary(f => f.Id);
         var inviters = (await _friendsService.GetInvitationsFor(currentUser)).Select(i => i.Invitor).ToDictionary(f => f.Id);
@@ -209,13 +210,23 @@ public class UsersService : IUsersService
             var friendsIds = friends.Select(f => f.Value.Id);
             var invitersIds = inviters.Select(f => f.Value.Id);
             
-            foundUser = 
-                roles.Contains(nameof(Role.Root)) || roles.Contains(nameof(Role.Admin))
+            foundUser = isCurrentUserAdmin
                     ? _userManager.Users.FirstOrDefault(predicate)
                     : _userManager.Users.Where(u => u.IsPublic || friendsIds.Contains(u.Id) || invitersIds.Contains(u.Id)).FirstOrDefault(predicate);
         }
         
         if (foundUser == null) return null;
+
+        if (!isCurrentUserAdmin)
+        {
+            foundUser = new ApplicationUser
+            {
+                Id = foundUser.Id,
+                UserName = foundUser.UserName,
+                About = foundUser.About,
+                IsPublic = foundUser.IsPublic
+            };
+        }
         
         var relationshipState = 
             friends.ContainsKey(foundUser.Id) ? RelationshipState.Friends

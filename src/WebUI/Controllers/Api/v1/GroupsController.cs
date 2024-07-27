@@ -37,10 +37,17 @@ public class GroupsController : ApiController
     public async Task<ActionResult<IEnumerable<GroupViewModel>>> GetAll(FilterViewModel? filterModel, OrderViewModel? orderModel, PageViewModel? pageModel)
     {
         var groups = await _groupsService.GetAll(filterModel, orderModel, pageModel);
-
         return _mapper.Map<List<GroupViewModel>>(groups);
     }
 
+    [HttpGet("count")]
+    [QueryValuesReader<DefaultOrderOptions>]
+    [AllowAnonymous]
+    public async Task<IActionResult> Count(FilterViewModel? filterModel)
+    {
+        return Ok(await _groupsService.Count(filterModel));
+    }
+    
     [HttpGet("{groupId:guid}")]
     [AllowAnonymous]
     public async Task<ActionResult<GroupViewModel>> Get(Guid groupId)

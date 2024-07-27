@@ -94,7 +94,7 @@
                 </td>
                 <td>
                     @{
-                        await Html.RenderPartialAsync("Partials/UsersRelationshipActions", (userInfo.RelationshipState, userInfo.User.UserName, Context.Request.Path.ToString()));
+                        await Html.RenderPartialAsync("Partials/UsersRelationshipActions", (userInfo.RelationshipState, userInfo.User, Context.Request.Path.ToString()));
                     }
                 </td>
             </tr>

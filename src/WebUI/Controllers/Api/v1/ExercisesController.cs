@@ -35,6 +35,14 @@ public class ExercisesController : ApiController
         var exercises = await _exercisesService.GetAll(filterModel, orderModel, pageModel);
         return Ok(_mapper.Map<List<ExerciseViewModel>>(exercises));
     }
+    
+    [HttpGet("count")]
+    [QueryValuesReader<DefaultOrderOptions>]
+    [AllowAnonymous]
+    public async Task<IActionResult> Count(FilterViewModel? filterModel)
+    {
+        return Ok(await _exercisesService.Count(filterModel));
+    }
 
     [HttpGet("{exerciseId:guid}")]
     [AllowAnonymous]
