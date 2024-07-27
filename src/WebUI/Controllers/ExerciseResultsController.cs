@@ -41,7 +41,7 @@ public class ExerciseResultsController : Controller
     public async Task<IActionResult> GetUserResults(FilterViewModel? filterModel, OrderViewModel? orderModel, PageViewModel? pageModel)
     {
         var user = await _userManager.GetUserAsync(HttpContext.User);
-        if (user is null) return RedirectToAction("Login", "Accounts", new {returnUrl = "/exercises/results"});
+        if (user is null) return RedirectToAction("Login", "Account", new {returnUrl = "/exercises/results"});
         
         pageModel ??= new PageViewModel();
         if (pageModel.PageSize is PageModel.DefaultPageSize or <= 0)
@@ -65,7 +65,7 @@ public class ExerciseResultsController : Controller
     public async Task<IActionResult> GetUserResults(string userName, FilterViewModel? filterModel, OrderViewModel? orderModel, PageModel? pageModel)
     {
         var user = await _userManager.GetUserAsync(HttpContext.User);
-        if (user is null) return RedirectToAction("Login", "Accounts", new {returnUrl = "/exercises/results"});
+        if (user is null) return RedirectToAction("Login", "Account", new {returnUrl = "/exercises/results"});
 
         if (user.UserName == userName)
             return RedirectToAction("GetUserResults");
@@ -112,7 +112,7 @@ public class ExerciseResultsController : Controller
     public async Task<IActionResult> GetUserResultsAsExcel([FromServices] IExerciseResultsToExсelExporter exсelExporter)
     {
         var user = await _userManager.GetUserAsync(HttpContext.User);
-        if (user is null) return RedirectToAction("Login", "Accounts", new {returnUrl = "/exercises/results"});
+        if (user is null) return RedirectToAction("Login", "Account", new {returnUrl = "/exercises/results"});
         
         var filterModel = new FilterModel
         {
@@ -131,7 +131,7 @@ public class ExerciseResultsController : Controller
         [FromServices] IExercisesService exercisesService)
     {
         var user = await _userManager.GetUserAsync(HttpContext.User);
-        if (user is null) return RedirectToAction("Login", "Accounts", new {returnUrl = $"/exercises/results/for-exercise/{exerciseId}"});
+        if (user is null) return RedirectToAction("Login", "Account", new {returnUrl = $"/exercises/results/for-exercise/{exerciseId}"});
         
         var exercise = await exercisesService.GetById(exerciseId);
 
@@ -160,7 +160,7 @@ public class ExerciseResultsController : Controller
     public async Task<IActionResult> Create([FromRoute] Guid exerciseId, [FromQuery] string? returnUrl)
     {
         var user = await _userManager.GetUserAsync(HttpContext.User);
-        if (user is null) return RedirectToAction("Login", "Accounts", new {returnUrl = "/exercises/results"});
+        if (user is null) return RedirectToAction("Login", "Account", new {returnUrl = "/exercises/results"});
         
         var result = await _exerciseResultsService.Create(new ExerciseResult
             { Owner = user, Exercise = new Exercise { Id = exerciseId } });
@@ -182,7 +182,7 @@ public class ExerciseResultsController : Controller
     public async Task<IActionResult> Delete(Guid exerciseId)
     {
         var user = await _userManager.GetUserAsync(HttpContext.User);
-        if (user is null) return RedirectToAction("Login", "Accounts", new {returnUrl = "/exercises/results"});
+        if (user is null) return RedirectToAction("Login", "Account", new {returnUrl = "/exercises/results"});
         
         var result = await _exerciseResultsService.Delete(user.Id, exerciseId);
 
@@ -199,7 +199,7 @@ public class ExerciseResultsController : Controller
     public async Task<IActionResult> Update(Guid exerciseId)
     {
         var user = await _userManager.GetUserAsync(User);
-        if (user is null) return RedirectToAction("Login", "Accounts", new {returnUrl = $"/exercises/results/update/{exerciseId}"});
+        if (user is null) return RedirectToAction("Login", "Account", new {returnUrl = $"/exercises/results/update/{exerciseId}"});
 
         var result = await _exerciseResultsService.GetById(user.Id, exerciseId);
         if (result is null) return this.NotFoundRedirect(["Result was not found"]);
@@ -233,7 +233,7 @@ public class ExerciseResultsController : Controller
         }
         
         var user = await _userManager.GetUserAsync(User);
-        if (user is null) return RedirectToAction("Login", "Accounts", new {returnUrl = $"/exercises/results/update/{exerciseId}"});
+        if (user is null) return RedirectToAction("Login", "Account", new {returnUrl = $"/exercises/results/update/{exerciseId}"});
         
         var exerciseResult = new ExerciseResult
         {

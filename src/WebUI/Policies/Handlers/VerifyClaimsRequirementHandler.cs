@@ -32,6 +32,12 @@ public class VerifyClaimsRequirementHandler : AuthorizationHandler<VerifyClaimsR
             context.Fail();
             return;
         }
+
+        if (!user.EmailConfirmed)
+        {
+            context.Fail();
+            return;
+        }
         
         var rolesFromClaim = context.User.Claims.Where(c => c.Type == ClaimTypes.Role).Select(c => c.Value).ToList();
         var roles = await _userManager.GetRolesAsync(user);

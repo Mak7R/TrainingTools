@@ -36,7 +36,7 @@ public class UsersController : Controller
     public async Task<IActionResult> GetAll(FilterViewModel? filterModel, OrderViewModel? orderModel, PageViewModel? pageModel)
     {
         var user = await _userManager.GetUserAsync(User);
-        if (user is null) return RedirectToAction("Login", "Accounts", new {ReturnUrl = "/users"});
+        if (user is null) return RedirectToAction("Login", "Account", new {ReturnUrl = "/users"});
         
         pageModel ??= new PageViewModel();
         if (pageModel.PageSize is PageModel.DefaultPageSize or <= 0)
@@ -69,10 +69,10 @@ public class UsersController : Controller
             return this.BadRequestRedirect(new [] {"UserName was empty"});
         
         var user = await _userManager.GetUserAsync(User);
-        if (user is null) return RedirectToAction("Login", "Accounts", new {ReturnUrl = $"/users/{userName}"});
+        if (user is null) return RedirectToAction("Login", "Account", new {ReturnUrl = $"/users/{userName}"});
 
         if (user.UserName == userName)
-            return RedirectToAction("Profile", "Accounts");
+            return RedirectToAction("Profile", "Account");
         
         var userInfo = await _usersService.GetByName(user, userName);
         if (userInfo is null) return this.NotFoundRedirect(["User with this username was not found"]);
@@ -85,10 +85,10 @@ public class UsersController : Controller
     public async Task<IActionResult> Get(Guid userId)
     {
         var user = await _userManager.GetUserAsync(User);
-        if (user is null) return RedirectToAction("Login", "Accounts", new {ReturnUrl = $"/users/{userId}"});
+        if (user is null) return RedirectToAction("Login", "Account", new {ReturnUrl = $"/users/{userId}"});
 
         if (user.Id == userId)
-            return RedirectToAction("Profile", "Accounts");
+            return RedirectToAction("Profile", "Account");
         
         var userInfo = await _usersService.GetById(user, userId);
         if (userInfo is null) return this.NotFoundRedirect(["User with this id was not found"]);
@@ -109,7 +109,7 @@ public class UsersController : Controller
     public async Task<IActionResult> Create(CreateUserModel createUserModel)
     {
         var user = await _userManager.GetUserAsync(User);
-        if (user is null) return RedirectToAction("Login", "Accounts", new {ReturnUrl = "/users/create"});
+        if (user is null) return RedirectToAction("Login", "Account", new {ReturnUrl = "/users/create"});
         
         if (!ModelState.IsValid)
             return View(createUserModel);
@@ -137,7 +137,7 @@ public class UsersController : Controller
     public async Task<IActionResult> Update(Guid userId)
     {
         var currentUser = await _userManager.GetUserAsync(User);
-        if (currentUser is null) return RedirectToAction("Login", "Accounts", new {ReturnUrl = $"/users/{userId}/update"});
+        if (currentUser is null) return RedirectToAction("Login", "Account", new {ReturnUrl = $"/users/{userId}/update"});
 
         var user = await _userManager.FindByIdAsync(userId.ToString());
         if (user is null) return this.NotFoundRedirect(["User was not found"]);
@@ -163,7 +163,7 @@ public class UsersController : Controller
     {
         var user = await _userManager.GetUserAsync(User);
         if (user is null) 
-            return RedirectToAction("Login", "Accounts", new {ReturnUrl = $"/users/{userId}/update"});
+            return RedirectToAction("Login", "Account", new {ReturnUrl = $"/users/{userId}/update"});
         
         if (!ModelState.IsValid)
         {
@@ -194,7 +194,7 @@ public class UsersController : Controller
     public async Task<IActionResult> Delete([FromRoute] Guid userId)
     {
         var user = await _userManager.GetUserAsync(User);
-        if (user is null) return RedirectToAction("Login", "Accounts", new {ReturnUrl = "/users"});
+        if (user is null) return RedirectToAction("Login", "Account", new {ReturnUrl = "/users"});
         
         var result = await _usersService.Delete(user, userId);
         if (!result.IsSuccessful) return this.BadRequestRedirect(result.Errors);

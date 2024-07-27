@@ -54,7 +54,7 @@ public class TrainingPlansController : Controller
     {
         var user = await _userManager.GetUserAsync(User);
         if (user is null)
-            return RedirectToAction("Login", "Accounts", new { returnUrl = "/training-plans/for-user" });
+            return RedirectToAction("Login", "Account", new { returnUrl = "/training-plans/for-user" });
 
         filterModel ??= new FilterViewModel();
         filterModel[FilterOptionNames.TrainingPlan.AuthorName] = user.UserName;
@@ -68,7 +68,7 @@ public class TrainingPlansController : Controller
     {
         var user = await _userManager.GetUserAsync(User);
         if (user is null)
-            return RedirectToAction("Login", "Accounts", new { returnUrl = $"/training-plans/{planId}" });
+            return RedirectToAction("Login", "Account", new { returnUrl = $"/training-plans/{planId}" });
         
         var trainingPlan = await _trainingPlansService.GetById(planId);
 
@@ -83,7 +83,7 @@ public class TrainingPlansController : Controller
     {
         var user = await _userManager.GetUserAsync(User);
         if (user is null)
-            return RedirectToAction("Login", "Accounts", new { returnUrl = "/training-plans/create" });
+            return RedirectToAction("Login", "Account", new { returnUrl = "/training-plans/create" });
 
         return View();
     }
@@ -93,7 +93,7 @@ public class TrainingPlansController : Controller
     {
         var user = await _userManager.GetUserAsync(User);
         if (user is null)
-            return RedirectToAction("Login", "Accounts", new { returnUrl = "/training-plans/create" });
+            return RedirectToAction("Login", "Account", new { returnUrl = "/training-plans/create" });
 
         if (!ModelState.IsValid)
         {
@@ -124,7 +124,7 @@ public class TrainingPlansController : Controller
     {
         var user = await _userManager.GetUserAsync(User);
         if (user is null)
-            return RedirectToAction("Login", "Accounts",
+            return RedirectToAction("Login", "Account",
                 new { returnUrl = $"/training-plans/{planId}/update" });
         
         var trainingPlan = await _trainingPlansService.GetById(planId);
@@ -173,7 +173,7 @@ public class TrainingPlansController : Controller
         
         var user = await _userManager.GetUserAsync(User);
         if (user is null)
-            return RedirectToAction("Login", "Accounts", new { returnUrl = $"/training-plans/{planId}/update" });
+            return RedirectToAction("Login", "Account", new { returnUrl = $"/training-plans/{planId}/update" });
 
         var trainingPlan = await _trainingPlansService.GetById(planId);
 
@@ -247,7 +247,7 @@ public class TrainingPlansController : Controller
     {
         var user = await _userManager.GetUserAsync(User);
         if (user is null)
-            return RedirectToAction("Login", "Accounts", new { returnUrl = $"/training-plans/{planId}/update" });
+            return RedirectToAction("Login", "Account", new { returnUrl = $"/training-plans/{planId}/update" });
 
         var plan = await _trainingPlansService.GetById(planId);
 

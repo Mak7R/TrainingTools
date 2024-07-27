@@ -5,7 +5,7 @@
 }
 
 <div class="container">
-    <form method="post" asp-controller="Accounts" asp-action="UpdateProfile">
+    <form method="post" asp-controller="Account" asp-action="UpdateProfile">
         <div class="col">
             <div class="mb-3">
                 <label asp-for="Username" class="form-label"></label>
@@ -70,7 +70,7 @@
         </div>
 
         <div class="mb-3">
-            <a class="btn btn-secondary" asp-controller="Accounts" asp-action="Profile">Cancel</a>
+            <a class="btn btn-secondary" asp-controller="Account" asp-action="Profile">Cancel</a>
             <button type="submit" class="btn btn-primary">Save changes</button>
         </div>
 

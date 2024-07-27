@@ -32,7 +32,7 @@ public class FriendsController : Controller
     public async Task<IActionResult> Invite(Guid userId, string? returnUrl = null)
     {
         var user = await _userManager.GetUserAsync(HttpContext.User);
-        if (user is null) return RedirectToAction("Login", "Accounts");
+        if (user is null) return RedirectToAction("Login", "Account");
 
         var targetUser = await _userManager.FindByIdAsync(userId.ToString());
         if (targetUser is null) return this.NotFoundRedirect(["User was not found"]);
@@ -54,7 +54,7 @@ public class FriendsController : Controller
     public async Task<IActionResult> Accept(Guid userId, string? returnUrl)
     {
         var user = await _userManager.GetUserAsync(HttpContext.User);
-        if (user is null) return RedirectToAction("Login", "Accounts");
+        if (user is null) return RedirectToAction("Login", "Account");
 
         var invitor = await _userManager.FindByIdAsync(userId.ToString());
         if (invitor is null) return this.NotFoundRedirect(["User was not found"]);
@@ -76,7 +76,7 @@ public class FriendsController : Controller
     public async Task<IActionResult> Refuse(Guid userId, string? returnUrl)
     {
         var user = await _userManager.GetUserAsync(HttpContext.User);
-        if (user is null) return RedirectToAction("Login", "Accounts");
+        if (user is null) return RedirectToAction("Login", "Account");
 
         var invitor = await _userManager.FindByIdAsync(userId.ToString());
         if (invitor is null) return this.NotFoundRedirect(["User was not found"]);
@@ -98,7 +98,7 @@ public class FriendsController : Controller
     public async Task<IActionResult> Cancel(Guid userId, string? returnUrl)
     {
         var user = await _userManager.GetUserAsync(HttpContext.User);
-        if (user is null) return RedirectToAction("Login", "Accounts");
+        if (user is null) return RedirectToAction("Login", "Account");
 
         var target = await _userManager.FindByNameAsync(userId.ToString());
         if (target is null) return this.NotFoundRedirect(["User was not found"]);
@@ -120,7 +120,7 @@ public class FriendsController : Controller
     public async Task<IActionResult> RemoveFriendship(Guid userId, string? returnUrl)
     {
         var user = await _userManager.GetUserAsync(HttpContext.User);
-        if (user is null) return RedirectToAction("Login", "Accounts");
+        if (user is null) return RedirectToAction("Login", "Account");
 
         var friend = await _userManager.FindByNameAsync(userId.ToString());
         if (friend is null) return this.NotFoundRedirect(["User was not found"]);
@@ -143,7 +143,7 @@ public class FriendsController : Controller
     public async Task<IActionResult> Index()
     {
         var user = await _userManager.GetUserAsync(HttpContext.User);
-        if (user is null) return RedirectToAction("Login", "Accounts");
+        if (user is null) return RedirectToAction("Login", "Account");
 
         var friends = await _friendsService.GetFriendsFor(user);
         var invitationsFor = await _friendsService.GetInvitationsFor(user);

@@ -9,24 +9,20 @@ public class RegisterDto
     [Display(Name = "Nickname")]
     [Required(ErrorMessage = "Nickname is required")]
     [StringLength(MaxUsernameSize, MinimumLength = MinUsernameSize, ErrorMessage = "Nickname length must have less than 64 characters")]
-    [Remote(action: "IsUserNameFree", controller: "Accounts", ErrorMessage = "This username already registered")]
-    public string? UserName { get; set; } = string.Empty;
-
-    [Display(Name = "About")]
-    [StringLength(MaxAboutSize, ErrorMessage = "About must be shorter")]
-    public string? About { get; set; }
+    [Remote(action: "IsUserNameFree", controller: "Account", ErrorMessage = "This username already registered")]
+    public string UserName { get; set; } = string.Empty;
 
     [Display(Name = "Email")]
     [Required(ErrorMessage = "Email is required")]
     [EmailAddress(ErrorMessage = "Email is invalid")]
     [StringLength(MaxEmailSize, ErrorMessage = "Email must be shorter")]
-    [Remote(action: "IsEmailFree", controller: "Accounts", ErrorMessage = "This email already registered")]
-    public string? Email { get; set; } = string.Empty;
+    [Remote(action: "IsEmailFree", controller: "Account", ErrorMessage = "This email already registered")]
+    public string Email { get; set; } = string.Empty;
 
     [Display(Name = "Phone number")]
     [Required(ErrorMessage = "Phone is required")]
     [Phone(ErrorMessage = "Phone is invalid")]
-    public string? Phone { get; set; } = string.Empty;
+    public string Phone { get; set; } = string.Empty;
 
     [Display(Name = "Password")]
     [Required(ErrorMessage = "Password is required")]

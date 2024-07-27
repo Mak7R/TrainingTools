@@ -8,11 +8,11 @@ using WebUI.Middlewares;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Host.UseSerilog((context, services, loggerConfiguration) =>
-    {
-        loggerConfiguration
-            .ReadFrom.Configuration(context.Configuration)
-            .ReadFrom.Services(services);
-    });
+{
+    loggerConfiguration
+        .ReadFrom.Configuration(context.Configuration)
+        .ReadFrom.Services(services);
+});
 
 builder.Services.ConfigureServices(builder.Configuration);
 
@@ -54,9 +54,7 @@ app.UseHttpLogging();
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
-app.UseSwagger(options => {
-    options.RouteTemplate = "api/{documentName}/index.json";
-});
+app.UseSwagger(options => { options.RouteTemplate = "api/{documentName}/index.json"; });
 app.UseSwaggerUI(options =>
 {
     options.SwaggerEndpoint("/api/v1/index.json", "API V1");
@@ -70,8 +68,8 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllerRoute(
-    name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}");
+    "default",
+    "{controller=Home}/{action=Index}/{id?}");
 
 app.MapControllers();
 app.Run();

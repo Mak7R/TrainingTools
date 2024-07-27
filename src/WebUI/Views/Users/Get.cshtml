@@ -48,7 +48,7 @@
                 @if (!Model.Roles.Contains(nameof(Role.Root)) &&
                 (currentUserIsRoot || !Model.Roles.Contains(nameof(Role.Admin))))
                 {
-                <a class="btn btn-primary" asp-controller="Users" asp-action="Update" asp-route-userName="@Model.User.UserName">Update</a>
+                <a class="btn btn-primary" asp-controller="Users" asp-action="Update" asp-route-userId="@Model.User.Id">Update</a>
 
                 <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteUserModal">
                     Delete
@@ -66,7 +66,7 @@
                             </div>
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Cancel</button>
-                                <a type="button" class="btn btn-danger" asp-controller="Users" asp-action="Delete" asp-route-userName="@Model.User.UserName">Delete</a>
+                                <a type="button" class="btn btn-danger" asp-controller="Users" asp-action="Delete" asp-route-userId="@Model.User.Id">Delete</a>
                             </div>
                         </div>
                     </div>

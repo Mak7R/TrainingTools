@@ -53,20 +53,38 @@ public class HomeController : Controller
         return RedirectToAction("Index", "Home");
     }
 
-    [Route("/error")]
-    [Route("/error/{statusCode:int}")]
+    [Route("/info")]
+    [Route("/info/{statusCode:int}")]
     [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-    public IActionResult Error(int statusCode = 500, string[]? errors = null)
+    public IActionResult Info(int statusCode = 500, string[]? messages = null)
     {
         if (statusCode is >= 200 and < 600)
         {
             Response.StatusCode = statusCode;
         }
         
-        return View(new ErrorViewModel
+        return View("Info", new InfoViewModel
         {
             StatusCode = statusCode, 
-            Errors = errors ?? [], 
+            Messages = messages ?? [], 
+            RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier
+        });
+    }
+    
+    [Route("/error")]
+    [Route("/error/{statusCode:int}")]
+    [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+    public IActionResult Error(int statusCode = 500, string[]? messages = null)
+    {
+        if (statusCode is >= 200 and < 600)
+        {
+            Response.StatusCode = statusCode;
+        }
+        
+        return View("Info", new InfoViewModel
+        {
+            StatusCode = statusCode, 
+            Messages = messages ?? [], 
             RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier
         });
     }

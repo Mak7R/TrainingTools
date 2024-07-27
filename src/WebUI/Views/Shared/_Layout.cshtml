@@ -70,19 +70,19 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" asp-controller="Accounts" asp-action="Profile">@Localizer["Profile"]</a>
+                        <a class="nav-link" asp-controller="Account" asp-action="Profile">@Localizer["Profile"]</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" asp-controller="Accounts" asp-action="Logout">@Localizer["Logout"]</a>
+                        <a class="nav-link" asp-controller="Account" asp-action="Logout">@Localizer["Logout"]</a>
                     </li>
                     }
                     else
                     {
                     <li class="nav-item">
-                        <a class="nav-link" asp-controller="Accounts" asp-action="Login">@Localizer["Login"]</a>
+                        <a class="nav-link" asp-controller="Account" asp-action="Login">@Localizer["Login"]</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" asp-controller="Accounts" asp-action="Register">@Localizer["Register"]</a>
+                        <a class="nav-link" asp-controller="Account" asp-action="Register">@Localizer["Register"]</a>
                     </li>
                     }
                 </ul>
@@ -124,7 +124,7 @@
     </div>
     <div class="container">
         <div class="row">
-            <p class="text-center m-3 col"><a href="/api-docs">@Localizer["OpenApi"]</a></p>
+            <p class="text-center m-3 col"><a target="_blank" href="/api-docs">@Localizer["OpenApi"]</a></p>
             <p class="text-center m-3 col">&copy; 2024 - Training Tools - <a asp-area="" asp-controller="Home" asp-action="Privacy">@Localizer["Privacy"]</a></p>
         </div>
     </div>

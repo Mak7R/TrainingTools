@@ -6,18 +6,30 @@ using Microsoft.Extensions.Options;
 
 namespace Infrastructure.Repositories;
 
-public class MsSqlSpecificUserManager : UserManager<ApplicationUser>
+public class ApplicationUserManager : UserManager<ApplicationUser>
 {
     private readonly ApplicationDbContext _context;
 
-    public MsSqlSpecificUserManager(IUserStore<ApplicationUser> store, IOptions<IdentityOptions> optionsAccessor,
+    public ApplicationUserManager(IUserStore<ApplicationUser> store, IOptions<IdentityOptions> optionsAccessor,
         IPasswordHasher<ApplicationUser> passwordHasher, IEnumerable<IUserValidator<ApplicationUser>> userValidators,
         IEnumerable<IPasswordValidator<ApplicationUser>> passwordValidators, ILookupNormalizer keyNormalizer,
-        IdentityErrorDescriber errors, IServiceProvider services, ILogger<MsSqlSpecificUserManager> logger,
+        IdentityErrorDescriber errors, IServiceProvider services, ILogger<ApplicationUserManager> logger,
         ApplicationDbContext context)
         : base(store, optionsAccessor, passwordHasher, userValidators, passwordValidators, keyNormalizer, errors, services, logger)
     {
         _context = context;
+    }
+
+    public override Task<IdentityResult> CreateAsync(ApplicationUser user, string password)
+    {
+        user.RegistrationDateTime = DateTime.UtcNow;
+        return base.CreateAsync(user, password);
+    }
+
+    public override Task<IdentityResult> CreateAsync(ApplicationUser user)
+    {
+        user.RegistrationDateTime = DateTime.UtcNow;
+        return base.CreateAsync(user);
     }
 
     public override async Task<IdentityResult> DeleteAsync(ApplicationUser user)

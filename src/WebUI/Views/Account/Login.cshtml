@@ -8,7 +8,7 @@
 <div class="container mt-3">
     <h2 class="text-center">Login</h2>
     
-    <form method="post" asp-controller="Accounts" asp-action="Login" asp-route-returnUrl="@Context.Request.Query["ReturnUrl"]">
+    <form method="post" asp-controller="Account" asp-action="Login" asp-route-returnUrl="@Context.Request.Query["ReturnUrl"]">
         <div class="mb-3">
             <label asp-for="EmailOrUsername" class="form-label"></label>
             <input asp-for="EmailOrUsername" class="form-control"/>

@@ -3,6 +3,7 @@ using System.Text;
 using Application.Interfaces.Repositories;
 using Application.Interfaces.Services;
 using Application.Models;
+using Application.Options;
 using Application.Services;
 using Application.Services.ReferencedContentProviders;
 using Domain.Identity;
@@ -18,6 +19,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
@@ -95,13 +97,21 @@ public static class ConfigureServicesExtension
 
                 options.User.AllowedUserNameCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.!#$%^&*()_-+=";
                 options.User.RequireUniqueEmail = true;
+                
+                options.Tokens.EmailConfirmationTokenProvider = "emailconfirmation";
+                options.SignIn.RequireConfirmedEmail = true;
             })
-            .AddUserManager<MsSqlSpecificUserManager>()
+            .AddUserManager<ApplicationUserManager>()
             .AddEntityFrameworkStores<ApplicationDbContext>()
             .AddUserStore<UserStore<ApplicationUser, ApplicationRole, ApplicationDbContext, Guid>>()
             .AddRoleStore<RoleStore<ApplicationRole, ApplicationDbContext, Guid>>()
-            .AddDefaultTokenProviders();
+            .AddDefaultTokenProviders()
+            .AddTokenProvider<EmailTokenProvider<ApplicationUser>>("emailconfirmation");
 
+        services.Configure<DataProtectionTokenProviderOptions>(options =>
+        {
+            options.TokenLifespan = TimeSpan.FromDays(3);
+        });
 
         services.ConfigureApplicationCookie(options =>
         {
@@ -149,7 +159,6 @@ public static class ConfigureServicesExtension
                     tokenValidationParameters.ValidateIssuer = true;
                     tokenValidationParameters.ValidIssuer = configuration["Jwt:Issuer"];
                 }
-                
                 
                 options.TokenValidationParameters = tokenValidationParameters;
             });
@@ -231,6 +240,8 @@ public static class ConfigureServicesExtension
     
     private static void AddApplicationServices(this IServiceCollection services, IConfiguration configuration)
     {
+        services.Configure<ConfirmationEmailOptions>(configuration.GetSection("Emails:Confirmation"));
+        
         services.AddScoped<IRepository<Group, Guid>, GroupsRepository>();
         services.AddScoped<IRepository<Exercise, Guid>, ExercisesRepository>();
         services.AddScoped<IRepository<TrainingPlan, Guid>, TrainingPlansRepository>();
@@ -249,6 +260,10 @@ public static class ConfigureServicesExtension
         services.AddSingleton<IAuthTokenService<TokenGenerationInfo>, JwtService>();
         services.AddSingleton<IExerciseResultsToExсelExporter, ExerciseResultsToExcelExporter>();
         
+        services.AddTransient<IEmailSender, EmailSender>();
         services.AddScoped<IAuthorizationHandler, VerifyClaimsRequirementHandler>();
+
+
+        services.AddSingleton<ISmtpClientFactory, SmtpClientFactory>();
     }
 }

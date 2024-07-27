@@ -13,4 +13,10 @@ public class HelpController : Controller
     {
         return View();
     }
+    
+    [HttpGet("info")]
+    public IActionResult Information()
+    {
+        return View();
+    }
 }
