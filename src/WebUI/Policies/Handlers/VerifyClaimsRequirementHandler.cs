@@ -10,11 +10,13 @@ namespace WebUI.Policies.Handlers;
 public class VerifyClaimsRequirementHandler : AuthorizationHandler<VerifyClaimsRequirement>
 {
     private readonly UserManager<ApplicationUser> _userManager;
+    private readonly SignInManager<ApplicationUser> _signInManager;
 
 
-    public VerifyClaimsRequirementHandler(UserManager<ApplicationUser> userManager)
+    public VerifyClaimsRequirementHandler(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager)
     {
         _userManager = userManager;
+        _signInManager = signInManager;
     }
     
     protected override async Task HandleRequirementAsync(AuthorizationHandlerContext context, VerifyClaimsRequirement requirement)
@@ -22,6 +24,7 @@ public class VerifyClaimsRequirementHandler : AuthorizationHandler<VerifyClaimsR
         var idClaim = context.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
         if (string.IsNullOrEmpty(idClaim?.Value) || !Guid.TryParse(idClaim.Value, out var userId))
         {
+            await _signInManager.SignOutAsync();
             context.Fail();
             return;
         }
@@ -29,12 +32,14 @@ public class VerifyClaimsRequirementHandler : AuthorizationHandler<VerifyClaimsR
         var user = await _userManager.FindByIdAsync(userId.ToString());
         if (user is null)
         {
+            await _signInManager.SignOutAsync();
             context.Fail();
             return;
         }
 
         if (!user.EmailConfirmed)
         {
+            await _signInManager.SignOutAsync();
             context.Fail();
             return;
         }
@@ -44,6 +49,7 @@ public class VerifyClaimsRequirementHandler : AuthorizationHandler<VerifyClaimsR
         
         if (Enum.GetNames<Role>().Any(role => rolesFromClaim.Contains(role) != roles.Contains(role)))
         {
+            await _signInManager.SignOutAsync();
             context.Fail();
             return;
         }

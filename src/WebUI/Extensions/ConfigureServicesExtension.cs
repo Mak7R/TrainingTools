@@ -161,6 +161,13 @@ public static class ConfigureServicesExtension
                 }
                 
                 options.TokenValidationParameters = tokenValidationParameters;
+            })
+            .AddGoogle(options =>
+            {
+                var googleOAuth = configuration.GetSection("OAuth2:Google");
+                options.ClientId = googleOAuth["ClientId"] ?? throw new InvalidOperationException("ClientId cannot be empty");
+                options.ClientSecret = googleOAuth["ClientSecret"] ?? throw new InvalidOperationException("ClientSecret cannot be empty");
+                options.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
             });
 
         services.AddAuthorizationBuilder()

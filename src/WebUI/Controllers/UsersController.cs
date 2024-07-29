@@ -96,7 +96,6 @@ public class UsersController : Controller
         return View(_mapper.Map<UserInfoViewModel>(userInfo));
     }
     
-    
     [HttpGet("create")]
     [AuthorizeVerifiedRoles(Role.Root, Role.Admin)]
     public IActionResult Create()

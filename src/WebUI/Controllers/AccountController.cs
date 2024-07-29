@@ -1,6 +1,9 @@
 ﻿using AutoMapper;
 using Domain.Enums;
 using Domain.Identity;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
@@ -14,6 +17,7 @@ namespace WebUI.Controllers;
 
 [Controller]
 [Route("[controller]/[action]")]
+[AllowAnonymous]
 public class AccountController : Controller
 {
     private readonly UserManager<ApplicationUser> _userManager;
@@ -135,6 +139,7 @@ public class AccountController : Controller
         
         return View(loginDto);
     }
+    
     
     [HttpPost("/resend-email-confirmation")]
     public async Task<IActionResult> ResendEmailConfirmation(string email, [FromServices] IEmailSender emailSender)
