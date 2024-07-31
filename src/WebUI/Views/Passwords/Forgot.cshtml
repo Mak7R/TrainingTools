@@ -1,0 +1,23 @@
+﻿@model string?
+
+@{
+    ViewBag.Title = "Forgot password";
+}
+
+<div class="container mt-3">
+    <h2>Reset password</h2>
+    
+    <form asp-controller="Passwords" asp-action="Forgot" method="post">
+        <div class="mb-3">
+            <label for="email-input" class="form-label">Email: </label>
+            <input id="email-input" class="form-control" name="email" value="@Model"/>
+            <div id="form-all-errors" asp-validation-summary="All" class="text-danger">
+
+            </div>
+        </div>
+        
+        <div class="mb-3">
+            <button type="submit" class="btn btn-success">Send reset password link to this email</button>
+        </div>
+    </form>
+</div>

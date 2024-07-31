@@ -142,6 +142,8 @@ public class FriendsController : Controller
     [HttpGet("")]
     public async Task<IActionResult> Index()
     {
+        // todo add paging and filtering
+        
         var user = await _userManager.GetUserAsync(HttpContext.User);
         if (user is null) return RedirectToAction("Login", "Account");
 

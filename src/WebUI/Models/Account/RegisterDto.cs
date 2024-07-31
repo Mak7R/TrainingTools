@@ -20,9 +20,8 @@ public class RegisterDto
     public string Email { get; set; } = string.Empty;
 
     [Display(Name = "Phone number")]
-    [Required(ErrorMessage = "Phone is required")]
     [Phone(ErrorMessage = "Phone is invalid")]
-    public string Phone { get; set; } = string.Empty;
+    public string? Phone { get; set; } = string.Empty;
 
     [Display(Name = "Password")]
     [Required(ErrorMessage = "Password is required")]

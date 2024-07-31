@@ -1,9 +1,7 @@
-﻿using AutoMapper;
+﻿using System.ComponentModel.DataAnnotations;
+using AutoMapper;
 using Domain.Enums;
 using Domain.Identity;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
@@ -139,45 +137,6 @@ public class AccountController : Controller
         
         return View(loginDto);
     }
-    
-    
-    [HttpPost("/resend-email-confirmation")]
-    public async Task<IActionResult> ResendEmailConfirmation(string email, [FromServices] IEmailSender emailSender)
-    {
-        var user = await _userManager.FindByEmailAsync(email);
-        if (user == null)
-        {
-            return this.BadRequestRedirect(["User was not registered"]);
-        }
-
-        if (user.EmailConfirmed)
-        {
-            return this.BadRequestRedirect(["Email already confirmed"]);
-        }
-        
-        var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-        var confirmationLink = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, token }, Request.Scheme) ?? $"?userId{user.Id}&token={token}";
-        await emailSender.SendEmailAsync(email, _localizer["ConfirmEmailTitle"], _localizer["ConfirmEmailText", confirmationLink]);
-
-        return this.InfoRedirect(100,
-            ["Letter with confirmation was sent to your email", "Check it and confirm before login"]);
-    }
-    
-    [HttpGet("confirm-email")]
-    public async Task<IActionResult> ConfirmEmail(Guid userId, string token)
-    {
-        if (string.IsNullOrWhiteSpace(token))
-            return RedirectToAction("Index", "Home");
-
-        var user = await _userManager.FindByIdAsync(userId.ToString());
-        if (user == null) return RedirectToAction("Login","Account");
-
-        var result = await _userManager.ConfirmEmailAsync(user, token);
-        if (result.Succeeded)
-            return this.InfoRedirect(200, ["Email was confirmed successful", "Now you can log in your account"]);
-
-        return this.ErrorRedirect(500, ["Unexpected error was occured while processing the request"]);
-    }
 
     [AuthorizeVerifiedRoles]
     [Route("/logout")]
@@ -240,21 +199,13 @@ public class AccountController : Controller
 
         if (await _userManager.CheckPasswordAsync(user, updateProfileDto.CurrentPassword!))
         {
-            try
+            var result = await _userManager.UpdateAsync(user);
+            if (!result.Succeeded) return this.BadRequestRedirect(result.Errors.Select(err => err.Description));
+            if (logout)
             {
-                var result = await _userManager.UpdateAsync(user);
-                if (!result.Succeeded) return this.BadRequestRedirect(result.Errors.Select(err => err.Description));
-                if (logout)
-                {
-                    var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-                    var confirmationLink = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, token }, Request.Scheme) ?? $"?userId{user.Id}&token={token}";
-                    await emailSender.SendEmailAsync(updateProfileDto.Email!, _localizer["ConfirmEmailTitle"], _localizer["ConfirmEmailText", confirmationLink]);
-                }
-            }
-            finally
-            {
-                if (logout)
-                    await _signInManager.SignOutAsync();
+                var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+                var confirmationLink = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, token }, Request.Scheme) ?? $"?userId{user.Id}&token={token}";
+                await emailSender.SendEmailAsync(updateProfileDto.Email!, _localizer["ConfirmEmailTitle"], _localizer["ConfirmEmailText", confirmationLink]);
             }
             
             if (!string.IsNullOrWhiteSpace(updateProfileDto.NewPassword))
@@ -286,6 +237,7 @@ public class AccountController : Controller
                 return RedirectToAction("Profile");
             }
 
+            //await _signInManager.SignOutAsync();
             return this.InfoRedirect(100,
                 ["Letter with confirmation was sent to your email", "Check it and confirm before login"]);
         }
@@ -305,9 +257,7 @@ public class AccountController : Controller
         if (string.IsNullOrWhiteSpace(password)) return this.BadRequestRedirect(new[] { "Invalid password" });
 
         if (!await _userManager.CheckPasswordAsync(user, password))
-        {
             return this.BadRequestRedirect(new[] { "Invalid password" });
-        }
         
         var result = await _userManager.DeleteAsync(user);
         if (result.Succeeded)

@@ -65,5 +65,7 @@
         </tbody>
     </table>
 
+    @await Html.PartialAsync("Partials/DefaultPagingFormPartialView", ViewBag.TrainingPlansCount, ViewData)
+    
     <a class="btn btn-success d-block w-100" asp-controller="TrainingPlans" asp-action="Create">Create Training Plan</a>
 </div>

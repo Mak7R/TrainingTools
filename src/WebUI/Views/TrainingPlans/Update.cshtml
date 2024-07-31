@@ -59,17 +59,17 @@
                 if (isPublic !== null) {this.isPublic = isPublic;}
             }
 
-            addBlock(blockName = '') {
+            addBlock(blockTitle = '') {
                 const newBlock = {
-                    name: blockName,
+                    title: blockTitle,
                     entries: []
                 };
                 this.blocks.push(newBlock);
             }
 
-            editBlockName(blockIndex, newName) {
+            editBlockName(blockIndex, newTitle) {
                 if (blockIndex >= 0 && blockIndex < this.blocks.length) {
-                    this.blocks[blockIndex].name = newName;
+                    this.blocks[blockIndex].title = newTitle;
                 }
             }
 
@@ -115,7 +115,7 @@
                     const blockHeaderCell = document.createElement('th');
                     blockHeaderCell.innerHTML = `
                             <div class="input-group">
-                                <input class="form-control" id="input-block-name-${blockIndex}" value="${block.name}" placeholder="Block Name" oninput="trainingPlan.editBlockName(${blockIndex}, this.value);"/>
+                                <input class="form-control" id="input-block-name-${blockIndex}" value="${block.title}" placeholder="Block Title" oninput="trainingPlan.editBlockName(${blockIndex}, this.value);"/>
                                 <div class="input-group-append">
                                     <button type="button" class="btn btn-danger btn-sm" onclick="trainingPlan.removeBlock(${blockIndex});trainingPlan.renderTable()">
                                         <img src="/img/icons/bin.svg" style="width: 2em; height: 2em" alt="remove"/>
@@ -196,7 +196,7 @@
                     newTitle: this.newTitle,
                     isPublic: this.isPublic,
                     blocks: this.blocks.map(block => ({
-                        name: block.name,
+                        title: block.title,
                         entries: block.entries.map(entry => ({
                             groupId: entry.groupId,
                             description: entry.description
@@ -222,8 +222,7 @@
                     }
                     else{
                         const currentUrl = window.location.href;
-                        const baseUrl = currentUrl.split('/update')[0];
-                        window.location.href = baseUrl.substring(0, baseUrl.lastIndexOf("/") + 1) + this.newTitle;
+                        window.location.href = currentUrl.split('/update')[0];
                     }
                 })
                 .catch(error => {
@@ -249,7 +248,7 @@
         let currentBlocks = [
             @foreach (var block in Model.Blocks)
             {
-                @:{ name: '@Html.Raw(block.Name)', entries: [
+                @:{ title: '@Html.Raw(block.Title)', entries: [
                 @foreach (var entry in block.Entries)
                 {
                     @: { description: '@Html.Raw(entry.Description)', groupId: '@entry.GroupId' },

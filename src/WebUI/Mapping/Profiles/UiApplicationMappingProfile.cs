@@ -94,6 +94,17 @@ public class UiApplicationMappingProfile : Profile
         CreateMap<TrainingPlan, TrainingPlanViewModel>();
         CreateMap<TrainingPlanBlock, TrainingPlanBlockViewModel>();
         CreateMap<TrainingPlanBlockEntry, TrainingPlanBlockEntryViewModel>();
+        
+        CreateMap<TrainingPlan, UpdateTrainingPlanModel>()
+            .ForMember(dest => dest.NewTitle, opt => opt.MapFrom(src => src.Title))
+            .ForMember(dest => dest.AuthorName, opt => opt.MapFrom(src => src.Author.UserName))
+            .ForMember(dest => dest.Blocks, opt => opt.MapFrom(src => src.TrainingPlanBlocks));
+        
+        CreateMap<TrainingPlanBlock, UpdateTrainingPlanBlockModel>()
+            .ForMember(dest => dest.Title, opt => opt.MapFrom(src => src.Title))
+            .ForMember(dest => dest.Entries, opt => opt.MapFrom(src => src.TrainingPlanBlockEntries));
+        CreateMap<TrainingPlanBlockEntry, UpdateTrainingPlanBlockEntryModel>()
+            .ForMember(dest => dest.GroupId, opt => opt.MapFrom(src => src.Group.Id));
     }
 
     private void CreateFriendMaps()

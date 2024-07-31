@@ -1,5 +1,6 @@
 ﻿using Application.Constants;
 using Application.Interfaces.Services;
+using Application.Models.Shared;
 using AutoMapper;
 using Domain.Exceptions;
 using Domain.Identity;
@@ -41,6 +42,16 @@ public class TrainingPlansController : Controller
     {
         filterModel ??= new FilterViewModel();
         filterModel[FilterOptionNames.TrainingPlan.PublicOnly] = "true";
+        
+        pageModel ??= new PageViewModel();
+        if (pageModel.PageSize is PageModel.DefaultPageSize or <= 0)
+        {
+            int defaultPageSize = 10;
+            pageModel.PageSize = defaultPageSize;
+            ViewBag.DefaultPageSize = defaultPageSize;
+        } 
+        ViewBag.TrainingPlansCount = await _trainingPlansService.Count(filterModel);
+        
         var plans = await _trainingPlansService.GetAll(filterModel, orderModel, pageModel);
         return View(plans.Select(p => _mapper.Map<TrainingPlanViewModel>(p)));
     }
@@ -58,6 +69,15 @@ public class TrainingPlansController : Controller
 
         filterModel ??= new FilterViewModel();
         filterModel[FilterOptionNames.TrainingPlan.AuthorName] = user.UserName;
+        
+        pageModel ??= new PageViewModel();
+        if (pageModel.PageSize is PageModel.DefaultPageSize or <= 0)
+        {
+            int defaultPageSize = 10;
+            pageModel.PageSize = defaultPageSize;
+            ViewBag.DefaultPageSize = defaultPageSize;
+        } 
+        ViewBag.TrainingPlansCount = await _trainingPlansService.Count(filterModel);
 
         var plans = await _trainingPlansService.GetAll(filterModel, orderModel, pageModel);
         return View(plans.Select(p => _mapper.Map<TrainingPlanViewModel>(p)));
@@ -136,22 +156,7 @@ public class TrainingPlansController : Controller
             return this.ErrorRedirect(StatusCodes.Status403Forbidden,
                 new[] { "Only owner can update his/her training plan" });
         
-        return View(new UpdateTrainingPlanModel
-        {
-            Id = trainingPlan.Id,
-            NewTitle = trainingPlan.Title,
-            AuthorName = trainingPlan.Author.UserName,
-            IsPublic = trainingPlan.IsPublic,
-            Blocks = trainingPlan.TrainingPlanBlocks.Select(b => new UpdateTrainingPlanBlockModel
-            {
-                Name = b.Title,
-                Entries = b.TrainingPlanBlockEntries.Select(e => new UpdateTrainingPlanBlockEntryModel
-                {
-                    Description = e.Description,
-                    GroupId = e.Group.Id
-                }).ToList()
-            }).ToList()
-        });
+        return View(_mapper.Map<UpdateTrainingPlanModel>(trainingPlan));
     }
 
     [HttpPost("{planId:guid}/update")]
@@ -178,18 +183,11 @@ public class TrainingPlansController : Controller
         var trainingPlan = await _trainingPlansService.GetById(planId);
 
         if (trainingPlan is null)
-            return NotFound(new ProblemDetails
-            {
-                Detail = "Training plan was not found in database",
-                Status = StatusCodes.Status404NotFound,
-                Title = "Training plan was not found"
-            });
+            return Problem(detail:"Training plan was not found in database", statusCode: StatusCodes.Status404NotFound);
         
         if (user.Id != trainingPlan.Author.Id)
             return this.ErrorRedirect(StatusCodes.Status403Forbidden, new[] { "Only author can edit training plan" });
-
         
-
         var newTrainingPlan = new TrainingPlan
         {
             Id = trainingPlan.Id,
@@ -198,7 +196,7 @@ public class TrainingPlansController : Controller
             IsPublic = updateTrainingPlanModel.IsPublic,
             TrainingPlanBlocks = updateTrainingPlanModel.Blocks.Select(b => new TrainingPlanBlock
             {
-                Title = b.Name,
+                Title = b.Title,
                 TrainingPlanBlockEntries = b.Entries.Select(e => new TrainingPlanBlockEntry
                 {
                     Description = e.Description,
@@ -209,37 +207,20 @@ public class TrainingPlansController : Controller
         var result = await _trainingPlansService.Update(newTrainingPlan);
 
         if (result.IsSuccessful)
-        {
-            return Ok();
-        }
-
-        var problemDetails = new ProblemDetails();
+            return Ok(newTrainingPlan);
         
         if (result.Exception is AlreadyExistsException)
-        {
-            problemDetails.Title = "Training plan already exists";
-            problemDetails.Detail = "Training plan with this name already exists";
-            problemDetails.Status = StatusCodes.Status400BadRequest;
-            return BadRequest(problemDetails);
-        }
+            return Problem("Training plan with this name already exists", statusCode: StatusCodes.Status400BadRequest);
         
         if (result.Exception is NotFoundException)
+            return Problem("Training plan was not found in database", statusCode: StatusCodes.Status404NotFound);
+
+        return StatusCode(StatusCodes.Status500InternalServerError, new ProblemDetails
         {
-            problemDetails.Detail = "Training plan was not found in database";
-            problemDetails.Status = StatusCodes.Status404NotFound;
-            problemDetails.Title = "Training plan was not found";
-
-            return NotFound(problemDetails);
-        }
-        
-        problemDetails.Detail = "An internal server error occurred while processing the request";
-        problemDetails.Status = StatusCodes.Status500InternalServerError;
-        problemDetails.Title = "Server Error";
-        
-        if (result.Errors.Any())
-            problemDetails.Extensions.Add("errors", result.Errors);
-
-        return StatusCode(StatusCodes.Status500InternalServerError, problemDetails);
+            Detail = "An internal server error occurred while processing the request",
+            Status = StatusCodes.Status500InternalServerError,
+            Extensions = new Dictionary<string, object?> { { "errors", result.Errors } }
+        });
     }
     
     [HttpGet("{planId:guid}/delete")]

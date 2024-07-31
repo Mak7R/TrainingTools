@@ -9,6 +9,8 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace WebUI.Controllers;
 
+[AllowAnonymous]
+[Controller]
 public class GoogleAuthenticationController : Controller
 {
     private readonly UserManager<ApplicationUser> _userManager;
@@ -19,8 +21,7 @@ public class GoogleAuthenticationController : Controller
         _userManager = userManager;
         _signInManager = signInManager;
     }
-
-    [AllowAnonymous]
+    
     [HttpGet("/signin-with-google")]
     public IActionResult SignIn()
     {
@@ -30,8 +31,7 @@ public class GoogleAuthenticationController : Controller
             AllowRefresh = true
         }, GoogleDefaults.AuthenticationScheme);
     }
-
-    [AllowAnonymous]
+    
     [HttpGet("/google-response")]
     public async Task<IActionResult> HandleGoogleResponse()
     {
@@ -41,7 +41,6 @@ public class GoogleAuthenticationController : Controller
             var email = result.Principal.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
             if (string.IsNullOrWhiteSpace(email))
                 return RedirectToAction("Login", "Account");
-            
             
             var user = await _userManager.FindByEmailAsync(email);
             if (user is null)

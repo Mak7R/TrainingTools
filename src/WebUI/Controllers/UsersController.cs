@@ -56,9 +56,8 @@ public class UsersController : Controller
     [AuthorizeVerifiedRoles(Role.Root, Role.Admin)]
     public async Task<IActionResult> GetAllAsCsv()
     {
-        var stream = await _usersService.GetAllUsersAsCsv();
-
-        return File(stream, MediaTypeNames.Text.Csv, "users.csv");
+        var csvFileStream = await _usersService.GetAllUsersAsCsv();
+        return File(csvFileStream, MediaTypeNames.Text.Csv, "users.csv");
     }
 
     [HttpGet("{userName}")]
@@ -94,41 +93,6 @@ public class UsersController : Controller
         if (userInfo is null) return this.NotFoundRedirect(["User with this id was not found"]);
         
         return View(_mapper.Map<UserInfoViewModel>(userInfo));
-    }
-    
-    [HttpGet("create")]
-    [AuthorizeVerifiedRoles(Role.Root, Role.Admin)]
-    public IActionResult Create()
-    {
-        return View();
-    }
-    
-    [HttpPost("create")]
-    [AuthorizeVerifiedRoles(Role.Root, Role.Admin)]
-    public async Task<IActionResult> Create(CreateUserModel createUserModel)
-    {
-        var user = await _userManager.GetUserAsync(User);
-        if (user is null) return RedirectToAction("Login", "Account", new {ReturnUrl = "/users/create"});
-        
-        if (!ModelState.IsValid)
-            return View(createUserModel);
-
-        var appCreateUserDto = new CreateUserDto
-        {
-            Username = createUserModel.UserName,
-            Email = createUserModel.Email,
-            Phone = createUserModel.Phone,
-            IsPublic = createUserModel.IsPublic,
-            IsAdmin = createUserModel.IsAdmin,
-            Password = createUserModel.Password
-        };
-        
-        var result = await _usersService.Create(user, appCreateUserDto);
-
-        if (!result.IsSuccessful)
-            this.BadRequestRedirect(result.Errors);
-
-        return RedirectToAction("Get", new {userName = createUserModel.UserName});
     }
 
     [HttpGet("{userId:guid}/update")]

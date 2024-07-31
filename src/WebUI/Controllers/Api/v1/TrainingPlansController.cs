@@ -160,7 +160,7 @@ public class TrainingPlansController : ApiController
             IsPublic = updateTrainingPlanModel.IsPublic,
             TrainingPlanBlocks = updateTrainingPlanModel.Blocks.Select(b => new TrainingPlanBlock
             {
-                Title = b.Name,
+                Title = b.Title,
                 TrainingPlanBlockEntries = b.Entries.Select(e => new TrainingPlanBlockEntry
                 {
                     Description = e.Description,

@@ -46,22 +46,6 @@
                 <span asp-validation-for="IsTrainer" class="text-danger"></span>
             </div>
         }
-        
-        <div class="border border-black mb-3 p-1">
-            <label class="form-label">Leave this fields empty if you don't want to change password</label>
-            
-            <div class="mb-3">
-                <label asp-for="NewPassword" class="form-label"></label>
-                <input asp-for="NewPassword" class="form-control"/>
-                <span asp-validation-for="NewPassword" class="text-danger"></span>
-            </div>
-
-            <div class="mb-3">
-                <label asp-for="ConfirmPassword" class="form-label"></label>
-                <input asp-for="ConfirmPassword" class="form-control"/>
-                <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
-            </div>
-        </div>
 
         <div class="mb-3">
             <label asp-for="CurrentPassword" class="form-label"></label>

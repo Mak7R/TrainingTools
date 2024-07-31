@@ -22,6 +22,6 @@
         <value>Confirm email on Training Tools</value>
     </data>
     <data name="ConfirmEmailText" xml:space="preserve">
-        <value>Please confirm your email by clicking the link &lt;a href='{0}'&gt;Confirm Email&lt;/a&gt;</value>
+        <value>Please confirm your email by clicking the link &lt;a href='{0}'&gt;Confirm Email&lt;/a&gt; &lt;br&gt; If you have not requested email confirmation, simply ignore this email.</value>
     </data>
 </root>
