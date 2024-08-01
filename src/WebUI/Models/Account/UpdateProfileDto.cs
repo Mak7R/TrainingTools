@@ -30,15 +30,6 @@ public class UpdateProfileDto
     public bool IsPublic { get; set; } = false;
     public bool IsTrainer { get; set; } = false;
     
-    [Display(Name = "New password")]
-    [DataType(DataType.Password)]
-    public string? NewPassword { get; set; }
-    
-    [Display(Name = "Confirm password")]
-    [Compare(nameof(NewPassword), ErrorMessage = "Confirm password must be same with password")]
-    [DataType(DataType.Password)]
-    public string? ConfirmPassword { get; set; }
-    
     
     [Display(Name = "Current password")]
     [Required(ErrorMessage = "Current password is required for confirm changes")]

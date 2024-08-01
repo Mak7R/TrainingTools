@@ -150,7 +150,7 @@ namespace WebUI.Resources.Views.Shared {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Privacy.
+        ///   Looks up a localized string similar to Privacy Policy and Terms of Use.
         /// </summary>
         internal static string Privacy {
             get {

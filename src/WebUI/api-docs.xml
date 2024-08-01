@@ -286,7 +286,7 @@
         </member>
         <member name="P:WebUI.Resources.Views.Shared._Layout_en_US.Privacy">
             <summary>
-              Looks up a localized string similar to Privacy.
+              Looks up a localized string similar to Privacy Policy and Terms of Use.
             </summary>
         </member>
         <member name="P:WebUI.Resources.Views.Shared._Layout_en_US.Profile">
@@ -382,7 +382,7 @@
         </member>
         <member name="P:WebUI.Resources.Views.Shared._Layout_uk_UA.Privacy">
             <summary>
-              Looks up a localized string similar to Конфіденційність.
+              Looks up a localized string similar to Політика конфіденційності та умови використання.
             </summary>
         </member>
         <member name="P:WebUI.Resources.Views.Shared._Layout_uk_UA.Profile">

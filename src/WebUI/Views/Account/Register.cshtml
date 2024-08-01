@@ -1,4 +1,4 @@
-﻿@model WebUI.Models.Account.RegisterDto
+﻿@model RegisterDto
 
 @{
     ViewBag.Title = "Register";
@@ -47,6 +47,7 @@
         </div>
 
         <div class="mb-3">
+            <p>By clicking the register button, you agree to our <a asp-controller="Home" asp-action="Privacy">Privacy Policy and Terms of Use</a></p>
             <button type="submit" class="btn btn-success">Register</button>
         </div>
 

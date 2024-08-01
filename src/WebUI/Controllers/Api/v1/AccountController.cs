@@ -59,7 +59,7 @@ public class AccountController : ApiController
             await _userManager.AddToRoleAsync(newUser, nameof(Role.User));
             
             var token = await _userManager.GenerateEmailConfirmationTokenAsync(newUser);
-            var confirmationLink = Url.Action("ConfirmEmail", "Account", new { userId = newUser.Id, token }, Request.Scheme) ?? $"?userId{newUser.Id}&token={token}";
+            var confirmationLink = Url.Action("ConfirmEmail", "EmailConfirmation", new { userId = newUser.Id, token }, Request.Scheme) ?? $"?userId{newUser.Id}&token={token}";
             await emailSender.SendEmailAsync(registerDto.Email, _localizer["ConfirmEmailTitle"], _localizer["ConfirmEmailText", confirmationLink]);
             
             return Ok(new AuthenticationResponse{UserName = newUser.UserName, Email = newUser.Email, Roles = [nameof(Role.User)]});
@@ -67,57 +67,12 @@ public class AccountController : ApiController
         return StatusCode(500,
             new ProblemDetails
             {
-                Detail = "Error was occuranced while processing the request",
+                Detail = "Error was occured while processing the request",
                 Extensions = new Dictionary<string, object?>
                 {
                     {"errors", result.Errors}
                 },
                 Status = 500,
-                Title = "Server error"
-            });
-    }
-    
-    [AllowAnonymous]
-    [HttpPost("resend-email-confirmation")]
-    public async Task<IActionResult> ResendEmailConfirmation(string email, [FromServices] IEmailSender emailSender)
-    {
-        var user = await _userManager.FindByEmailAsync(email);
-        if (user == null)
-        {
-            return Problem("User was not registered", statusCode: 400);
-        }
-
-        if (user.EmailConfirmed)
-        {
-            return Problem("Email already confirmed", statusCode: 400);
-        }
-        
-        var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-        var confirmationLink = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, token }, Request.Scheme) ?? $"?userId{user.Id}&token={token}";
-        await emailSender.SendEmailAsync(email, _localizer["ConfirmEmailTitle"], _localizer["ConfirmEmailText", confirmationLink]);
-
-        return Ok("Check email and confirm it before login");
-    }
-    
-    [AllowAnonymous]
-    [HttpGet("confirm-email")]
-    public async Task<IActionResult> ConfirmEmail(Guid userId, string token)
-    {
-        if (string.IsNullOrWhiteSpace(token))
-            return RedirectToAction("Index", "Home");
-
-        var user = await _userManager.FindByIdAsync(userId.ToString());
-        if (user == null) return RedirectToAction("Login","Account");
-
-        var result = await _userManager.ConfirmEmailAsync(user, token);
-        if (result.Succeeded)
-            return Ok("Email was confirmed successful");
-
-        return StatusCode(500,
-            new ProblemDetails
-            {
-                Detail = "Server error was occurred while processing the request",
-                Extensions = new Dictionary<string, object?> { { "errors", result.Errors } }, Status = 500,
                 Title = "Server error"
             });
     }
@@ -204,15 +159,8 @@ public class AccountController : ApiController
             if (emailUpdated)
             {
                 var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-                var confirmationLink = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, token }, Request.Scheme) ?? $"?userId{user.Id}&token={token}";
+                var confirmationLink = Url.Action("ConfirmEmail", "EmailConfirmation", new { userId = user.Id, token }, Request.Scheme) ?? $"?userId{user.Id}&token={token}";
                 await emailSender.SendEmailAsync(updateProfileDto.Email!, _localizer["ConfirmEmailTitle"], _localizer["ConfirmEmailText", confirmationLink]);
-            }
-            
-            if (!string.IsNullOrWhiteSpace(updateProfileDto.NewPassword))
-            {
-                var updatePasswordResult = await _userManager.ChangePasswordAsync(user, updateProfileDto.CurrentPassword!, updateProfileDto.NewPassword);
-                if (!updatePasswordResult.Succeeded) 
-                    return StatusCode(400, new ProblemDetails{Detail = "Update user password error", Extensions = new Dictionary<string, object?>{{"error", result.Errors.Select(err=>err.Description)}}});
             }
             
             var roles = await _userManager.GetRolesAsync(user);

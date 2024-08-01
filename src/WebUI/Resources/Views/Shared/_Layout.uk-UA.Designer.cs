@@ -150,7 +150,7 @@ namespace WebUI.Resources.Views.Shared {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Конфіденційність.
+        ///   Looks up a localized string similar to Політика конфіденційності та умови використання.
         /// </summary>
         internal static string Privacy {
             get {

@@ -1,6 +1,6 @@
 ﻿@using Filters = Application.Constants.FilterOptionNames.User
 @using Orders = Application.Constants.OrderOptionNames.User
-@model IEnumerable<WebUI.Models.User.UserInfoViewModel>
+@model IEnumerable<UserInfoViewModel>
 
 @{
     ViewBag.Title = "Users";
@@ -11,10 +11,8 @@
 
     @if (Context.User.IsInRole(nameof(Role.Admin)) || Context.User.IsInRole(nameof(Role.Root)))
     {
-        <div class="row mb-3">
-            <a class="col d-block w-75 btn btn-outline-success me-2" asp-controller="Users" asp-action="Create">Create new User</a>
-            
-            <a class="col-3 btn btn-primary" asp-controller="Users" asp-action="GetAllAsCsv">Download as CSV</a>
+        <div class="mb-3 d-flex justify-content-end">
+            <a class="btn btn-primary" asp-controller="Users" asp-action="GetAllAsCsv">Download as CSV</a>
         </div>
     }
 

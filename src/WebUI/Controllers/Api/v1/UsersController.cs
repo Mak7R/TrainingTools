@@ -88,44 +88,6 @@ public class UsersController : ApiController
         return Ok(_mapper.Map<UserInfoViewModel>(userInfo));
     }
     
-    [HttpPost("create")]
-    [AuthorizeVerifiedRoles(Role.Root, Role.Admin)]
-    public async Task<IActionResult> Create(CreateUserModel createUserModel)
-    {
-        var user = await _userManager.GetUserAsync(User);
-        if (user is null) return Problem("User unauthorized", statusCode:StatusCodes.Status401Unauthorized);
-
-        var appCreateUserDto = new CreateUserDto
-        {
-            Username = createUserModel.UserName,
-            Email = createUserModel.Email,
-            Phone = createUserModel.Phone,
-            IsPublic = createUserModel.IsPublic,
-            IsAdmin = createUserModel.IsAdmin,
-            Password = createUserModel.Password
-        };
-        
-        var result = await _usersService.Create(user, appCreateUserDto);
-
-        if (result.IsSuccessful)
-            return CreatedAtAction("Get", "Users", new {userName = createUserModel.UserName},_mapper.Map<UserViewModel>(await _userManager.FindByNameAsync(createUserModel.UserName ?? string.Empty)));
-
-        if (result.Exception is AlreadyExistsException)
-            return BadRequest(new ProblemDetails
-            {
-                Detail = "User with this name already exists", Status = 400, Title = "Already exists",
-                Extensions = new Dictionary<string, object?> { { "errors", result.Errors } }
-            });
-        
-        return StatusCode(500,
-            new ProblemDetails
-            {
-                Detail = "Server error was occurred while processing the request",
-                Extensions = new Dictionary<string, object?> { { "errors", result.Errors } }, Status = 500,
-                Title = "Server error"
-            });
-    }
-    
     
     [HttpPut("{userId:guid}")]
     [AuthorizeVerifiedRoles(Role.Root, Role.Admin)]

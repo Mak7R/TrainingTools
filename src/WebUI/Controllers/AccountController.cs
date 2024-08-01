@@ -1,5 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-using AutoMapper;
+﻿using AutoMapper;
 using Domain.Enums;
 using Domain.Identity;
 using Microsoft.AspNetCore.Authorization;
@@ -204,17 +203,8 @@ public class AccountController : Controller
             if (logout)
             {
                 var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-                var confirmationLink = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, token }, Request.Scheme) ?? $"?userId{user.Id}&token={token}";
+                var confirmationLink = Url.Action("ConfirmEmail", "EmailConfirmation", new { userId = user.Id, token }, Request.Scheme) ?? $"?userId{user.Id}&token={token}";
                 await emailSender.SendEmailAsync(updateProfileDto.Email!, _localizer["ConfirmEmailTitle"], _localizer["ConfirmEmailText", confirmationLink]);
-            }
-            
-            if (!string.IsNullOrWhiteSpace(updateProfileDto.NewPassword))
-            {
-                logout = true;
-                var updatePasswordResult = await _userManager.ChangePasswordAsync(user,
-                    updateProfileDto.CurrentPassword!, updateProfileDto.NewPassword);
-                if (!updatePasswordResult.Succeeded)
-                    return this.BadRequestRedirect(updatePasswordResult.Errors.Select(err => err.Description));
             }
             
             var roles = await _userManager.GetRolesAsync(user);
