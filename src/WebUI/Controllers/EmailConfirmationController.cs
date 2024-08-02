@@ -32,7 +32,7 @@ public class EmailConfirmationController : Controller
             return this.BadRequestRedirect(["Email already confirmed"]);
         
         var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-        var confirmationLink = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, token }, Request.Scheme) ?? $"?userId{user.Id}&token={token}";
+        var confirmationLink = Url.Action("ConfirmEmail", "EmailConfirmation", new { userId = user.Id, token }, Request.Scheme) ?? $"?userId{user.Id}&token={token}";
         await emailSender.SendEmailAsync(email, _localizer["ConfirmEmailTitle"], _localizer["ConfirmEmailText", confirmationLink]);
 
         return this.InfoRedirect(100,

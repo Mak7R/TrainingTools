@@ -52,7 +52,7 @@ public static class ConfigureServicesExtension
         services.AddHealthChecks()
             .AddSqlServer(sqlServerConnectionString, name: "SQL Server");
 
-        services.AddControllersWithViews(options =>
+        var mvcBuilder = services.AddControllersWithViews(options =>
             {
                 options.ModelBinderProviders.Insert(0, new UpdateTrainingPlanModelBinderProvider());
                 options.ModelBinderProviders.Insert(0, new FilterModelBinderProvider());
@@ -60,8 +60,9 @@ public static class ConfigureServicesExtension
                 // option.Filters
             })
             .AddViewLocalization(LanguageViewLocationExpanderFormat.Suffix)
-            .AddDataAnnotationsLocalization()
-            .AddRazorRuntimeCompilation();
+            .AddDataAnnotationsLocalization();
+        
+        if (configuration["RazorRuntimeCompilation"] == "True") mvcBuilder.AddRazorRuntimeCompilation();
 
         services.AddHttpContextAccessor();
         services.TryAddSingleton<IActionContextAccessor, ActionContextAccessor>();

@@ -70,7 +70,7 @@ public class AccountController : Controller
             await _userManager.AddToRoleAsync(newUser, nameof(Role.User));
             
             var token = await _userManager.GenerateEmailConfirmationTokenAsync(newUser);
-            var confirmationLink = Url.Action("ConfirmEmail", "Account", new { userId = newUser.Id, token }, Request.Scheme) ?? $"?userId{newUser.Id}&token={token}";
+            var confirmationLink = Url.Action("ConfirmEmail", "EmailConfirmation", new { userId = newUser.Id, token }, Request.Scheme) ?? $"?userId{newUser.Id}&token={token}";
             await emailSender.SendEmailAsync(registerDto.Email, _localizer["ConfirmEmailTitle"], _localizer["ConfirmEmailText", confirmationLink]);
         }
         else
