@@ -29,6 +29,13 @@ public class UsersController : ApiController
         _mapper = mapper;
     }
     
+    /// <summary>
+    /// Retrieves a list of all groups, with optional filtering, ordering, and pagination.
+    /// </summary>
+    /// <param name="filterModel">Supported filters: f_id, f_name, f_name-equals, f_role, f_relationships</param>
+    /// <param name="orderModel">Supported orders: name, role, relationships</param>
+    /// <param name="pageModel">Paging params: page, page-size</param>
+    /// <returns>List of users</returns>
     [HttpGet("")]
     [QueryValuesReader<DefaultOrderOptions>]
     [AuthorizeVerifiedRoles]
@@ -42,6 +49,11 @@ public class UsersController : ApiController
         return Ok(userInfos.Select(userInfo => _mapper.Map<UserInfoViewModel>(userInfo)));
     }
     
+    /// <summary>
+    /// Counts the total number of users based on optional filter criteria.
+    /// </summary>
+    /// <param name="filterModel">Supported filters: f_id, f_name, f_name-equals, f_role, f_relationships</param>
+    /// <returns></returns>
     [HttpGet("count")]
     [QueryValuesReader<DefaultOrderOptions>]
     [AuthorizeVerifiedRoles]
@@ -53,6 +65,10 @@ public class UsersController : ApiController
         return Ok(await _usersService.Count(user, filterModel));
     }
     
+    /// <summary>
+    /// Gets all users in csv format
+    /// </summary>
+    /// <returns>csv file with all users</returns>
     [HttpGet("as-csv")]
     [AuthorizeVerifiedRoles(Role.Root, Role.Admin)]
     public async Task<IActionResult> GetAllAsCsv()
@@ -62,6 +78,11 @@ public class UsersController : ApiController
         return File(stream, MediaTypeNames.Text.Csv, "users.csv");
     }
 
+    /// <summary>
+    /// Gets user by its userName
+    /// </summary>
+    /// <param name="userName">userName of user</param>
+    /// <returns>user</returns>
     [HttpGet("{userName}")]
     [AuthorizeVerifiedRoles]
     public async Task<IActionResult> Get([Required] string? userName)
@@ -75,6 +96,11 @@ public class UsersController : ApiController
         return Ok(_mapper.Map<UserInfoViewModel>(userInfo));
     }
     
+    /// <summary>
+    /// Gets user by its <see cref="userId"/>
+    /// </summary>
+    /// <param name="userId">ID of user</param>
+    /// <returns>user</returns>
     [HttpGet("{userId:guid}")]
     [AuthorizeVerifiedRoles]
     public async Task<IActionResult> Get(Guid userId)
@@ -88,7 +114,12 @@ public class UsersController : ApiController
         return Ok(_mapper.Map<UserInfoViewModel>(userInfo));
     }
     
-    
+    /// <summary>
+    /// Updates user by <see cref="userId"/>.
+    /// </summary>
+    /// <param name="userId">ID of user</param>
+    /// <param name="updateUserModel">model for updating user</param>
+    /// <returns>user if updated successfully otherwise problem</returns>
     [HttpPut("{userId:guid}")]
     [AuthorizeVerifiedRoles(Role.Root, Role.Admin)]
     public async Task<IActionResult> Update([FromRoute] Guid userId, [FromForm] UpdateUserModel updateUserModel)
@@ -129,6 +160,11 @@ public class UsersController : ApiController
             });
     }
     
+    /// <summary>
+    /// Deletes user by id
+    /// </summary>
+    /// <param name="userId">ID of user</param>
+    /// <returns>ok if successful deleted</returns>
     [HttpDelete("{userId:guid}")]
     [AuthorizeVerifiedRoles(Role.Root, Role.Admin)]
     public async Task<IActionResult> Delete([FromRoute] Guid userId)

@@ -31,6 +31,7 @@ public class GroupsRepository : IRepository<Group, Guid>
         new(new Dictionary<string, Func<string, Expression<Func<GroupEntity, bool>>>>
         {
             { FilterOptionNames.Group.Name, value => p => p.Name.Contains(value) },
+            { FilterOptionNames.Group.NameEquals, value => p => p.Name == value }
         });
 
     private static readonly

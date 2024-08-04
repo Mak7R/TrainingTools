@@ -25,6 +25,10 @@ public class GoogleAuthenticationController : ApiController
         _tokenService = tokenService;
     }
     
+    /// <summary>
+    /// Authenticate user in application by Google JWT Access Token
+    /// </summary>
+    /// <returns>authentication info with jwt access token of type <see cref="AuthenticationResponse"/></returns>
     [HttpGet("google-response")]
     public async Task<IActionResult> HandleGoogleResponse()
     {

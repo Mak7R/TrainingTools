@@ -24,6 +24,12 @@ public class PasswordsController : ApiController
         _localizer = localizer;
     }
     
+    /// <summary>
+    /// Send link for reset password to <see cref="email"/>
+    /// </summary>
+    /// <param name="email">to this email will be sent link for reset password</param>
+    /// <param name="emailSender">Service for sending letter</param>
+    /// <returns><see cref="email"/></returns>
     [AllowAnonymous]
     [HttpPost("/forgot-password")]
     public async Task<IActionResult> Forgot([EmailAddress] string email, [FromServices] IEmailSender emailSender)
@@ -39,6 +45,11 @@ public class PasswordsController : ApiController
         return Ok(email);
     }
 
+    /// <summary>
+    /// Resets password if reset token is valid for current email
+    /// </summary>
+    /// <param name="resetPasswordModel">represents all necessary info for resetting password</param>
+    /// <returns>ok</returns>
     [HttpPost("/reset-password")]
     public async Task<IActionResult> Reset(ResetPasswordModel resetPasswordModel)
     {
@@ -65,18 +76,23 @@ public class PasswordsController : ApiController
         });
     }
     
+    /// <summary>
+    /// Changes current password to new password
+    /// </summary>
+    /// <param name="changePasswordModel">represents info for changing password</param>
+    /// <returns></returns>
     [AuthorizeVerifiedRoles]
     [HttpPost("/change-password")]
     public async Task<IActionResult> Change(ChangePasswordModel changePasswordModel)
     {
         var user = await _userManager.GetUserAsync(User);
         if (user is null)
-            return RedirectToAction("Login", "Account");
+            return Problem("User was not found", statusCode:404);
         
         var result = await _userManager.ChangePasswordAsync(user, changePasswordModel.OldPassword, changePasswordModel.Password);
 
         if (result.Succeeded)
-            return RedirectToAction("Index", "Home");
+            return Ok();
         
         return BadRequest(new ProblemDetails
         {

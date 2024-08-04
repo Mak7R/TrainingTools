@@ -41,6 +41,7 @@ public static class DataBaseInitializeExtension
     public static async Task InitializeDataBase<T>(this IServiceProvider serviceProvider, IEnumerable<string> roles) where T: DbContext
     {
         var dbContext = serviceProvider.GetRequiredService<T>();
+        await dbContext.Database.EnsureCreatedAsync();
         dbContext.Migrate();
 
         await serviceProvider.InitializeRoles(roles);

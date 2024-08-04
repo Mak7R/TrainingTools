@@ -34,6 +34,13 @@ public class ExerciseResultsController : ApiController
         _mapper = mapper;
     }
 
+    /// <summary>
+    /// Gets exercise results for current user.
+    /// </summary>
+    /// <param name="filterModel">Supported filters: f_exercise-id, f_full-name, f_full-name-equals</param>
+    /// <param name="orderModel">Supported orders: group-name, owner</param>
+    /// <param name="pageModel">Paging params: page, page-size</param>
+    /// <returns></returns>
     [HttpGet("")]
     [QueryValuesReader<DefaultOrderOptions>]
     public async Task<IActionResult> GetUserResults(FilterViewModel? filterModel, OrderViewModel? orderModel, PageViewModel? pageModel)
@@ -49,6 +56,14 @@ public class ExerciseResultsController : ApiController
         return Ok(results.Select(r => _mapper.Map<ExerciseResultViewModel>(r)));
     }
     
+    /// <summary>
+    /// Gets exercise results for a specified user.
+    /// </summary>
+    /// <param name="userName">The username of the user whose results are requested</param>
+    /// <param name="filterModel">Supported filters: f_exercise-id, f_full-name, f_full-name-equals</param>
+    /// <param name="orderModel">Supported orders: group-name, owner</param>
+    /// <param name="pageModel">Paging params: page, page-size</param>
+    /// <returns>List of exercise results for the specified user</returns>
     [HttpGet("{userName}")]
     [QueryValuesReader<DefaultOrderOptions>]
     public async Task<IActionResult> GetUserResults(string userName, FilterViewModel? filterModel, OrderViewModel? orderModel, PageModel? pageModel)
@@ -86,6 +101,11 @@ public class ExerciseResultsController : ApiController
         return Ok(results.Select(r => _mapper.Map<ExerciseResultViewModel>(r)));
     }
     
+    /// <summary>
+    /// Exports exercise results for the current user to an Excel file.
+    /// </summary>
+    /// <param name="exсelExporter">Service for exporting results to Excel</param>
+    /// <returns>An Excel file with exercise results</returns>
     [HttpGet("as-exel")]
     public async Task<IActionResult> GetUserResultsAsExcel([FromServices] IExerciseResultsToExсelExporter exсelExporter)
     {
@@ -102,6 +122,14 @@ public class ExerciseResultsController : ApiController
         return File(stream, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "results.xlsx");
     }
     
+    /// <summary>
+    /// Gets friends' exercise results for a specified exercise.
+    /// </summary>
+    /// <param name="exerciseId">ID of the exercise</param>
+    /// <param name="filterModel">Supported filters: f_full-name, f_full-name-equals, f_owner, f_owner-equals</param>
+    /// <param name="orderModel">Supported orders: group-name, owner</param>
+    /// <param name="pageModel">Paging params: page, page-size</param>
+    /// <returns>List of friends' exercise results for the specified exercise</returns>
     [HttpGet("for-exercise/{exerciseId:guid}")]
     [QueryValuesReader<DefaultOrderOptions>]
     public async Task<IActionResult> GetFriendsResultsForExercise([FromRoute] Guid exerciseId, 
@@ -118,6 +146,11 @@ public class ExerciseResultsController : ApiController
         return Ok(results.Select(r => _mapper.Map<ExerciseResultViewModel>(r)));
     }  
 
+    /// <summary>
+    /// Creates a new exercise result for the specified exercise.
+    /// </summary>
+    /// <param name="exerciseId">ID of the exercise</param>
+    /// <returns>Created result or an error response</returns>
     [HttpPost("{exerciseId:guid}")]
     public async Task<IActionResult> Create([FromRoute] Guid exerciseId)
     {
@@ -150,6 +183,11 @@ public class ExerciseResultsController : ApiController
             });
     }
     
+    /// <summary>
+    /// Deletes the exercise result for the specified exercise.
+    /// </summary>
+    /// <param name="exerciseId">ID of the exercise</param>
+    /// <returns>No content or an error response</returns>
     [HttpDelete("{exerciseId:guid}")]
     public async Task<IActionResult> Delete(Guid exerciseId)
     {
@@ -173,6 +211,12 @@ public class ExerciseResultsController : ApiController
             });
     }
     
+    /// <summary>
+    /// Updates the exercise result for the specified exercise.
+    /// </summary>
+    /// <param name="exerciseId">ID of the exercise</param>
+    /// <param name="updateResultsModel">Model containing the updated result data</param>
+    /// <returns>No content or an error response</returns>
     [HttpPut("{exerciseId:guid}")]
     public async Task<IActionResult> Update(Guid exerciseId, UpdateResultsModel updateResultsModel)
     {

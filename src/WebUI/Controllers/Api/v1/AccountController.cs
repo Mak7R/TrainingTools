@@ -21,7 +21,7 @@ public class AccountController : ApiController
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly IMapper _mapper;
     private readonly IStringLocalizer<Controllers.AccountController> _localizer;
-
+    
     public AccountController(UserManager<ApplicationUser> userManager, IMapper mapper, IAuthTokenService<TokenGenerationInfo> tokenService, IStringLocalizer<Controllers.AccountController> localizer)
     {
         _userManager = userManager;
@@ -29,7 +29,14 @@ public class AccountController : ApiController
         _tokenService = tokenService;
         _localizer = localizer;
     }
-    
+
+
+    /// <summary>
+    /// Registers a new user.
+    /// </summary>
+    /// <param name="registerDto">The registration data transfer object.</param>
+    /// <param name="emailSender">Service for sending letter</param>
+    /// <returns>The action result.</returns>
     [AllowAnonymous]
     [HttpPost("register")]
     public async Task<IActionResult> Register(RegisterDto registerDto, [FromServices] IEmailSender emailSender)
@@ -77,6 +84,11 @@ public class AccountController : ApiController
             });
     }
 
+    /// <summary>
+    /// Logs in a user account.
+    /// </summary>
+    /// <param name="loginDto">The login data transfer object.</param>
+    /// <returns>The action result.</returns>
     [AllowAnonymous]
     [HttpPost("login")]
     public async Task<IActionResult> Login(LoginDto loginDto)
@@ -112,7 +124,11 @@ public class AccountController : ApiController
         
         return Problem(detail:"Invalid login or password", statusCode:400);
     }
-
+    
+    /// <summary>
+    /// Gets the profile of the currently logged-in user.
+    /// </summary>
+    /// <returns>The action result.</returns>
     [Authorize]
     [HttpGet("profile")]
     public async Task<IActionResult> Profile()
@@ -126,7 +142,12 @@ public class AccountController : ApiController
         return Ok(profile);
     }
     
-
+    /// <summary>
+    /// Updates the profile of the currently logged-in user.
+    /// </summary>
+    /// <param name="updateProfileDto">The update profile data transfer object.</param>
+    /// <param name="emailSender">Service for sending letter</param>
+    /// <returns>The action result.</returns>
     [AuthorizeVerifiedRoles]
     [HttpPost("profile")]
     public async Task<IActionResult> UpdateProfile(UpdateProfileDto? updateProfileDto, [FromServices] IEmailSender emailSender)
@@ -183,6 +204,11 @@ public class AccountController : ApiController
         return StatusCode(StatusCodes.Status403Forbidden, new ProblemDetails { Detail = "Invalid password", Status = 403});
     }
     
+    /// <summary>
+    /// Deletes the account of the currently logged-in user.
+    /// </summary>
+    /// <param name="password">The user's password.</param>
+    /// <returns>The action result.</returns>
     [HttpDelete]
     [AuthorizeVerifiedRoles]
     public async Task<IActionResult> DeleteAccount([FromBody] string? password)
@@ -211,6 +237,11 @@ public class AccountController : ApiController
         });
     }
     
+    /// <summary>
+    /// Checks if the email is free for registration.
+    /// </summary>
+    /// <param name="email">The email to check.</param>
+    /// <returns>The action result.</returns>
     [AllowAnonymous]
     [HttpGet("is-email-free")]
     public async Task<IActionResult> IsEmailFree(string? email)
@@ -223,6 +254,11 @@ public class AccountController : ApiController
         return Ok(user == null);
     }
     
+    /// <summary>
+    /// Checks if the username is free for registration.
+    /// </summary>
+    /// <param name="userName">The username to check.</param>
+    /// <returns>The action result.</returns>
     [AllowAnonymous]
     [HttpGet("is-username-free")]
     public async Task<IActionResult> IsUserNameFree(string? userName)

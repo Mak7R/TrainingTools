@@ -25,11 +25,11 @@ public class GroupsController : ApiController
     }
 
     /// <summary>
-    /// Gets all groups. Can be filtered with FilterModel and Ordered with order model
+    /// Retrieves a list of all groups, with optional filtering, ordering, and pagination.
     /// </summary>
-    /// <param name="orderModel">provides order for list of groups</param>
-    /// <param name="filterModel">provides filters for filtering groups</param>
-    /// <param name="pageModel">provides page settings for paging groups</param>
+    /// <param name="filterModel">Supported filters: f_name, f_name-equals</param>
+    /// <param name="orderModel">Supported orders: name</param>
+    /// <param name="pageModel">Paging params: page, page-size</param>
     /// <returns>List of groups</returns>
     [HttpGet("")]
     [QueryValuesReader<DefaultOrderOptions>]
@@ -40,6 +40,11 @@ public class GroupsController : ApiController
         return _mapper.Map<List<GroupViewModel>>(groups);
     }
 
+    /// <summary>
+    /// Counts the total number of groups based on optional filter criteria.
+    /// </summary>
+    /// <param name="filterModel">Supported filters: f_name, f_name-equals</param>
+    /// <returns>Total count of groups matching the criteria</returns>
     [HttpGet("count")]
     [QueryValuesReader<DefaultOrderOptions>]
     [AllowAnonymous]
@@ -48,6 +53,11 @@ public class GroupsController : ApiController
         return Ok(await _groupsService.Count(filterModel));
     }
     
+    /// <summary>
+    /// Retrieves a specific group by its ID.
+    /// </summary>
+    /// <param name="groupId">ID of group</param>
+    /// <returns></returns>
     [HttpGet("{groupId:guid}")]
     [AllowAnonymous]
     public async Task<ActionResult<GroupViewModel>> Get(Guid groupId)
@@ -89,6 +99,12 @@ public class GroupsController : ApiController
         });
     }
 
+    /// <summary>
+    /// Updates group by <see cref="groupId"/>
+    /// </summary>
+    /// <param name="groupId">ID of group</param>
+    /// <param name="updateGroupModel">model for updating group</param>
+    /// <returns>updated group id update was successful</returns>
     [HttpPut("{groupId:guid}")]
     [AuthorizeVerifiedRoles(Role.Admin, Role.Root)]
     public async Task<IActionResult> Update(Guid groupId, UpdateGroupModel updateGroupModel)
@@ -115,6 +131,11 @@ public class GroupsController : ApiController
         });
     }
 
+    /// <summary>
+    /// Deletes group by <see cref="groupId"/>
+    /// </summary>
+    /// <param name="groupId">ID of group</param>
+    /// <returns>no content if successfully deleted otherwise problem</returns>
     [HttpDelete("{groupId:guid}")]
     [AuthorizeVerifiedRoles(Role.Admin, Role.Root)]
     public async Task<IActionResult> Delete(Guid groupId)

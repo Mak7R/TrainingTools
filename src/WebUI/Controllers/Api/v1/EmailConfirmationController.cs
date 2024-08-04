@@ -21,6 +21,12 @@ public class EmailConfirmationController : ApiController
         _localizer = localizer;
     }
 
+    /// <summary>
+    /// Resends the confirmation letter to email.
+    /// </summary>
+    /// <param name="email">The email address.</param>
+    /// <param name="emailSender">Service for sending letter</param>
+    /// <returns>The action result.</returns>
     [HttpPost("resend-email-confirmation")]
     public async Task<IActionResult> ResendEmailConfirmation(string email, [FromServices] IEmailSender emailSender)
     {
@@ -38,6 +44,12 @@ public class EmailConfirmationController : ApiController
         return Ok(email);
     }
     
+    /// <summary>
+    /// Confirms the user's email.
+    /// </summary>
+    /// <param name="userId">The user ID.</param>
+    /// <param name="token">The confirmation token.</param>
+    /// <returns>The action result.</returns>
     [HttpGet("account/confirm-email")]
     public async Task<IActionResult> ConfirmEmail(Guid userId, string token)
     {

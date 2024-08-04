@@ -1,5 +1,4 @@
 ﻿using Application.Interfaces.Services;
-using Application.Models.Shared;
 using AutoMapper;
 using Domain.Enums;
 using Domain.Exceptions;
@@ -24,6 +23,13 @@ public class ExercisesController : ApiController
         _mapper = mapper;
     }
     
+    /// <summary>
+    /// Retrieves a list of all exercises, with optional filtering, ordering, and pagination.
+    /// </summary>
+    /// <param name="filterModel">Supported filters: f_name, f_name-equals, f_group</param>
+    /// <param name="orderModel">Supported orders: name, group-name</param>
+    /// <param name="pageModel">Paging params: page, page-size</param>
+    /// <returns>List of exercises matching the criteria</returns>
     [HttpGet("")]
     [QueryValuesReader<DefaultOrderOptions>]
     [AllowAnonymous]
@@ -36,6 +42,11 @@ public class ExercisesController : ApiController
         return Ok(_mapper.Map<List<ExerciseViewModel>>(exercises));
     }
     
+    /// <summary>
+    /// Counts the total number of exercises based on optional filter criteria.
+    /// </summary>
+    /// <param name="filterModel">Supported filters: f_name, f_name-equals, f_group</param>
+    /// <returns>Total count of exercises matching the criteria</returns>
     [HttpGet("count")]
     [QueryValuesReader<DefaultOrderOptions>]
     [AllowAnonymous]
@@ -44,6 +55,11 @@ public class ExercisesController : ApiController
         return Ok(await _exercisesService.Count(filterModel));
     }
 
+    /// <summary>
+    /// Retrieves a specific exercise by its ID.
+    /// </summary>
+    /// <param name="exerciseId">ID of the exercise</param>
+    /// <returns>The exercise with the specified ID</returns>
     [HttpGet("{exerciseId:guid}")]
     [AllowAnonymous]
     public async Task<IActionResult> Get(Guid exerciseId)
@@ -56,6 +72,12 @@ public class ExercisesController : ApiController
         return Ok(_mapper.Map<ExerciseViewModel>(exercise));
     }
 
+    /// <summary>
+    /// Renders a preview of the "about" content, parsed for references.
+    /// </summary>
+    /// <param name="about">Content to be parsed</param>
+    /// <param name="referencedContentProvider">Provider for parsing referenced content</param>
+    /// <returns>Rendered content as plain text</returns>
     [HttpGet("render-about-preview")]
     [AllowAnonymous]
     public async Task<IActionResult> RenderAboutPreview([FromBody] string? about, [FromServices] IReferencedContentProvider referencedContentProvider)
@@ -63,6 +85,11 @@ public class ExercisesController : ApiController
         return Content(await referencedContentProvider.ParseContentAsync(about));
     }
 
+    /// <summary>
+    /// Creates a new exercise with the specified details.
+    /// </summary>
+    /// <param name="createExerciseModel">Model containing details of the new exercise</param>
+    /// <returns>Created exercise or an error response</returns>
     [AuthorizeVerifiedRoles(Role.Root, Role.Admin)]
     [HttpPost("")]
     [AddAvailableGroups]
@@ -93,6 +120,12 @@ public class ExercisesController : ApiController
             });
     }
 
+    /// <summary>
+    /// Updates the details of an existing exercise.
+    /// </summary>
+    /// <param name="exerciseId">ID of the exercise to update</param>
+    /// <param name="updateExerciseModel">Model containing updated details of the exercise</param>
+    /// <returns>Updated exercise or an error response</returns>
     [AuthorizeVerifiedRoles(Role.Root, Role.Admin)]
     [HttpPut("{exerciseId:guid}")]
     [AddAvailableGroups]
@@ -122,6 +155,11 @@ public class ExercisesController : ApiController
             });
     }
 
+    /// <summary>
+    /// Deletes an existing exercise by its ID.
+    /// </summary>
+    /// <param name="exerciseId">ID of the exercise to delete</param>
+    /// <returns>No content or an error response</returns>
     [AuthorizeVerifiedRoles(Role.Root, Role.Admin)]
     [HttpDelete("{exerciseId:guid}")]
     public async Task<IActionResult> DeleteExercise(Guid exerciseId)

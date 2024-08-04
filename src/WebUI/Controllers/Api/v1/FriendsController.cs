@@ -26,6 +26,11 @@ public class FriendsController : ApiController
         _mapper = mapper;
     }
 
+    /// <summary>
+    /// Invite user to friendship. Creates friend invitation between current user and user with <see cref="userId"/>
+    /// </summary>
+    /// <param name="userId">represents id of user which is invited by current user</param>
+    /// <returns>User id or error response</returns>
     [HttpPost("{userId:guid}/invite")]
     public async Task<IActionResult> Invite(Guid userId)
     {
@@ -49,6 +54,11 @@ public class FriendsController : ApiController
             });
     }
 
+    /// <summary>
+    /// Accepts invitation of user with id <see cref="userId"/>
+    /// </summary>
+    /// <param name="userId">represents id of user which has invited current user</param>
+    /// <returns>User id or error response</returns>
     [HttpPut("{userId:guid}/accept")]
     public async Task<IActionResult> Accept(Guid userId)
     {
@@ -72,6 +82,11 @@ public class FriendsController : ApiController
             });
     }
     
+    /// <summary>
+    /// Refuses invitation of user with id <see cref="userId"/>
+    /// </summary>
+    /// <param name="userId">represents id of user which has invited current user</param>
+    /// <returns>User id or error response</returns>
     [HttpDelete("{userId:guid}/refuse")]
     public async Task<IActionResult> Refuse(Guid userId)
     {
@@ -95,6 +110,11 @@ public class FriendsController : ApiController
             });
     }
 
+    /// <summary>
+    /// Cancels invitation to user with id <see cref="userId"/>
+    /// </summary>
+    /// <param name="userId">represents id of user which was invited by current user</param>
+    /// <returns>User id or error response</returns>
     [HttpDelete("{userId:guid}/cancel")]
     public async Task<IActionResult> Cancel(Guid userId)
     {
@@ -118,6 +138,11 @@ public class FriendsController : ApiController
             });
     }
     
+    /// <summary>
+    /// Removes friendship between current user and user with <see cref="userId"/>
+    /// </summary>
+    /// <param name="userId">represents user which is friend to current</param>
+    /// <returns>User id or error response</returns>
     [HttpDelete("{userId:guid}/remove")]
     public async Task<IActionResult> RemoveFriendship(Guid userId)
     {
@@ -141,7 +166,10 @@ public class FriendsController : ApiController
             });
     }
     
-    
+    /// <summary>
+    /// Get all friends for current user 
+    /// </summary>
+    /// <returns>List of friends</returns>
     [HttpGet("")]
     public async Task<IActionResult> Index()
     {
@@ -153,6 +181,10 @@ public class FriendsController : ApiController
         return Ok(_mapper.Map<UserViewModel>(friends));
     }
     
+    /// <summary>
+    /// Get all invitations for current user (current user is invited)
+    /// </summary>
+    /// <returns>List of invitations where user is invited</returns>
     [HttpGet("invitations-for")]
     public async Task<IActionResult> InvitationsFor()
     {
@@ -164,6 +196,10 @@ public class FriendsController : ApiController
         return Ok(_mapper.Map<FriendInvitationViewModel>(invitationsFor));
     }
     
+    /// <summary>
+    /// Get all invitations of current user (current user is invitor)
+    /// </summary>
+    /// <returns>List of invitations where user is invitor</returns>
     [HttpGet("invitations-of")]
     public async Task<IActionResult> InvitationsOf()
     {

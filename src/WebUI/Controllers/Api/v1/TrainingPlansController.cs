@@ -30,6 +30,13 @@ public class TrainingPlansController : ApiController
         _mapper = mapper;
     }
 
+    /// <summary>
+    /// Retrieves all public training plans with optional filtering, ordering, and pagination.
+    /// </summary>
+    /// <param name="filterModel">Supported filters: f_title, f_title_equals, f_author-id, f_author, f_author-equals</param>
+    /// <param name="orderModel">Supported orders: title, owner</param>
+    /// <param name="pageModel">Paging params: page, page-size</param>
+    /// <returns>A list of training plans.</returns>
     [HttpGet("")]
     [QueryValuesReader<DefaultOrderOptions>]
     public async Task<IActionResult> GetAll(
@@ -43,6 +50,11 @@ public class TrainingPlansController : ApiController
         return Ok(plans.Select(p => _mapper.Map<TrainingPlanViewModel>(p)));
     }
     
+    /// <summary>
+    /// Counts all public training plans with optional filtering.
+    /// </summary>
+    /// <param name="filterModel">Supported filters: f_title, f_title_equals, f_author-id, f_author, f_author-equals</param>
+    /// <returns>The count of training plans.</returns>
     [HttpGet("count")]
     [QueryValuesReader<DefaultOrderOptions>]
     public async Task<IActionResult> Count(FilterViewModel? filterModel)
@@ -52,6 +64,11 @@ public class TrainingPlansController : ApiController
         return Ok(await _trainingPlansService.Count(filterModel));
     }
     
+    /// <summary>
+    /// Counts all training plans created by the current user.
+    /// </summary>
+    /// <param name="filterModel">Supported filters: f_title, f_title_equals, f_public-only</param>
+    /// <returns>The count of user-specific training plans.</returns>
     [HttpGet("my/count")]
     [QueryValuesReader<DefaultOrderOptions>]
     public async Task<IActionResult> UserPlansCount(FilterViewModel? filterModel)
@@ -64,7 +81,13 @@ public class TrainingPlansController : ApiController
         return Ok(await _trainingPlansService.Count(filterModel));
     }
     
-
+    /// <summary>
+    /// Retrieves training plans created by the current user with optional filtering, ordering, and pagination.
+    /// </summary>
+    /// <param name="filterModel">Supported filters: f_title, f_title_equals, f_public-only</param>
+    /// <param name="orderModel">Supported orders: title</param>
+    /// <param name="pageModel">Paging params: page, page-size</param>
+    /// <returns>A list of user-specific training plans.</returns>
     [HttpGet("for-user")]
     [QueryValuesReader<DefaultOrderOptions>]
     public async Task<IActionResult> GetUserTrainingPlans(
@@ -77,12 +100,17 @@ public class TrainingPlansController : ApiController
             return RedirectToAction("Login", "Account", new { returnUrl = "/training-plans/for-user" });
 
         filterModel ??= new FilterViewModel();
-        filterModel[FilterOptionNames.TrainingPlan.AuthorName] = user.UserName;
+        filterModel[FilterOptionNames.TrainingPlan.AuthorId] = user.Id.ToString();
 
         var plans = await _trainingPlansService.GetAll(filterModel, orderModel, pageModel);
         return Ok(plans.Select(p => _mapper.Map<TrainingPlanViewModel>(p)));
     }
 
+    /// <summary>
+    /// Retrieves a specific training plan by its ID.
+    /// </summary>
+    /// <param name="planId">The ID of the training plan.</param>
+    /// <returns>The training plan details.</returns>
     [HttpGet("{planId:guid}")]
     public async Task<IActionResult> GetTrainingPlan(Guid planId)
     {
@@ -98,6 +126,11 @@ public class TrainingPlansController : ApiController
         return Ok(_mapper.Map<TrainingPlanViewModel>(trainingPlan));
     }
     
+    /// <summary>
+    /// Creates a new training plan.
+    /// </summary>
+    /// <param name="creationModel">The model containing the training plan creation details.</param>
+    /// <returns>A redirection to the user's training plans page.</returns>
     [HttpPost("")]
     public async Task<IActionResult> Create([FromForm] CreateTrainingPlanModel creationModel)
     {
@@ -123,6 +156,12 @@ public class TrainingPlansController : ApiController
         return RedirectToAction("GetUserTrainingPlans", "TrainingPlans");
     }
 
+    /// <summary>
+    /// Updates an existing training plan.
+    /// </summary>
+    /// <param name="planId">The ID of the training plan to update.</param>
+    /// <param name="updateTrainingPlanModel">The model containing the training plan update details.</param>
+    /// <returns>The updated training plan details.</returns>
     [HttpPut("{planId:guid}")]
     public async Task<IActionResult> Update(Guid planId, [UpdateTrainingPlanModelBinder] UpdateTrainingPlanModel updateTrainingPlanModel)
     {
@@ -193,6 +232,11 @@ public class TrainingPlansController : ApiController
             });
     }
     
+    /// <summary>
+    /// Deletes an existing training plan.
+    /// </summary>
+    /// <param name="planId">The ID of the training plan to delete.</param>
+    /// <returns>The details of the deleted training plan.</returns>
     [HttpDelete("{planId:guid}")]
     public async Task<IActionResult> Delete(Guid planId)
     {
