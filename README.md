@@ -1,5 +1,10 @@
 # Training Tools
 
+### Deployments
+
+- Somee.com: https://trainingtools.somee.com (All time available)
+- Azure: https://training-tools.azurewebsites.net (1 hour per day available)
+
 ## Description
 
 Training Tools is a web application designed to manage muscle groups, exercises, training plans, and user interactions. Users can log in or register an account, view and manage their profiles, add friends, and track exercise results. Training plans can be created and shared, with the possibility to compare results with friends. Admins have additional privileges to manage exercises, muscle groups, and user roles. The application also supports OAuth 2.0 for signing in with Google and provides an open API for integration with other applications.
@@ -44,7 +49,7 @@ To set up the project, follow these steps:
 
 2. **Build the Project:**
    ```bash
-   dotnet build WebUI
+   dotnet build src\WebUI
 
 3. **Configure appsettings.json**
     ``` json
@@ -104,7 +109,7 @@ To use the application, follow these steps:
 
 1. **Start the Application:**
    ```bash
-   dotnet run
+   dotnet run --project src\WebUI
 
 2. Once the application is running, you can access the web interface and interact with the available features. The API endpoints will also be available for external applications.
 
@@ -276,7 +281,7 @@ To run the tests for this project, use the following command:
 dotnet test
 ```
 
-Testing Frameworks: XUnit
+Testing Frameworks: **XUnit**
 
 ## Contributing
 
