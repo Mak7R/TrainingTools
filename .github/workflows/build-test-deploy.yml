@@ -7,8 +7,29 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
+  test:
+      runs-on: ubuntu-latest
+      steps:
+        - uses: actions/checkout@v4
+  
+        - name: Set up .NET Core
+          uses: actions/setup-dotnet@v4
+          with:
+            dotnet-version: '8.x'
+            include-prerelease: true
+  
+        - name: Restore dependencies
+          run: dotnet restore
+          
+        - name: Build
+          run: dotnet build --no-restore
+          
+        - name: Test
+          run: dotnet test --no-build --verbosity normal
+
+  build-production:
     runs-on: ubuntu-latest
+    needs: test
     steps:
       - uses: actions/checkout@v4
 
@@ -33,30 +54,9 @@ jobs:
           name: .net-app
           path: ${{env.DOTNET_ROOT}}/myapp
 
-  test:
-    runs-on: ubuntu-latest
-    needs: build
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up .NET Core
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: '8.x'
-          include-prerelease: true
-
-      - name: Restore dependencies
-        run: dotnet restore
-        
-      - name: Build
-        run: dotnet build --no-restore
-        
-      - name: Test
-        run: dotnet test --no-build --verbosity normal
-
   deploy-to-azure:
     runs-on: ubuntu-latest
-    needs: [build, test]
+    needs: [test, build-production]
     environment:
       name: 'Production'
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
@@ -75,10 +75,10 @@ jobs:
           slot-name: 'Production'
           package: .
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_84482AE746004F7BA92B08B2C841F1D9 }}
+          
   deploy-to-somee:
-    name: 🎉 Deploy
     runs-on: ubuntu-latest
-    needs: [build, test]
+    needs: [test, build-production]
     steps:
       - name: Download artifact from build job
         uses: actions/download-artifact@v3
@@ -91,4 +91,5 @@ jobs:
           server: ${{ secrets.SOMEE_FTP_SERVER }}
           username: ${{ secrets.SOMEE_FTP_USERNAME }}
           password: ${{ secrets.SOMEE_FTP_PASSWORD }}
+          local-dir: ${{ secrets.SOMEE_FTP_LOCAL_DIR }}
           exclude: '**/appsettings.Production.json'
