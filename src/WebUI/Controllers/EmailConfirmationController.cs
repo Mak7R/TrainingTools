@@ -22,7 +22,7 @@ public class EmailConfirmationController : Controller
     }
 
     [HttpPost("/resend-email-confirmation")]
-    public async Task<IActionResult> ResendEmailConfirmation(string email, [FromServices] IEmailSender emailSender)
+    public async Task<IActionResult> ResendEmailConfirmationLetter(string email, [FromServices] IEmailSender emailSender)
     {
         var user = await _userManager.FindByEmailAsync(email);
         if (user == null)

@@ -54,7 +54,7 @@
             <param name="userName">The username to check.</param>
             <returns>The action result.</returns>
         </member>
-        <member name="M:WebUI.Controllers.Api.v1.EmailConfirmationController.ResendEmailConfirmation(System.String,Microsoft.AspNetCore.Identity.UI.Services.IEmailSender)">
+        <member name="M:WebUI.Controllers.Api.v1.EmailConfirmationController.ResendEmailConfirmationLetter(System.String,Microsoft.AspNetCore.Identity.UI.Services.IEmailSender)">
             <summary>
             Resends the confirmation letter to email.
             </summary>
