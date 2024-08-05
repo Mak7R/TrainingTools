@@ -75,6 +75,7 @@ jobs:
           slot-name: 'Production'
           package: .
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_84482AE746004F7BA92B08B2C841F1D9 }}
+
           
   deploy-to-somee:
     runs-on: ubuntu-latest
@@ -84,12 +85,14 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: .net-app
-    
-      - name: Send files
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+      - name: FTP Deployer
+        uses: sand4rt/ftp-deployer@v1.8
         with:
-          server: ${{ secrets.SOMEE_FTP_SERVER }}
+          sftp: false
+          host: ${{ secrets.SOMEE_FTP_SERVER }}
           username: ${{ secrets.SOMEE_FTP_USERNAME }}
           password: ${{ secrets.SOMEE_FTP_PASSWORD }}
-          local-dir: ${{ secrets.SOMEE_FTP_LOCAL_DIR }}
-          exclude: '**/appsettings.Production.json'
+          remote_folder: ${{ secrets.SOMEE_FTP_REMOTE_DIR }}
+          cleanup: true
+          exclude: "['**/appsettings.Production.json']"
+          passive: true
