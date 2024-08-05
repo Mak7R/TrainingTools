@@ -170,8 +170,8 @@ public class UsersServiceTests
         _userManagerMock.Setup(mock => mock.GetRolesAsync(currentUser))
             .ReturnsAsync(new List<string> { nameof(Role.Admin) });
 
-        var existingUser = new ApplicationUser { Id = updateUserDto.UserId, UserName = "existingUser" };
-        _userManagerMock.Setup(mock => mock.FindByNameAsync("existingUser"))
+        var existingUser = new ApplicationUser { Id = updateUserDto.UserId };
+        _userManagerMock.Setup(mock => mock.FindByIdAsync(existingUser.Id.ToString()))
             .ReturnsAsync(existingUser);
 
         _userManagerMock.Setup(mock => mock.UpdateAsync(existingUser))
@@ -208,13 +208,12 @@ public class UsersServiceTests
     {
         // Arrange
         var currentUser = new ApplicationUser { Id = Guid.NewGuid() };
-        var userName = "userToDelete";
 
         _userManagerMock.Setup(mock => mock.GetRolesAsync(currentUser))
             .ReturnsAsync(new List<string> { nameof(Role.Admin) });
 
-        var userToDelete = new ApplicationUser { Id = Guid.NewGuid(), UserName = userName };
-        _userManagerMock.Setup(mock => mock.FindByNameAsync(userName))
+        var userToDelete = new ApplicationUser { Id = Guid.NewGuid() };
+        _userManagerMock.Setup(mock => mock.FindByIdAsync(userToDelete.Id.ToString()))
             .ReturnsAsync(userToDelete);
 
         _userManagerMock.Setup(mock => mock.DeleteAsync(userToDelete))
