@@ -28,7 +28,7 @@ public class EmailConfirmationController : ApiController
     /// <param name="emailSender">Service for sending letter</param>
     /// <returns>The action result.</returns>
     [HttpPost("resend-email-confirmation")]
-    public async Task<IActionResult> ResendEmailConfirmation(string email, [FromServices] IEmailSender emailSender)
+    public async Task<IActionResult> ResendEmailConfirmationLetter(string email, [FromServices] IEmailSender emailSender)
     {
         var user = await _userManager.FindByEmailAsync(email);
         if (user == null)
