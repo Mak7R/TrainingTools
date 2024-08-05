@@ -93,6 +93,7 @@ jobs:
           username: ${{ secrets.SOMEE_FTP_USERNAME }}
           password: ${{ secrets.SOMEE_FTP_PASSWORD }}
           remote_folder: ${{ secrets.SOMEE_FTP_REMOTE_DIR }}
+          local_folder: ./
           cleanup: true
           exclude: '["**/appsettings.Production.json"]'
           passive: true
