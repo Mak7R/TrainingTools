@@ -1,6 +1,5 @@
 ﻿using Application.Constants;
 using Application.Interfaces.Repositories;
-using Application.Interfaces.ServiceInterfaces;
 using Application.Interfaces.Services;
 using Application.Models.Shared;
 using Application.Services;
@@ -14,13 +13,13 @@ namespace ApplicationTests;
 
 public class GroupsServiceTests
 {
-    private readonly Mock<IGroupsRepository> _groupsRepositoryMock;
+    private readonly Mock<IRepository<Group, Guid>> _groupsRepositoryMock;
     private readonly IGroupsService _groupsService;
     private readonly IFixture _fixture;
 
     public GroupsServiceTests()
     {
-        _groupsRepositoryMock = new Mock<IGroupsRepository>();
+        _groupsRepositoryMock = new Mock<IRepository<Group, Guid>>();
         _groupsService = new GroupsService(_groupsRepositoryMock.Object);
         _fixture = new Fixture();
     }
@@ -32,7 +31,7 @@ public class GroupsServiceTests
     {
         // Arrange
         var groups = _fixture.CreateMany<Group>().ToList();
-        _groupsRepositoryMock.Setup(repo => repo.GetAll(null)).ReturnsAsync(groups);
+        _groupsRepositoryMock.Setup(repo => repo.GetAll(null, null, null)).ReturnsAsync(groups);
 
         // Act
         var result = await _groupsService.GetAll();
@@ -52,10 +51,10 @@ public class GroupsServiceTests
             OrderOption = OrderOptionNames.Shared.Ascending
         };
 
-        _groupsRepositoryMock.Setup(repo => repo.GetAll(null)).ReturnsAsync(groups);
+        _groupsRepositoryMock.Setup(repo => repo.GetAll(It.IsAny<FilterModel?>(), orderModel, It.IsAny<PageModel?>())).ReturnsAsync(groups.OrderBy(g => g.Name));
 
         // Act
-        var result = await _groupsService.GetAll(orderModel);
+        var result = await _groupsService.GetAll(orderModel: orderModel);
 
         // Assert
         result.Should().BeInAscendingOrder(g => g.Name);
@@ -71,11 +70,11 @@ public class GroupsServiceTests
             OrderBy = OrderOptionNames.Group.Name,
             OrderOption = OrderOptionNames.Shared.Descending
         };
-
-        _groupsRepositoryMock.Setup(repo => repo.GetAll(null)).ReturnsAsync(groups);
+        
+        _groupsRepositoryMock.Setup(repo => repo.GetAll(null, orderModel, null)).ReturnsAsync(groups.OrderByDescending(g => g.Name));
 
         // Act
-        var result = await _groupsService.GetAll(orderModel);
+        var result = await _groupsService.GetAll(orderModel: orderModel);
 
         // Assert
         result.Should().BeInDescendingOrder(g => g.Name);
@@ -91,10 +90,10 @@ public class GroupsServiceTests
             { FilterOptionNames.Group.Name, groups.First().Name }
         };
 
-        _groupsRepositoryMock.Setup(repo => repo.GetAll(filterModel)).ReturnsAsync(groups.Where(g => g.Name == groups.First().Name));
+        _groupsRepositoryMock.Setup(repo => repo.GetAll(filterModel, null, null)).ReturnsAsync(groups.Where(g => g.Name == groups.First().Name));
 
         // Act
-        var result = await _groupsService.GetAll(null, filterModel);
+        var result = await _groupsService.GetAll(filterModel);
 
         // Assert
         result.Should().BeEquivalentTo(groups.Where(g => g.Name == groups.First().Name));
@@ -109,7 +108,7 @@ public class GroupsServiceTests
     {
         // Arrange
         var group = _fixture.Create<Group>();
-        _groupsRepositoryMock.Setup(repo => repo.GetByName(group.Name)).ReturnsAsync(group);
+        _groupsRepositoryMock.Setup(repo => repo.GetAll(It.IsAny<FilterModel?>(), It.IsAny<OrderModel?>(), It.IsAny<PageModel?>())).ReturnsAsync([group]);
 
         // Act
         var result = await _groupsService.GetByName(group.Name);
@@ -122,7 +121,7 @@ public class GroupsServiceTests
     public async Task GetByName_ShouldReturnNull_WhenGroupDoesNotExist()
     {
         // Arrange
-        _groupsRepositoryMock.Setup(repo => repo.GetByName(It.IsAny<string>())).ReturnsAsync((Group)null);
+        _groupsRepositoryMock.Setup(repo => repo.GetAll(It.IsAny<FilterModel>(), null, null)).ReturnsAsync([]);
 
         // Act
         var result = await _groupsService.GetByName("NonExistentName");

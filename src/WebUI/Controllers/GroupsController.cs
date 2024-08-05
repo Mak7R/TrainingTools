@@ -1,6 +1,7 @@
 ﻿using Application.Interfaces.Services;
 using Application.Models.Shared;
 using AutoMapper;
+using Domain.Enums;
 using Domain.Exceptions;
 using Domain.Models;
 using Microsoft.AspNetCore.Authorization;
@@ -13,7 +14,6 @@ using WebUI.Models.Shared;
 namespace WebUI.Controllers;
 
 [Controller]
-[AllowAnonymous]
 [Route("groups")]
 public class GroupsController : Controller
 {
@@ -25,27 +25,35 @@ public class GroupsController : Controller
         _groupsService = groupsService;
         _mapper = mapper;
     }
-
+    
     [HttpGet("")]
     [QueryValuesReader<DefaultOrderOptions>]
-    
+    [AllowAnonymous]
     public async Task<IActionResult> GetAll(
-        OrderModel? orderModel, 
-        FilterModel? filterModel,
-        PageModel? pageModel)
+        FilterViewModel? filterModel, 
+        OrderViewModel? orderModel, 
+        PageViewModel? pageModel)
     {
-        var groups = await _groupsService.GetAll(orderModel, filterModel, pageModel);
+        pageModel ??= new PageViewModel();
+        if (pageModel.PageSize is PageModel.DefaultPageSize or <= 0)
+        {
+            int defaultPageSize = 10;
+            pageModel.PageSize = defaultPageSize;
+            ViewBag.DefaultPageSize = defaultPageSize;
+        } 
+        ViewBag.GroupsCount = await _groupsService.Count(filterModel);
+        
+        var groups = await _groupsService.GetAll(filterModel, orderModel, pageModel);
         
         return View(_mapper.Map<List<GroupViewModel>>(groups));
     }
 
     [HttpPost("create")]
-    [Authorize(Roles = "Root,Admin")]
-    [ConfirmUser]
+    [AuthorizeVerifiedRoles(Role.Root, Role.Admin)]
     public async Task<IActionResult> Create([FromForm] CreateGroupModel createGroupModel)
     {
         if (!ModelState.IsValid)
-            return this.BadRequestView(ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage));
+            return this.BadRequestRedirect(ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage));
         
         var result = await _groupsService.Create(_mapper.Map<Group>(createGroupModel));
         
@@ -53,18 +61,17 @@ public class GroupsController : Controller
             return RedirectToAction("GetAll", "Groups");
         
         if (result.Exception is AlreadyExistsException)
-            return this.BadRequestView(result.Errors);
+            return this.BadRequestRedirect(result.Errors);
         
-        return this.ErrorView(500, result.Errors);
+        return this.ErrorRedirect(500, result.Errors);
     }
 
     [HttpPost("update")]
-    [Authorize(Roles = "Root,Admin")]
-    [ConfirmUser]
+    [AuthorizeVerifiedRoles(Role.Root, Role.Admin)]
     public async Task<IActionResult> Update([FromForm] UpdateGroupModel updateGroupModel)
     {
         if (!ModelState.IsValid)
-            return this.BadRequestView(ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage));
+            return this.BadRequestRedirect(ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage));
         
         var result = await _groupsService.Update(_mapper.Map<Group>(updateGroupModel));
         
@@ -72,17 +79,16 @@ public class GroupsController : Controller
             return RedirectToAction("GetAll", "Groups");
         
         if (result.Exception is AlreadyExistsException)
-            return this.BadRequestView(result.Errors);
+            return this.BadRequestRedirect(result.Errors);
         
         if (result.Exception is NotFoundException)
-            return this.NotFoundView(result.Errors);
+            return this.NotFoundRedirect(result.Errors);
         
-        return this.ErrorView(500, result.Errors);
+        return this.ErrorRedirect(500, result.Errors);
     }
 
     [HttpGet("delete")]
-    [Authorize(Roles = "Root,Admin")]
-    [ConfirmUser]
+    [AuthorizeVerifiedRoles(Role.Root, Role.Admin)]
     public async Task<IActionResult> Delete([FromQuery] Guid groupId)
     {
         var result = await _groupsService.Delete(groupId);
@@ -91,8 +97,8 @@ public class GroupsController : Controller
             return RedirectToAction("GetAll");
 
         if (result.Exception is NotFoundException)
-            return this.NotFoundView(result.Errors);
+            return this.NotFoundRedirect(result.Errors);
         
-        return this.ErrorView(500, result.Errors);
+        return this.ErrorRedirect(500, result.Errors);
     }
 }

@@ -1,6 +1,6 @@
 ﻿@using Filters = Application.Constants.FilterOptionNames.User
 @using Orders = Application.Constants.OrderOptionNames.User
-@model IEnumerable<WebUI.Models.User.UserInfoViewModel>
+@model IEnumerable<UserInfoViewModel>
 
 @{
     ViewBag.Title = "Users";
@@ -11,14 +11,12 @@
 
     @if (Context.User.IsInRole(nameof(Role.Admin)) || Context.User.IsInRole(nameof(Role.Root)))
     {
-        <div class="row mb-3">
-            <a class="col d-block w-75 btn btn-outline-success me-2" asp-controller="Users" asp-action="Create">Create new User</a>
-            
-            <a class="col-3 btn btn-primary" asp-controller="Users" asp-action="GetAllAsCsv">Download as CSV</a>
+        <div class="mb-3 d-flex justify-content-end">
+            <a class="btn btn-primary" asp-controller="Users" asp-action="GetAllAsCsv">Download as CSV</a>
         </div>
     }
 
-    <form class="d-flex justify-content-end" method="get">
+    <form class="d-flex justify-content-end" method="get" onsubmit="addQueryParametersFromForm(event)">
         <div class="input-group mb-1">
             <label for="filter-by-name-input" hidden></label>
             <input id="filter-by-name-input" class="form-control rounded-start-5 me-1" name="@Filters.Name.AsFilterName()" value="@ViewData[Filters.Name.AsFilterName()]" placeholder="search"/>
@@ -62,9 +60,6 @@
             </select>
 
             <button type="submit" class="btn btn-primary rounded-end-5"><img style="width: 2em;height: 2em;" src="/img/icons/search.svg" alt="Search"/></button>
-
-            <input name="order" value="@(ViewData["current_order"] ?? "")" hidden/>
-            <input name="order_by" value="@(ViewData["order_by"])" hidden/>
         </div>
     </form>
 
@@ -72,40 +67,13 @@
         <thead>
         <tr>
             <th class="col-3 fs-5">
-                <form method="get" onclick="this.submit()" class="cursor-pointer non-selectable">
-                    Username
-                    @{
-                        await Html.RenderPartialAsync("Partials/DefaultOrderFormPartialView", Orders.Name);
-                    }
-
-                    <input name="@Filters.Name.AsFilterName()" value="@ViewData[Filters.Name.AsFilterName()]" hidden/>
-                    <input name="@Filters.Role.AsFilterName()" value="@ViewData[Filters.Role.AsFilterName()]" hidden/>
-                    <input name="@Filters.RelationshipsState.AsFilterName()" value="@ViewData[Filters.RelationshipsState.AsFilterName()]" hidden/>
-                </form>
+                @await Html.PartialAsync("Partials/DefaultOrderFormPartialView", (Orders.Name, "Username"))
             </th>
             <th class="col-1 fs-5">
-                <form method="get" onclick="this.submit()" class="cursor-pointer non-selectable">
-                    Roles
-                    @{
-                        await Html.RenderPartialAsync("Partials/DefaultOrderFormPartialView", Orders.Role);
-                    }
-
-                    <input name="@Filters.Name.AsFilterName()" value="@ViewData[Filters.Name.AsFilterName()]" hidden/>
-                    <input name="@Filters.Role.AsFilterName()" value="@ViewData[Filters.Role.AsFilterName()]" hidden/>
-                    <input name="@Filters.RelationshipsState.AsFilterName()" value="@ViewData[Filters.RelationshipsState.AsFilterName()]" hidden/>
-                </form>
+                @await Html.PartialAsync("Partials/DefaultOrderFormPartialView", (Orders.Role, "Role"))
             </th>
             <th class="col-1 fs-5">
-                <form method="get" onclick="this.submit()" class="cursor-pointer non-selectable">
-                    Friendship Status
-                    @{
-                        await Html.RenderPartialAsync("Partials/DefaultOrderFormPartialView", Orders.RelationshipsState);
-                    }
-
-                    <input name="@Filters.Name.AsFilterName()" value="@ViewData[Filters.Name.AsFilterName()]" hidden/>
-                    <input name="@Filters.Role.AsFilterName()" value="@ViewData[Filters.Role.AsFilterName()]" hidden/>
-                    <input name="@Filters.RelationshipsState.AsFilterName()" value="@ViewData[Filters.RelationshipsState.AsFilterName()]" hidden/>
-                </form>
+                 @await Html.PartialAsync("Partials/DefaultOrderFormPartialView", (Orders.RelationshipsState, "Relationships"))
             </th>
         </tr>
         </thead>
@@ -124,11 +92,13 @@
                 </td>
                 <td>
                     @{
-                        await Html.RenderPartialAsync("Partials/UsersRelationshipActions", (userInfo.RelationshipState, userInfo.User.UserName, Context.Request.Path.ToString()));
+                        await Html.RenderPartialAsync("Partials/UsersRelationshipActions", (userInfo.RelationshipState, userInfo.User, Context.Request.Path.ToString()));
                     }
                 </td>
             </tr>
         }
         </tbody>
     </table>
+
+    @await Html.PartialAsync("Partials/DefaultPagingFormPartialView", ViewBag.UsersCount, ViewData)
 </div>

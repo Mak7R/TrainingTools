@@ -24,21 +24,11 @@ public class UpdateProfileDto
     public string? Email { get; set; } = string.Empty;
 
     [Display(Name = "Phone number")]
-    [Required(ErrorMessage = "Phone is required")]
     [Phone(ErrorMessage = "Phone is invalid")]
     public string? Phone { get; set; } = string.Empty;
     
     public bool IsPublic { get; set; } = false;
     public bool IsTrainer { get; set; } = false;
-    
-    [Display(Name = "New password")]
-    [DataType(DataType.Password)]
-    public string? NewPassword { get; set; }
-    
-    [Display(Name = "Confirm password")]
-    [Compare(nameof(NewPassword), ErrorMessage = "Confirm password must be same with password")]
-    [DataType(DataType.Password)]
-    public string? ConfirmPassword { get; set; }
     
     
     [Display(Name = "Current password")]

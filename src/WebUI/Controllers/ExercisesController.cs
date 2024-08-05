@@ -1,6 +1,8 @@
-﻿using Application.Interfaces.ServiceInterfaces;
+﻿using Application.Constants;
+using Application.Interfaces.Services;
 using Application.Models.Shared;
 using AutoMapper;
+using Domain.Enums;
 using Domain.Exceptions;
 using Domain.Identity;
 using Domain.Models;
@@ -9,14 +11,12 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using WebUI.Extensions;
 using WebUI.Filters;
-using WebUI.ModelBinding.ModelBinders;
 using WebUI.Models.Exercise;
 using WebUI.Models.Shared;
 
 namespace WebUI.Controllers;
 
 [Controller]
-[AllowAnonymous]
 [Route("exercises")]
 public class ExercisesController : Controller
 {
@@ -32,51 +32,63 @@ public class ExercisesController : Controller
     [HttpGet("")]
     [QueryValuesReader<DefaultOrderOptions>]
     [AddAvailableGroups]
+    [AllowAnonymous]
     public async Task<IActionResult> GetAll(
-        [FromQuery] OrderModel? orderModel,
-        [FilterModelBinder] FilterModel? filterModel, 
+        FilterViewModel? filterModel, 
+        OrderViewModel? orderModel,
+        PageViewModel? pageModel,
         
         [FromServices] IExerciseResultsService resultsService, 
         [FromServices] UserManager<ApplicationUser> userManager)
     {
-        var exercises = await _exercisesService.GetAll(orderModel, filterModel);
+        pageModel ??= new PageViewModel();
+        if (pageModel.PageSize is PageModel.DefaultPageSize or <= 0)
+        {
+            int defaultPageSize = 10;
+            pageModel.PageSize = defaultPageSize;
+            ViewBag.DefaultPageSize = defaultPageSize;
+        } 
+        ViewBag.ExercisesCount = await _exercisesService.Count(filterModel);
+        
+        var exercises = await _exercisesService.GetAll(filterModel, orderModel, pageModel);
 
         var user = await userManager.GetUserAsync(User);
 
         if (user is not null)
-            ViewBag.UserResults = await resultsService.GetForUser(user.Id);
+            ViewBag.UserResults = await resultsService.GetAll(new FilterModel{{FilterOptionNames.ExerciseResults.OwnerId, user.Id.ToString()}}); // todo not optimize
         
         return View(_mapper.Map<List<ExerciseViewModel>>(exercises));
     }
 
     [HttpGet("{exerciseId:guid}")]
+    [AllowAnonymous]
     public async Task<IActionResult> Get(Guid exerciseId)
     {
         var exercise = await _exercisesService.GetById(exerciseId);
 
         if (exercise is null) 
-            return this.NotFoundView("Exercise was not found");
+            return this.NotFoundRedirect(["Exercise was not found"]);
         
         return View(_mapper.Map<ExerciseViewModel>(exercise));
     }
 
     [HttpPost("render-about-preview")]
+    [AllowAnonymous]
     public async Task<IActionResult> RenderAboutPreview(string? about, [FromServices] IReferencedContentProvider referencedContentProvider)
     {
         return Content(await referencedContentProvider.ParseContentAsync(about));
     }
 
     [HttpGet("create")]
-    [Authorize(Roles = "Admin,Root")]
+    [AuthorizeVerifiedRoles(Role.Root, Role.Admin)]
     [AddAvailableGroups]
     public IActionResult Create()
     {
         return View();
     }
 
-    [Authorize(Roles = "Admin,Root")]
+    [AuthorizeVerifiedRoles(Role.Root, Role.Admin)]
     [HttpPost("create")]
-    [ConfirmUser]
     [AddAvailableGroups]
     public async Task<IActionResult> Create([FromForm] CreateExerciseModel createExerciseModel)
     {
@@ -94,20 +106,19 @@ public class ExercisesController : Controller
         return View(createExerciseModel);
     }
 
-    [Authorize(Roles = "Admin,Root")]
+    [AuthorizeVerifiedRoles(Role.Root, Role.Admin)]
     [HttpGet("{exerciseId:guid}/update")]
     [AddAvailableGroups]
     public async Task<IActionResult> Update(Guid exerciseId)
     {
         var exercise = await _exercisesService.GetById(exerciseId);
         if (exercise is null) 
-            return this.NotFoundView("Exercise was not found");
+            return this.NotFoundRedirect(["Exercise was not found"]);
         
         return View(_mapper.Map<UpdateExerciseModel>(exercise));
     }
 
-    [Authorize(Roles = "Admin,Root")]
-    [ConfirmUser]
+    [AuthorizeVerifiedRoles(Role.Root, Role.Admin)]
     [HttpPost("{exerciseId:guid}/update")]
     [AddAvailableGroups]
     public async Task<IActionResult> Update(Guid exerciseId, [FromForm] UpdateExerciseModel updateExerciseModel)
@@ -129,8 +140,7 @@ public class ExercisesController : Controller
         return View(updateExerciseModel);
     }
 
-    [Authorize(Roles = "Admin,Root")]
-    [ConfirmUser]
+    [AuthorizeVerifiedRoles(Role.Root, Role.Admin)]
     [HttpGet("delete")]
     public async Task<IActionResult> DeleteExercise([FromQuery] Guid exerciseId)
     {
@@ -139,9 +149,9 @@ public class ExercisesController : Controller
         if (result.IsSuccessful) return RedirectToAction("GetAll", "Exercises");
 
         if (result.ResultObject is NotFoundException exception)
-            return this.NotFoundView(exception.Message);
+            return this.NotFoundRedirect([exception.Message]);
         
-        return this.ErrorView(500, result.Errors);
+        return this.ErrorRedirect(500, result.Errors);
     }
 }
 

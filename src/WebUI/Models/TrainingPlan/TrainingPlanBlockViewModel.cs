@@ -2,7 +2,7 @@
 
 public class TrainingPlanBlockViewModel
 {
-    public string Name { get; set; }
+    public string Title { get; set; } = string.Empty;
     public List<TrainingPlanBlockEntryViewModel> TrainingPlanBlockEntries { get; set; }
 }
 

@@ -10,17 +10,20 @@
 <div class="container-fluid text-center justify-content-center">
     <h2>Results from exercise @(ViewBag.Exercise?.Name)</h2>
 
-    <form class="d-flex justify-content-end" method="get">
-        <div class="input-group mb-1">
-            <button class="btn btn-outline-primary rounded-start-5 me-1" onclick="this.closest('form').submit()">Order 
-                @await Html.PartialAsync("Partials/DefaultOrderFormPartialView", Orders.OwnerName)
-            </button>
-            
+    <div class="row mb-1">
+        <div class="btn btn-outline-primary rounded-start-5 justify-content-center text-center pt-2 ps-4 col-3 col-lg-2 col-xxl-1">
+            @await Html.PartialAsync("Partials/DefaultOrderFormPartialView", (Orders.OwnerName, "Order"))
+        </div>
+
+        <form class="d-flex justify-content-end col mx-1 px-0" method="get" onsubmit="addQueryParametersFromForm(event)">
             <label for="filter-by-name-input"></label>
             <input id="filter-by-name-input" class="form-control me-1" name="@Filters.OwnerName.AsFilterName()" value="@ViewData[Filters.OwnerName.AsFilterName()]" placeholder="search"/>
             <button type="submit" class="btn btn-primary rounded-end-5"><img style="width: 2em;height: 2em;" src="/img/icons/search.svg" alt="Search"/></button>
-        </div>
-    </form>
+        </form>
+    </div>
+    
+    
+    
     
     <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3">
         @foreach (var result in Model)
@@ -31,7 +34,6 @@
                 break;
             }
         }
-        
         @foreach (var result in Model)
         {
             @if (result.Owner.UserName != User.Identity?.Name)
@@ -39,19 +41,9 @@
                 await Html.RenderPartialAsync("PartialViews/ResultsCardPartialView", result);
             }
         }
-        <div class="col mb-2 px-1">
-            <div class="card text-center h-100">
-                <div class="card-header p-1">
-                    Add More Results
-                </div>
-                <div class="card-body p-1">
-                    <a class="d-block btn btn-success w-100 h-100 justify-content-center align-content-center" asp-controller="Exercises" asp-action="GetAll">
-                        <img src="/img/icons/plus-white.svg" alt="+" style="width: 4em;height: 4em;"/>
-                    </a>
-                </div>
-            </div>
-        </div>
     </div>
+
+    @await Html.PartialAsync("Partials/DefaultPagingFormPartialView", ViewBag.ExerciseResultsCount, ViewData)
 </div>
 
 

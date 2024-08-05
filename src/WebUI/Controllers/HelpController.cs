@@ -1,16 +1,21 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 namespace WebUI.Controllers;
 
-[Route("help")]
 [Controller]
+[Route("help")]
 [AllowAnonymous]
 public class HelpController : Controller
 {
     [HttpGet("")]
     public IActionResult Index()
+    {
+        return View();
+    }
+    
+    [HttpGet("info")]
+    public IActionResult Information()
     {
         return View();
     }

@@ -1,4 +1,4 @@
-using Application.Interfaces.ServiceInterfaces;
+using Application.Interfaces.Services;
 using Domain.Models;
 using OfficeOpenXml;
 

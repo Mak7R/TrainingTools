@@ -1,6 +1,6 @@
 ﻿using Application.Constants;
 using Application.Interfaces.Repositories;
-using Application.Interfaces.ServiceInterfaces;
+using Application.Interfaces.Services;
 using Application.Models.Shared;
 using Domain.Models;
 
@@ -8,55 +8,31 @@ namespace Application.Services;
 
 public class ExercisesService : IExercisesService
 {
-    private readonly IExercisesRepository _exercisesRepository;
+    private readonly IRepository<Exercise, Guid> _exercisesRepository;
 
-    public ExercisesService(IExercisesRepository exercisesRepository)
+    public ExercisesService(IRepository<Exercise, Guid> exercisesRepository)
     {
         _exercisesRepository = exercisesRepository;
     }
 
-    public async Task<IEnumerable<Exercise>> GetAll(OrderModel? orderModel = null, FilterModel? filterModel = null)
+    public async Task<IEnumerable<Exercise>> GetAll(FilterModel? filterModel = null, OrderModel? orderModel = null, PageModel? pageModel = null)
     {
-        var exercises = await _exercisesRepository.GetAll(filterModel);
-        
-        if (orderModel is null || string.IsNullOrWhiteSpace(orderModel.OrderBy)) return exercises;
-        
-        if (orderModel.OrderBy.Equals(OrderOptionNames.Exercise.Name, StringComparison.CurrentCultureIgnoreCase))
-        {
-            if (orderModel.OrderOption?.Equals(OrderOptionNames.Shared.Descending, StringComparison.CurrentCultureIgnoreCase) ?? false)
-            {
-                exercises = exercises.OrderByDescending(e => e.Name);
-            }
-            else
-            {
-                exercises = exercises.OrderBy(e => e.Name);
-            }
-        }
-        else if (orderModel.OrderBy.Equals(OrderOptionNames.Exercise.GroupName, StringComparison.CurrentCultureIgnoreCase))
-        {
-            if (orderModel.OrderOption?.Equals(OrderOptionNames.Shared.Descending, StringComparison.CurrentCultureIgnoreCase) ?? false)
-            {
-                exercises = exercises.OrderByDescending(e => e.Group.Name)
-                    .ThenByDescending(e => e.Name);
-            }
-            else
-            {
-                exercises = exercises.OrderBy(e => e.Group.Name)
-                    .ThenBy(e => e.Name);
-            }
-        }
-
-        return exercises.ToList();
+        return await _exercisesRepository.GetAll(filterModel, orderModel, pageModel);
     }
 
     public async Task<Exercise?> GetByName(string? name)
     {
-        return await _exercisesRepository.GetByName(name);
+        return (await _exercisesRepository.GetAll(new FilterModel{{FilterOptionNames.Exercise.NameEquals, name}}, null, new PageModel{PageSize = 1})).SingleOrDefault();
     }
 
     public async Task<Exercise?> GetById(Guid id)
     {
         return await _exercisesRepository.GetById(id);
+    }
+    
+    public async Task<int> Count(FilterModel? filterModel = null)
+    {
+        return await _exercisesRepository.Count(filterModel);
     }
     
     public async Task<OperationResult> Create(Exercise? exercise)

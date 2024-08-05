@@ -2,12 +2,14 @@
 using Application.Interfaces.Repositories;
 using Application.Models.Shared;
 using AutoFixture;
+using AutoMapper;
 using Domain.Exceptions;
 using Domain.Models;
 using EntityFrameworkCoreMock;
 using FluentAssertions;
 using Infrastructure.Data;
 using Infrastructure.Entities;
+using Infrastructure.Mapping.Profiles;
 using Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -18,16 +20,16 @@ namespace InfrastructureTests;
 
 public class ExercisesRepositoryTests
 {
-    private readonly Mock<ILogger<ExercisesRepository>> _loggerMock;
     private readonly DbContextMock<ApplicationDbContext> _dbContextMock;
     private readonly DbSetMock<GroupEntity> _groupsDbSetMock; 
     private readonly DbSetMock<ExerciseEntity> _exercisesDbSetMock; 
     
     private readonly IFixture _fixture;
     private readonly ITestOutputHelper _testOutputHelper;
-    private readonly IExercisesRepository _exercisesRepository;
+    private readonly IRepository<Exercise, Guid> _exercisesRepository;
     private readonly ApplicationDbContext _dbContext;
-    
+    private readonly IMapper _mapper;
+
     public ExercisesRepositoryTests(ITestOutputHelper testOutputHelper)
     {
         _testOutputHelper = testOutputHelper;
@@ -36,13 +38,18 @@ public class ExercisesRepositoryTests
         _dbContextMock = new DbContextMock<ApplicationDbContext>(new DbContextOptionsBuilder<ApplicationDbContext>().Options);
         _dbContext = _dbContextMock.Object;
 
-        _loggerMock = new Mock<ILogger<ExercisesRepository>>();
-        var logger = _loggerMock.Object;
+        var loggerMock = new Mock<ILogger<ExercisesRepository>>();
+        var logger = loggerMock.Object;
+        
+        _mapper = new Mapper(new MapperConfiguration(expression =>
+        {
+            expression.AddProfile<InfrastructureApplicationMappingProfile>();
+        }));
         
         _groupsDbSetMock = _dbContextMock.CreateDbSetMock(temp => temp.Groups, new List<GroupEntity>());
         _exercisesDbSetMock = _dbContextMock.CreateDbSetMock(temp => temp.Exercises, new List<ExerciseEntity>());
         
-        _exercisesRepository = new ExercisesRepository(_dbContext, logger);
+        _exercisesRepository = new ExercisesRepository(_dbContext, logger, _mapper);
     }
 
     #region GetAll
@@ -170,7 +177,7 @@ public class ExercisesRepositoryTests
         await _dbContext.SaveChangesAsync();
 
         // Act
-        var result = await _exercisesRepository.GetByName(exercise.Name);
+        var result = (await _exercisesRepository.GetAll(filterModel:new FilterModel{{FilterOptionNames.Exercise.NameEquals, exercise.Name}})).SingleOrDefault();
 
         // Assert
         result.Should().NotBeNull();
@@ -182,20 +189,10 @@ public class ExercisesRepositoryTests
     public async Task GetByName_ShouldReturnNull_WhenExerciseDoesNotExist()
     {
         // Act
-        var result = await _exercisesRepository.GetByName("NonExistentName");
+        var result = (await _exercisesRepository.GetAll(filterModel:new FilterModel{{FilterOptionNames.Exercise.NameEquals, "NonExistentName"}})).SingleOrDefault();
 
         // Assert
         result.Should().BeNull();
-    }
-
-    [Fact]
-    public async Task GetByName_ShouldThrowArgumentException_WhenNameIsNullOrWhiteSpace()
-    {
-        // Act
-        Func<Task> action = async () => await _exercisesRepository.GetByName("");
-
-        // Assert
-        await action.Should().ThrowAsync<ArgumentException>();
     }
 
     [Fact]
@@ -205,7 +202,7 @@ public class ExercisesRepositoryTests
         _dbContextMock.Setup(db => db.Exercises).Throws(new Exception("Database error"));
 
         // Act
-        Func<Task> action = async () => await _exercisesRepository.GetByName("TestName");
+        Func<Task> action = async () => await _exercisesRepository.GetAll(filterModel:new FilterModel{{FilterOptionNames.Exercise.NameEquals, "TestName"}});
 
         // Assert
         await action.Should().ThrowAsync<DataBaseException>();

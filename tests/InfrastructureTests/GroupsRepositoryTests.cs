@@ -2,13 +2,14 @@ using Application.Constants;
 using Application.Interfaces.Repositories;
 using Application.Models.Shared;
 using AutoFixture;
+using AutoMapper;
 using Domain.Exceptions;
 using Domain.Models;
 using EntityFrameworkCoreMock;
 using FluentAssertions;
 using Infrastructure.Data;
 using Infrastructure.Entities;
-using Infrastructure.Mapping.Mappers;
+using Infrastructure.Mapping.Profiles;
 using Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -19,15 +20,15 @@ namespace InfrastructureTests;
 
 public class GroupsRepositoryTests
 {
-    private readonly Mock<ILogger<GroupsRepository>> _loggerMock;
     private readonly DbContextMock<ApplicationDbContext> _dbContextMock;
     private readonly DbSetMock<GroupEntity> _groupsDbSetMock; 
     
     private readonly IFixture _fixture;
     private readonly ITestOutputHelper _testOutputHelper;
-    private readonly IGroupsRepository _groupsRepository;
+    private readonly IRepository<Group, Guid> _groupsRepository;
     private readonly ApplicationDbContext _dbContext;
-    
+    private readonly IMapper _mapper;
+
     public GroupsRepositoryTests(ITestOutputHelper testOutputHelper)
     {
         _testOutputHelper = testOutputHelper;
@@ -36,12 +37,17 @@ public class GroupsRepositoryTests
         _dbContextMock = new DbContextMock<ApplicationDbContext>(new DbContextOptionsBuilder<ApplicationDbContext>().Options);
         _dbContext = _dbContextMock.Object;
 
-        _loggerMock = new Mock<ILogger<GroupsRepository>>();
-        var logger = _loggerMock.Object;
+        var loggerMock = new Mock<ILogger<GroupsRepository>>();
+        var logger = loggerMock.Object;
+
+        _mapper = new Mapper(new MapperConfiguration(expression =>
+        {
+            expression.AddProfile<InfrastructureApplicationMappingProfile>();
+        }));
         
         _groupsDbSetMock = _dbContextMock.CreateDbSetMock(temp => temp.Groups, new List<GroupEntity>());
         
-        _groupsRepository = new GroupsRepository(_dbContext, logger);
+        _groupsRepository = new GroupsRepository(_dbContext, logger, _mapper);
     }
     
     #region GetAll
@@ -158,7 +164,7 @@ public class GroupsRepositoryTests
         await _dbContext.SaveChangesAsync();
 
         // Act
-        var result = await _groupsRepository.GetByName(groupName);
+        var result = (await _groupsRepository.GetAll(filterModel:new FilterModel{{FilterOptionNames.Group.NameEquals, groupName}})).SingleOrDefault();
 
         // Assert
         result.Should().NotBeNull();
@@ -175,20 +181,10 @@ public class GroupsRepositoryTests
         await _dbContext.SaveChangesAsync();
 
         // Act
-        var result = await _groupsRepository.GetByName(groupName);
+        var result = (await _groupsRepository.GetAll(filterModel:new FilterModel{{FilterOptionNames.Group.NameEquals, groupName}})).SingleOrDefault();
 
         // Assert
         result.Should().BeNull();
-    }
-
-    [Fact]
-    public async Task GetByName_ShouldThrowArgumentException_WhenGroupNameIsNullOrWhiteSpace()
-    {
-        // Act
-        Func<Task> action = async () => await _groupsRepository.GetByName(null);
-
-        // Assert
-        await action.Should().ThrowAsync<ArgumentException>();
     }
 
     [Fact]
@@ -198,7 +194,7 @@ public class GroupsRepositoryTests
         _dbContextMock.Setup(db => db.Groups).Throws(new Exception("Database error"));
 
         // Act
-        Func<Task> action = async () => await _groupsRepository.GetByName("GroupName");
+        Func<Task> action = async () => await _groupsRepository.GetAll(filterModel:new FilterModel{{FilterOptionNames.Group.NameEquals, string.Empty}});
 
         // Assert
         await action.Should().ThrowAsync<DataBaseException>();
@@ -273,7 +269,7 @@ public class GroupsRepositoryTests
         result.Errors.Should().BeEmpty();
         var containableGroup = _groupsDbSetMock.Object.FirstOrDefault(g => g.Id == group.Id);
         containableGroup.Should().NotBeNull();
-        containableGroup.ToGroup().Should().BeEquivalentTo(group);
+        _mapper.Map<Group>(containableGroup).Should().BeEquivalentTo(group);
     }
 
     [Fact]

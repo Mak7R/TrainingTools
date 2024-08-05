@@ -26,6 +26,7 @@ public static class InitializeRootAdminExtensions
 
         if (existsRoot == null)
         {
+            rootAdmin.EmailConfirmed = true;
             var result = await userManager.CreateAsync(rootAdmin, password);
             if (result.Succeeded)
             {

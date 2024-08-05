@@ -3,23 +3,15 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc;
 using WebUI.Extensions;
-using WebUI.Filters;
 using WebUI.Models.Shared;
 
 namespace WebUI.Controllers;
 
-[AllowAnonymous]
+
 [Controller]
+[AllowAnonymous]
 public class HomeController : Controller
 {
-    private readonly ILogger<HomeController> _logger;
-
-    public HomeController(ILogger<HomeController> logger)
-    {
-        _logger = logger;
-    }
-
-    
     [Route("/")]
     public IActionResult Index()
     {
@@ -45,7 +37,7 @@ public class HomeController : Controller
         }
         catch (Exception e)
         {
-            return this.BadRequestView(new []{e.Message});
+            return this.BadRequestRedirect(new []{e.Message});
         }
         
         if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl)) 
@@ -53,10 +45,39 @@ public class HomeController : Controller
         return RedirectToAction("Index", "Home");
     }
 
-    [Route("/error")]
+    [Route("/info")]
+    [Route("/info/{statusCode:int}")]
     [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-    public IActionResult Error()
+    public IActionResult Info(int statusCode = 500, string[]? messages = null)
     {
-        return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+        if (statusCode is >= 200 and < 600)
+        {
+            Response.StatusCode = statusCode;
+        }
+        
+        return View("Info", new InfoViewModel
+        {
+            StatusCode = statusCode, 
+            Messages = messages ?? [], 
+            RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier
+        });
+    }
+    
+    [Route("/error")]
+    [Route("/error/{statusCode:int}")]
+    [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+    public IActionResult Error(int statusCode = 500, string[]? messages = null)
+    {
+        if (statusCode is >= 200 and < 600)
+        {
+            Response.StatusCode = statusCode;
+        }
+        
+        return View("Info", new InfoViewModel
+        {
+            StatusCode = statusCode, 
+            Messages = messages ?? [], 
+            RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier
+        });
     }
 }

@@ -12,4 +12,6 @@ public class ApplicationUser : IdentityUser<Guid>
     [StringLength(MaxAboutSize)]
     public string? About { get; set; }
     public bool IsPublic { get; set; }
+    
+    public DateTime RegistrationDateTime { get; set; }
 }

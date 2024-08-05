@@ -2,6 +2,7 @@ using Application.Constants;
 using Application.Models.Shared;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using WebUI.Models.Shared;
 
 namespace WebUI.ModelBinding.ModelBinders;
 
@@ -26,7 +27,7 @@ public class FilterModelBinderAttribute : FromQueryAttribute, IModelBinder
     {
         ArgumentNullException.ThrowIfNull(bindingContext);
         
-        var filterModel = new FilterModel();
+        var filterModel = new FilterViewModel();
 
         foreach (var queryValue in bindingContext.HttpContext.Request.Query)
         {

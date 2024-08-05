@@ -2,6 +2,7 @@
 
 public class ProfileViewModel
 {
+    public Guid Id { get; set; }
     public string? UserName { get; set; }
     public string? About { get; set; }
     public IEnumerable<string>? Roles { get; set; }

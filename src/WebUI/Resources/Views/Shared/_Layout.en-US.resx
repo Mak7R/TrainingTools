@@ -1,0 +1,69 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+            
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <data name="description" xml:space="preserve">
+        <value>TrainingTools allows you to manage the results of sports exercises and create training plans. You can also view the results of your friends and use many other training tools.</value>
+    </data>
+    <data name="Home" xml:space="preserve">
+        <value>Home</value>
+    </data>
+    <data name="Exercises" xml:space="preserve">
+        <value>Exercises</value>
+    </data>
+    <data name="Users" xml:space="preserve">
+        <value>Users</value>
+    </data>
+    <data name="TrainingPlans" xml:space="preserve">
+        <value>Training plans</value>
+    </data>
+    <data name="Login" xml:space="preserve">
+        <value>Log in</value>
+    </data>
+    <data name="Register" xml:space="preserve">
+        <value>Register</value>
+    </data>
+    <data name="Profile" xml:space="preserve">
+        <value>Profile</value>
+    </data>
+    <data name="Groups" xml:space="preserve">
+        <value>Muscle groups</value>
+    </data>
+    <data name="Help" xml:space="preserve">
+        <value>Help</value>
+    </data>
+    <data name="Friends" xml:space="preserve">
+        <value>Friends</value>
+    </data>
+    <data name="Results" xml:space="preserve">
+        <value>My Results</value>
+    </data>
+    <data name="Privacy" xml:space="preserve">
+        <value>Privacy Policy and Terms of Use</value>
+    </data>
+    <data name="MyTrainingPlans" xml:space="preserve">
+        <value>My TrainingPlans</value>
+    </data>
+    <data name="OpenApi" xml:space="preserve">
+        <value>Api documentation for developers</value>
+    </data>
+    <data name="Logout" xml:space="preserve">
+        <value>Logout</value>
+    </data>
+</root>

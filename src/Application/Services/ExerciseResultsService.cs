@@ -1,88 +1,58 @@
 ﻿using Application.Constants;
 using Application.Interfaces.Repositories;
-using Application.Interfaces.ServiceInterfaces;
+using Application.Interfaces.Services;
 using Application.Models.Shared;
 using Domain.Defaults;
 using Domain.Models;
+using Domain.Models.Friendship;
 using Domain.Rules;
 
 namespace Application.Services;
 
 public class ExerciseResultsService : IExerciseResultsService
 {
-    private readonly IExerciseResultsRepository _exerciseResultsRepository;
-
-    // ReSharper disable once ConvertToPrimaryConstructor
-    public ExerciseResultsService(IExerciseResultsRepository exerciseResultsRepository)
+    private readonly IRepository<ExerciseResult, (Guid, Guid)> _exerciseResultsRepository;
+    private readonly IRepository<Friendship, (Guid, Guid)> _friendshipsRepository;
+    
+    public ExerciseResultsService(IRepository<ExerciseResult, (Guid, Guid)> exerciseResultsRepository, IRepository<Friendship, (Guid, Guid)> friendshipsRepository)
     {
         _exerciseResultsRepository = exerciseResultsRepository;
+        _friendshipsRepository = friendshipsRepository;
     }
     
-    public async Task<IEnumerable<ExerciseResult>> GetForUser(Guid ownerId, OrderModel? orderModel = null, FilterModel? filterModel = null)
+    public async Task<ExerciseResult?> GetById(Guid ownerId, Guid exerciseId)
     {
-        var results = await _exerciseResultsRepository.GetForUser(ownerId, filterModel);
-        
-        if (orderModel is null || string.IsNullOrWhiteSpace(orderModel.OrderBy)) return results;
-        
-        if (orderModel.OrderBy.Equals(OrderOptionNames.ExerciseResults.GroupName, StringComparison.CurrentCultureIgnoreCase))
-        {
-            if (orderModel.OrderOption?.Equals(OrderOptionNames.Shared.Descending, StringComparison.CurrentCultureIgnoreCase) ?? false)
-            {
-                results = results
-                    .OrderByDescending(e => e.Exercise.Group.Name)
-                    .ThenByDescending(e => e.Exercise.Name);
-            }
-            else
-            {
-                results = results
-                    .OrderBy(e => e.Exercise.Group.Name)
-                    .ThenBy(e => e.Exercise.Name);
-            }
-        }
-
-        return results;
+        return await _exerciseResultsRepository.GetById((ownerId, exerciseId));
     }
 
-    public async Task<IEnumerable<ExerciseResult>> GetForExercise(Guid exerciseId, OrderModel? orderModel = null, FilterModel? filterModel = null)
+    public async Task<int> Count(FilterModel? filterModel)
     {
-        var results = await _exerciseResultsRepository.GetForExercise(exerciseId, filterModel);
-        if (orderModel is null || string.IsNullOrWhiteSpace(orderModel.OrderBy)) return results;
-        
-        if (orderModel.OrderBy.Equals(OrderOptionNames.ExerciseResults.OwnerName, StringComparison.CurrentCultureIgnoreCase))
-        {
-            if (orderModel.OrderOption?.Equals(OrderOptionNames.Shared.Descending, StringComparison.CurrentCultureIgnoreCase) ?? false)
-            {
-                results = results.OrderByDescending(e => e.Owner.UserName);
-            }
-            else
-            {
-                results = results.OrderBy(e => e.Owner.UserName);
-            }
-        }
-
-        return results;
+        return await _exerciseResultsRepository.Count(filterModel);
     }
-
-    public async Task<IEnumerable<ExerciseResult>> GetOnlyUserAndFriendsResultForExercise(Guid userId, Guid exerciseId, OrderModel? orderModel = null, FilterModel? filterModel = null)
+    
+    
+    public async Task<IEnumerable<ExerciseResult>> GetAll(FilterModel? filterModel = null, OrderModel? orderModel = null, PageModel? pageModel = null)
     {
-        var results = await _exerciseResultsRepository.GetOnlyUserAndFriendsResultForExercise(userId, exerciseId, filterModel);
-
-        if (orderModel is null || string.IsNullOrWhiteSpace(orderModel.OrderBy)) return results;
-        
-        if (orderModel.OrderBy.Equals(OrderOptionNames.ExerciseResults.OwnerName, StringComparison.CurrentCultureIgnoreCase))
-        {
-            if (orderModel.OrderOption?.Equals(OrderOptionNames.Shared.Descending, StringComparison.CurrentCultureIgnoreCase) ?? false)
-            {
-                results = results.OrderByDescending(e => e.Owner.UserName);
-            }
-            else
-            {
-                results = results.OrderBy(e => e.Owner.UserName);
-            }
-        }
-        
-        return results;
+        return await _exerciseResultsRepository.GetAll(filterModel, orderModel, pageModel);
     }
+    
+    public async Task<IEnumerable<ExerciseResult>> GetOnlyUserAndFriendsResultForExercise(Guid userId, Guid exerciseId, FilterModel? filterModel = null, OrderModel? orderModel = null, PageModel? pageModel = null)
+    {
+        filterModel ??= new FilterModel();
+        filterModel[FilterOptionNames.ExerciseResults.ExerciseId] = exerciseId.ToString();
+        var userIds = (await _friendshipsRepository.GetAll(
+                new FilterModel
+                {
+                    { FilterOptionNames.Relationships.Friendship.FriendId, userId.ToString() }
+                }))
+            .Select(f => f.FirstFriend.Id == userId ? f.SecondFriend.Id : f.FirstFriend.Id).ToList();
+
+        userIds.Add(userId);
+        filterModel[FilterOptionNames.ExerciseResults.OwnerIds] = string.Join(FilterOptionNames.Shared.MultiplyFilterValuesSeparator, userIds); 
+        
+        return await _exerciseResultsRepository.GetAll(filterModel, orderModel, pageModel);
+    }
+    
     
     public async Task<OperationResult> Create(ExerciseResult result)
     {
@@ -101,14 +71,12 @@ public class ExerciseResultsService : IExerciseResultsService
     public async Task<OperationResult> Update(ExerciseResult result)
     {
         ArgumentNullException.ThrowIfNull(result);
-        if (result.ApproachInfos.Select(ai => ai.Weight).Any(w => w < 0) || result.ApproachInfos.Select(ai => ai.Count).Any(c => c < 0))
+        if (result.ApproachInfos.Any(
+                a => a.Count < 0 || 
+                a.Weight < 0 || 
+                (a.Comment?.Contains(SpecialConstants.DefaultSeparator) ?? false)))
         {
             return DefaultOperationResult.FromException(new InvalidOperationException("Weight and count cannot be less than 0"));
-        }
-        
-        if (result.ApproachInfos.Select(ai => ai.Comment).Any(comment => comment?.Contains(SpecialConstants.DefaultSeparator) ?? false))
-        {
-            return DefaultOperationResult.FromException(new InvalidOperationException($"Comments cannot contain symbol {SpecialConstants.DefaultSeparator}"));
         }
         
         return await _exerciseResultsRepository.Update(result);
@@ -116,11 +84,6 @@ public class ExerciseResultsService : IExerciseResultsService
 
     public async Task<OperationResult> Delete(Guid ownerId, Guid exerciseId)
     {
-        return await _exerciseResultsRepository.Delete(ownerId, exerciseId);
-    }
-
-    public async Task<ExerciseResult?> Get(Guid ownerId, Guid exerciseId)
-    {
-        return await _exerciseResultsRepository.Get(ownerId, exerciseId);
+        return await _exerciseResultsRepository.Delete((ownerId, exerciseId));
     }
 }

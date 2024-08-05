@@ -45,6 +45,11 @@ public static class FilterOptionNames
     public static class User
     {
         /// <summary>
+        /// Id is the same as value
+        /// </summary>
+        public const string Id = "id";
+        
+        /// <summary>
         /// Name contains value
         /// </summary>
         public const string Name = "name";
@@ -53,6 +58,11 @@ public static class FilterOptionNames
         /// Name equals value
         /// </summary>
         public const string NameEquals = "name-equals";
+        
+        /// <summary>
+        /// If Public Only value equals to true returns only public values
+        /// </summary>
+        public const string PublicOnly = "public-only";
         
         /// <summary>
         /// Has role
@@ -68,6 +78,11 @@ public static class FilterOptionNames
     public static class ExerciseResults
     {
         /// <summary>
+        /// Exercise id equals value
+        /// </summary>
+        public const string ExerciseId = "exercise-id";
+        
+        /// <summary>
         /// Exercise full name contains value
         /// </summary>
         public const string FullName = "full-name";
@@ -76,6 +91,16 @@ public static class FilterOptionNames
         /// Exercise full name equals value
         /// </summary>
         public const string FullNameEquals = "full-name-equals";
+        
+        /// <summary>
+        /// Owner id is the same as value
+        /// </summary>
+        public const string OwnerId = "owner-id";
+
+        /// <summary>
+        /// Owner id is in value
+        /// </summary>
+        public const string OwnerIds = "owner-ids";
         
         /// <summary>
         /// Owner name contains value
@@ -101,7 +126,7 @@ public static class FilterOptionNames
         public const string TitleEquals = "title-equals";
         
         /// <summary>
-        /// Author id is same as value
+        /// Author id is the same as value
         /// </summary>
         public const string AuthorId = "author-id";
         
@@ -110,10 +135,39 @@ public static class FilterOptionNames
         /// </summary>
         public const string AuthorName = "author";
         
+        /// <summary>
+        /// Author name equals
+        /// </summary>
+        public const string AuthorNameEquals = "author-equals";
+        
         
         /// <summary>
         /// If Public Only value equals to true returns only public values
         /// </summary>
         public const string PublicOnly = "public-only";
+    }
+    
+    public static class Relationships
+    {
+        public static class FriendInvitation
+        {
+            /// <summary>
+            /// Invitor id is the same as value
+            /// </summary>
+            public const string Invitor = "invitor-id";
+            
+            /// <summary>
+            /// Invited id is the same as value
+            /// </summary>
+            public const string Invited = "invited-id";
+        }
+
+        public static class Friendship
+        {
+            /// <summary>
+            /// Friend id is the same as value
+            /// </summary>
+            public const string FriendId = "friend-id";
+        }
     }
 }

@@ -6,7 +6,7 @@
             <div class="row px-3">
                 @if (ViewBag.IsResultsForExercise is true)
                 {
-                    <a class="col d-block w-75" asp-controller="ExerciseResults" asp-action="GetResultsForUser" asp-route-userName="@Model.Owner.UserName">
+                    <a class="col d-block w-75" asp-controller="ExerciseResults" asp-action="GetUserResults" asp-route-userName="@Model.Owner.UserName">
                         <h4>@Model.Owner.UserName</h4>
                     </a>
                     

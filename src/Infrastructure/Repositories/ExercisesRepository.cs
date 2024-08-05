@@ -3,39 +3,47 @@ using System.Linq.Expressions;
 using Application.Constants;
 using Application.Interfaces.Repositories;
 using Application.Models.Shared;
+using AutoMapper;
 using Domain.Defaults;
 using Domain.Exceptions;
 using Domain.Models;
 using Infrastructure.Data;
 using Infrastructure.Entities;
-using Infrastructure.Mapping.Mappers;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace Infrastructure.Repositories;
 
-public class ExercisesRepository : IExercisesRepository
+public class ExercisesRepository : IRepository<Exercise, Guid>
 {
     private readonly ApplicationDbContext _dbContext;
     private readonly ILogger<ExercisesRepository> _logger;
+    private readonly IMapper _mapper;
 
-    public ExercisesRepository(ApplicationDbContext dbContext, ILogger<ExercisesRepository> logger)
+    public ExercisesRepository(ApplicationDbContext dbContext, ILogger<ExercisesRepository> logger, IMapper mapper)
     {
         _dbContext = dbContext;
         _logger = logger;
+        _mapper = mapper;
     }
     
     private static readonly ReadOnlyDictionary<string, Func<string, Expression<Func<ExerciseEntity, bool>>>> ExerciseFilters =
         new(new Dictionary<string, Func<string, Expression<Func<ExerciseEntity, bool>>>>
         {
-            { FilterOptionNames.Exercise.GroupId, value =>
-            {
-                Guid.TryParse(value, out var groupId);
-                return e => e.GroupId == groupId;
-            }},
+            { FilterOptionNames.Exercise.GroupId, value => Guid.TryParse(value, out var groupId) ? e => e.GroupId == groupId : _ => false },
             { FilterOptionNames.Exercise.Name, value => e => e.Name.Contains(value) }
         });
-    public async Task<IEnumerable<Exercise>> GetAll(FilterModel? filterModel = null)
+
+    private static readonly ReadOnlyDictionary<OrderModel, Func<IQueryable<ExerciseEntity>, IQueryable<ExerciseEntity>>> ExerciseOrders = 
+        new(new Dictionary<OrderModel, Func<IQueryable<ExerciseEntity>, IQueryable<ExerciseEntity>>>()
+    {
+        {new OrderModel{OrderBy = OrderOptionNames.Exercise.Name, OrderOption = OrderOptionNames.Shared.Ascending}, query => query.OrderBy(g => g.Name)},
+        {new OrderModel{OrderBy = OrderOptionNames.Exercise.Name, OrderOption = OrderOptionNames.Shared.Descending}, query => query.OrderByDescending(g => g.Name)},
+        {new OrderModel{OrderBy = OrderOptionNames.Exercise.GroupName, OrderOption = OrderOptionNames.Shared.Ascending}, query => query.OrderBy(e => e.Group.Name).ThenBy(e => e.Name)},
+        {new OrderModel{OrderBy = OrderOptionNames.Exercise.GroupName, OrderOption = OrderOptionNames.Shared.Descending}, query => query.OrderByDescending(e => e.Group.Name).ThenByDescending(e => e.Name)}
+    });
+
+    public async Task<IEnumerable<Exercise>> GetAll(FilterModel? filterModel = null, OrderModel? orderModel = null, PageModel? pageModel = null)
     {
         try
         {
@@ -43,8 +51,14 @@ public class ExercisesRepository : IExercisesRepository
 
             if (filterModel is not null)
                 query = filterModel.Filter(query, ExerciseFilters);
+
+            if (orderModel is not null)
+                query = orderModel.Order(query, ExerciseOrders);
+
+            if (pageModel is not null)
+                query = pageModel.TakePage(query);
             
-            return await query.Select(e => e.ToExercise()).ToListAsync();
+            return (await query.ToListAsync()).Select(e => _mapper.Map<Exercise>(e));
         }
         catch (Exception e)
         {
@@ -53,41 +67,50 @@ public class ExercisesRepository : IExercisesRepository
         }
     }
 
-    private async Task<Exercise?> GetBy(Expression<Func<ExerciseEntity, bool>> predicate)
+    public async Task<Exercise?> GetById(Guid id)
     {
         try
         {
-            var exerciseEntity = await _dbContext.Exercises
+            var exercise = await _dbContext.Exercises
                 .AsNoTracking()
                 .Include(e => e.Group)
-                .FirstOrDefaultAsync(predicate);
-            return exerciseEntity?.ToExercise();
+                
+                .FirstOrDefaultAsync(e => e.Id == id);
+
+            return exercise == null ? null : _mapper.Map<Exercise>(exercise);
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Exception was thrown while receiving exercise by expression '{expression}'", predicate);
+            _logger.LogError(e, "Exception was thrown while receiving exercise by id '{id}'", id);
             throw new DataBaseException("Error while receiving exercise from database", e);
         }
     }
-    
-    public async Task<Exercise?> GetByName(string? name)
+
+    public async Task<int> Count(FilterModel? filterModel = null)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(name);
-        return await GetBy(e => e.Name == name);
+        try
+        {
+            var query = _dbContext.Exercises.AsNoTracking();
+
+            if (filterModel is not null)
+                query = filterModel.Filter(query, ExerciseFilters);
+
+            return await query.CountAsync();
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "Exception was thrown while receiving exercises count by filter '{filter}' from database", filterModel);
+            throw new DataBaseException("Error while receiving exercises count from database", e);
+        }
     }
 
-    public async Task<Exercise?> GetById(Guid id)
-    {
-        return await GetBy(e => e.Id == id);
-    }
-    
     public async Task<OperationResult> Create(Exercise? exercise)
     {
         ArgumentNullException.ThrowIfNull(exercise);
         ArgumentException.ThrowIfNullOrWhiteSpace(exercise.Name);
         ArgumentNullException.ThrowIfNull(exercise.Group);
-        
-        var exerciseEntity = new ExerciseEntity { Id = exercise.Id, Name = exercise.Name, GroupId = exercise.Group.Id, About = exercise.About };
+
+        var exerciseEntity = _mapper.Map<ExerciseEntity>(exercise);
         try
         {
             var sameName = await _dbContext.Exercises.AsNoTracking().FirstOrDefaultAsync(e => e.Name == exercise.Name && e.GroupId == exercise.Group.Id);
@@ -104,7 +127,7 @@ public class ExercisesRepository : IExercisesRepository
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Exception was thrown while adding new exercise '{exerciseName}' to database", exerciseEntity.Name);
+            _logger.LogError(e, "Exception was thrown while adding new exercise to database");
             return DefaultOperationResult.FromException(new DataBaseException("Error while adding exercise to database", e));
         }
 
@@ -128,16 +151,13 @@ public class ExercisesRepository : IExercisesRepository
             if (sameName != null)
                 throw new AlreadyExistsException($"Exercise with name '{exercise.Name}' already exist in database");
 
-            exerciseEntity.Name = exercise.Name;
-            exerciseEntity.Group = await _dbContext.Groups.FirstOrDefaultAsync(g => g.Id == exercise.Group.Id) ?? 
-                                   throw new NotFoundException($"Group with id '{exercise.Group.Id}' was not found");
-            exerciseEntity.About = exercise.About;
+            _mapper.Map(exercise, exerciseEntity);
             
             await _dbContext.SaveChangesAsync();
         }
         catch (NotFoundException e)
         {
-            _logger.LogWarning(e, "NotFoundException was thrown for when exercise updating");
+            _logger.LogInformation(e, "NotFoundException was thrown for when exercise updating");
             return DefaultOperationResult.FromException(e);
         }
         catch (AlreadyExistsException alreadyExistsException)
@@ -166,19 +186,14 @@ public class ExercisesRepository : IExercisesRepository
             if (exerciseEntity is null)
                 throw new NotFoundException($"Exercise with id '{id}' was not found");
 
-            exercise = new Exercise
-            {
-                Id = exerciseEntity.Id,
-                Name = exerciseEntity.Name,
-                Group = new Group{Id = exerciseEntity.Group.Id, Name = exerciseEntity.Group.Name}
-            };
+            exercise = _mapper.Map<Exercise>(exerciseEntity);
             
             _dbContext.Exercises.Remove(exerciseEntity);
             await _dbContext.SaveChangesAsync();
         }
         catch (NotFoundException notFoundException)
         {
-            _logger.LogWarning(notFoundException, "NotFoundException was thrown for {entity} with id '{entityId}'", "Exercise", id);
+            _logger.LogInformation(notFoundException, "NotFoundException was thrown for {entity} with id '{entityId}'", "Exercise", id);
             return DefaultOperationResult.FromException(notFoundException);
         }
         catch (Exception e)

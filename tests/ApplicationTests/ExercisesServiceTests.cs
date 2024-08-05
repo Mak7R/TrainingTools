@@ -1,6 +1,6 @@
 ﻿using Application.Constants;
 using Application.Interfaces.Repositories;
-using Application.Interfaces.ServiceInterfaces;
+using Application.Interfaces.Services;
 using Application.Models.Shared;
 using Application.Services;
 using AutoFixture;
@@ -13,13 +13,13 @@ namespace ApplicationTests;
 
 public class ExercisesServiceTests
 {
-    private readonly Mock<IExercisesRepository> _exercisesRepositoryMock;
+    private readonly Mock<IRepository<Exercise, Guid>> _exercisesRepositoryMock;
     private readonly IExercisesService _exercisesService;
     private readonly IFixture _fixture;
 
     public ExercisesServiceTests()
     {
-        _exercisesRepositoryMock = new Mock<IExercisesRepository>();
+        _exercisesRepositoryMock = new Mock<IRepository<Exercise, Guid>>();
         _exercisesService = new ExercisesService(_exercisesRepositoryMock.Object);
         _fixture = new Fixture();
     }
@@ -31,7 +31,7 @@ public class ExercisesServiceTests
     {
         // Arrange
         var exercises = _fixture.CreateMany<Exercise>().ToList();
-        _exercisesRepositoryMock.Setup(repo => repo.GetAll(null)).ReturnsAsync(exercises);
+        _exercisesRepositoryMock.Setup(repo => repo.GetAll(null, null, null)).ReturnsAsync(exercises);
 
         // Act
         var result = await _exercisesService.GetAll();
@@ -51,10 +51,10 @@ public class ExercisesServiceTests
             OrderOption = OrderOptionNames.Shared.Ascending
         };
 
-        _exercisesRepositoryMock.Setup(repo => repo.GetAll(null)).ReturnsAsync(exercises);
+        _exercisesRepositoryMock.Setup(repo => repo.GetAll(null, orderModel, null)).ReturnsAsync(exercises.OrderBy(e => e.Name));
 
         // Act
-        var result = await _exercisesService.GetAll(orderModel);
+        var result = await _exercisesService.GetAll(orderModel:orderModel);
 
         // Assert
         result.Should().BeInAscendingOrder(e => e.Name);
@@ -71,10 +71,10 @@ public class ExercisesServiceTests
             OrderOption = OrderOptionNames.Shared.Ascending
         };
 
-        _exercisesRepositoryMock.Setup(repo => repo.GetAll(null)).ReturnsAsync(exercises);
+        _exercisesRepositoryMock.Setup(repo => repo.GetAll(null, orderModel, null)).ReturnsAsync(exercises.OrderBy(e => e.Group.Name));
 
         // Act
-        var result = await _exercisesService.GetAll(orderModel);
+        var result = await _exercisesService.GetAll(orderModel:orderModel);
 
         // Assert
         result.Should().BeInAscendingOrder(e => e.Group.Name);
@@ -90,10 +90,10 @@ public class ExercisesServiceTests
             { FilterOptionNames.Exercise.Name, exercises.First().Name }
         };
 
-        _exercisesRepositoryMock.Setup(repo => repo.GetAll(filterModel)).ReturnsAsync(exercises.Where(e => e.Name == exercises.First().Name));
+        _exercisesRepositoryMock.Setup(repo => repo.GetAll(filterModel, null, null)).ReturnsAsync(exercises.Where(e => e.Name == exercises.First().Name));
 
         // Act
-        var result = await _exercisesService.GetAll(null, filterModel);
+        var result = await _exercisesService.GetAll(filterModel);
 
         // Assert
         result.Should().BeEquivalentTo(exercises.Where(e => e.Name == exercises.First().Name));
@@ -108,7 +108,7 @@ public class ExercisesServiceTests
     {
         // Arrange
         var exercise = _fixture.Create<Exercise>();
-        _exercisesRepositoryMock.Setup(repo => repo.GetByName(exercise.Name)).ReturnsAsync(exercise);
+        _exercisesRepositoryMock.Setup(repo => repo.GetAll(It.IsAny<FilterModel?>(), It.IsAny<OrderModel?>(), It.IsAny<PageModel?>())).ReturnsAsync([exercise]);
 
         // Act
         var result = await _exercisesService.GetByName(exercise.Name);
@@ -121,7 +121,7 @@ public class ExercisesServiceTests
     public async Task GetByName_ShouldReturnNull_WhenExerciseDoesNotExist()
     {
         // Arrange
-        _exercisesRepositoryMock.Setup(repo => repo.GetByName(It.IsAny<string>())).ReturnsAsync((Exercise)null);
+        _exercisesRepositoryMock.Setup(repo => repo.GetAll(It.IsAny<FilterModel>(), null, null)).ReturnsAsync([]);
 
         // Act
         var result = await _exercisesService.GetByName("NonExistentName");

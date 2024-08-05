@@ -5,10 +5,12 @@ namespace Application.Interfaces.Services;
 
 public interface IGroupsService
 {
-    Task<IEnumerable<Group>> GetAll(OrderModel? orderModel = null, FilterModel? filterModel = null, PageModel? pageModel = null);
+    Task<IEnumerable<Group>> GetAll(FilterModel? filterModel = null, OrderModel? orderModel = null, PageModel? pageModel = null);
     
     Task<Group?> GetByName(string? name);
     Task<Group?> GetById(Guid id);
+
+    Task<int> Count(FilterModel? filterModel = null);
     
     
     Task<OperationResult> Create(Group? group);

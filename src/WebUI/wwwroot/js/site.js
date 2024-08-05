@@ -29,3 +29,17 @@ class PreviewController{
         }
     }
 }
+
+
+function addQueryParametersFromForm(event) {
+    event.preventDefault();
+    const form = event.target.closest('form');
+    const formData = new FormData(form);
+    const params = new URLSearchParams(window.location.search);
+
+    for (const [key, value] of formData.entries()) {
+        params.set(key, value);
+    }
+    
+    window.location.href = `${window.location.pathname}?${params.toString()}`;
+}

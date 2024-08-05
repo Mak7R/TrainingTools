@@ -1,0 +1,81 @@
+﻿@using Paging = Application.Constants.PagingOptionNames;
+@model int  
+
+@{
+    int modelsCount = 1;
+    if (Model > 0)
+    {
+        modelsCount = Model;
+    }
+}
+
+@{
+    int pageSize = 0;
+    if (Context.Request.Query.ContainsKey(Paging.PageSize) && !int.TryParse(Context.Request.Query[Paging.PageSize], out pageSize))
+    {
+        pageSize = ViewBag.DefaultPageSize ?? modelsCount;
+    }
+    if (pageSize <= 0)
+    {
+        pageSize = ViewBag.DefaultPageSize ?? modelsCount;
+    }
+    
+    int pagesCount = modelsCount / pageSize + (modelsCount % pageSize == 0 ? 0 : 1); 
+    if (!int.TryParse(Context.Request.Query[Paging.CurrentPage], out var currentPage))
+    {
+        currentPage = 0;
+    }
+}
+
+<ul class="pagination justify-content-center">
+    @if (currentPage > 0)
+    {
+        <form method="get" onsubmit="addQueryParametersFromForm(event)" class="cursor-pointer non-selectable">
+            <li class="page-item">
+                <button type="submit" class="page-link">&laquo;</button>
+                <input name="@Paging.CurrentPage" value="@(currentPage - 1)" hidden/>
+                <input name="@Paging.PageSize" value="@pageSize" hidden/>
+            </li>
+        </form>
+    }
+    else
+    {
+        <li class="page-item disabled">
+            <a class="page-link" aria-label="Previous">
+                <span aria-hidden="true">&laquo;</span>
+            </a>
+        </li>
+    }
+
+
+    @for (int i = 0; i < pagesCount; i++)
+    {
+        var i1 = i;
+        <form method="get" onsubmit="addQueryParametersFromForm(event)" class="cursor-pointer non-selectable">
+            <li class="page-item @(currentPage == i1 ? "active" : "")">
+                <button type="submit" class="page-link">@(i1 + 1)</button>
+                <input name="@Paging.CurrentPage" value="@i1" hidden/>
+                <input name="@Paging.PageSize" value="@pageSize" hidden/>
+            </li>
+        </form>
+    }
+
+    @if (currentPage < pagesCount - 1)
+    {
+        <form method="get" onsubmit="addQueryParametersFromForm(event)" class="cursor-pointer non-selectable">
+            <li class="page-item">
+                <button type="submit" class="page-link">&raquo;</button>
+                <input name="@Paging.CurrentPage" value="@(currentPage + 1)" hidden/>
+                <input name="@Paging.PageSize" value="@pageSize" hidden/>
+            </li>
+        </form>
+    }
+    else
+    {
+        <li class="page-item disabled">
+            <a class="page-link" aria-label="Next">
+                <span aria-hidden="true">&raquo;</span>
+            </a>
+        </li>
+    }
+</ul>

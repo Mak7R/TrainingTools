@@ -42,12 +42,14 @@ namespace Infrastructure.Data.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("Name");
+
                     b.HasIndex("NormalizedName")
                         .IsUnique()
                         .HasDatabaseName("RoleNameIndex")
                         .HasFilter("[NormalizedName] IS NOT NULL");
 
-                    b.ToTable("AspNetRoles", (string)null);
+                    b.ToTable("Role", (string)null);
                 });
 
             modelBuilder.Entity("Domain.Identity.ApplicationUser", b =>
@@ -100,6 +102,9 @@ namespace Infrastructure.Data.Migrations
                     b.Property<bool>("PhoneNumberConfirmed")
                         .HasColumnType("bit");
 
+                    b.Property<DateTime>("RegistrationDateTime")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("nvarchar(max)");
 
@@ -112,6 +117,8 @@ namespace Infrastructure.Data.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("Email");
+
                     b.HasIndex("NormalizedEmail")
                         .HasDatabaseName("EmailIndex");
 
@@ -120,7 +127,9 @@ namespace Infrastructure.Data.Migrations
                         .HasDatabaseName("UserNameIndex")
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
 
-                    b.ToTable("AspNetUsers", (string)null);
+                    b.HasIndex("UserName");
+
+                    b.ToTable("User", (string)null);
                 });
 
             modelBuilder.Entity("Infrastructure.Entities.ExerciseEntity", b =>
@@ -180,25 +189,25 @@ namespace Infrastructure.Data.Migrations
                     b.ToTable("ExerciseResult", (string)null);
                 });
 
-            modelBuilder.Entity("Infrastructure.Entities.FriendInvitationEntity", b =>
+            modelBuilder.Entity("Infrastructure.Entities.Friendship.FriendInvitationEntity", b =>
                 {
                     b.Property<Guid>("InvitorId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("TargetId")
+                    b.Property<Guid>("InvitedId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<DateTime>("InvitationTime")
+                    b.Property<DateTime>("InvitationDateTime")
                         .HasColumnType("datetime2");
 
-                    b.HasKey("InvitorId", "TargetId");
+                    b.HasKey("InvitorId", "InvitedId");
 
-                    b.HasIndex("TargetId");
+                    b.HasIndex("InvitedId");
 
                     b.ToTable("FriendInvitation", (string)null);
                 });
 
-            modelBuilder.Entity("Infrastructure.Entities.FriendRelationshipEntity", b =>
+            modelBuilder.Entity("Infrastructure.Entities.Friendship.FriendshipEntity", b =>
                 {
                     b.Property<Guid>("FirstFriendId")
                         .HasColumnType("uniqueidentifier");
@@ -213,7 +222,7 @@ namespace Infrastructure.Data.Migrations
 
                     b.HasIndex("SecondFriendId");
 
-                    b.ToTable("FriendRelationship", (string)null);
+                    b.ToTable("Friendship", (string)null);
                 });
 
             modelBuilder.Entity("Infrastructure.Entities.GroupEntity", b =>
@@ -235,7 +244,7 @@ namespace Infrastructure.Data.Migrations
                     b.ToTable("Group", (string)null);
                 });
 
-            modelBuilder.Entity("Infrastructure.Entities.TrainingPlanEntities.TrainingPlanBlockEntity", b =>
+            modelBuilder.Entity("Infrastructure.Entities.TrainingPlan.TrainingPlanBlockEntity", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -250,6 +259,7 @@ namespace Infrastructure.Data.Migrations
                         .HasColumnType("nvarchar(32)");
 
                     b.Property<Guid?>("TrainingPlanEntityId")
+                        .IsRequired()
                         .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
@@ -259,14 +269,13 @@ namespace Infrastructure.Data.Migrations
                     b.ToTable("TrainingPlanBlock", (string)null);
                 });
 
-            modelBuilder.Entity("Infrastructure.Entities.TrainingPlanEntities.TrainingPlanBlockEntryEntity", b =>
+            modelBuilder.Entity("Infrastructure.Entities.TrainingPlan.TrainingPlanBlockEntryEntity", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("Desctiption")
-                        .IsRequired()
+                    b.Property<string>("Description")
                         .HasMaxLength(128)
                         .HasColumnType("nvarchar(128)");
 
@@ -288,7 +297,7 @@ namespace Infrastructure.Data.Migrations
                     b.ToTable("TrainingPlanBlockEntry", (string)null);
                 });
 
-            modelBuilder.Entity("Infrastructure.Entities.TrainingPlanEntities.TrainingPlanEntity", b =>
+            modelBuilder.Entity("Infrastructure.Entities.TrainingPlan.TrainingPlanEntity", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -448,26 +457,26 @@ namespace Infrastructure.Data.Migrations
                     b.Navigation("Owner");
                 });
 
-            modelBuilder.Entity("Infrastructure.Entities.FriendInvitationEntity", b =>
+            modelBuilder.Entity("Infrastructure.Entities.Friendship.FriendInvitationEntity", b =>
                 {
+                    b.HasOne("Domain.Identity.ApplicationUser", "Invited")
+                        .WithMany()
+                        .HasForeignKey("InvitedId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
                     b.HasOne("Domain.Identity.ApplicationUser", "Invitor")
                         .WithMany()
                         .HasForeignKey("InvitorId")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
-                    b.HasOne("Domain.Identity.ApplicationUser", "Target")
-                        .WithMany()
-                        .HasForeignKey("TargetId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
+                    b.Navigation("Invited");
 
                     b.Navigation("Invitor");
-
-                    b.Navigation("Target");
                 });
 
-            modelBuilder.Entity("Infrastructure.Entities.FriendRelationshipEntity", b =>
+            modelBuilder.Entity("Infrastructure.Entities.Friendship.FriendshipEntity", b =>
                 {
                     b.HasOne("Domain.Identity.ApplicationUser", "FirstFriend")
                         .WithMany()
@@ -486,15 +495,16 @@ namespace Infrastructure.Data.Migrations
                     b.Navigation("SecondFriend");
                 });
 
-            modelBuilder.Entity("Infrastructure.Entities.TrainingPlanEntities.TrainingPlanBlockEntity", b =>
+            modelBuilder.Entity("Infrastructure.Entities.TrainingPlan.TrainingPlanBlockEntity", b =>
                 {
-                    b.HasOne("Infrastructure.Entities.TrainingPlanEntities.TrainingPlanEntity", null)
+                    b.HasOne("Infrastructure.Entities.TrainingPlan.TrainingPlanEntity", null)
                         .WithMany("TrainingPlanBlocks")
                         .HasForeignKey("TrainingPlanEntityId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
-            modelBuilder.Entity("Infrastructure.Entities.TrainingPlanEntities.TrainingPlanBlockEntryEntity", b =>
+            modelBuilder.Entity("Infrastructure.Entities.TrainingPlan.TrainingPlanBlockEntryEntity", b =>
                 {
                     b.HasOne("Infrastructure.Entities.GroupEntity", "Group")
                         .WithMany()
@@ -502,7 +512,7 @@ namespace Infrastructure.Data.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Infrastructure.Entities.TrainingPlanEntities.TrainingPlanBlockEntity", null)
+                    b.HasOne("Infrastructure.Entities.TrainingPlan.TrainingPlanBlockEntity", null)
                         .WithMany("TrainingPlanBlockEntries")
                         .HasForeignKey("TrainingPlanBlockEntityId")
                         .OnDelete(DeleteBehavior.Cascade);
@@ -510,7 +520,7 @@ namespace Infrastructure.Data.Migrations
                     b.Navigation("Group");
                 });
 
-            modelBuilder.Entity("Infrastructure.Entities.TrainingPlanEntities.TrainingPlanEntity", b =>
+            modelBuilder.Entity("Infrastructure.Entities.TrainingPlan.TrainingPlanEntity", b =>
                 {
                     b.HasOne("Domain.Identity.ApplicationUser", "Author")
                         .WithMany()
@@ -572,12 +582,12 @@ namespace Infrastructure.Data.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Infrastructure.Entities.TrainingPlanEntities.TrainingPlanBlockEntity", b =>
+            modelBuilder.Entity("Infrastructure.Entities.TrainingPlan.TrainingPlanBlockEntity", b =>
                 {
                     b.Navigation("TrainingPlanBlockEntries");
                 });
 
-            modelBuilder.Entity("Infrastructure.Entities.TrainingPlanEntities.TrainingPlanEntity", b =>
+            modelBuilder.Entity("Infrastructure.Entities.TrainingPlan.TrainingPlanEntity", b =>
                 {
                     b.Navigation("TrainingPlanBlocks");
                 });

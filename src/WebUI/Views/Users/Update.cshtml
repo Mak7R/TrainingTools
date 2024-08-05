@@ -5,9 +5,9 @@
 }
 
 <div class="container mt-3">
-    <form method="post" asp-controller="Users" asp-action="Update" asp-route-userName="@Model.UserName">
+    <form method="post" asp-controller="Users" asp-action="Update" asp-route-userId="@Model.Id">
         <h3>Update @Model.UserName</h3>
-        
+        <input asp-for="UserName" hidden/>
         <div class="mb-3">
             <label asp-for="ClearAbout" class="form-label">Clear string about user: </label>
             <input asp-for="ClearAbout" class="form-check-input"/>

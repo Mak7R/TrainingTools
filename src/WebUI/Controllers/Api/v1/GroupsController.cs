@@ -1,13 +1,11 @@
-﻿using Application.Interfaces.ServiceInterfaces;
-using Application.Interfaces.Services;
-using Application.Models.Shared;
+﻿using Application.Interfaces.Services;
 using AutoMapper;
+using Domain.Enums;
 using Domain.Exceptions;
 using Domain.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using WebUI.Filters;
-using WebUI.ModelBinding.ModelBinders;
 using WebUI.Models.Group;
 using WebUI.Models.Shared;
 
@@ -27,22 +25,41 @@ public class GroupsController : ApiController
     }
 
     /// <summary>
-    /// Gets all groups. Can be filtered with FilterModel and Ordered with order model
+    /// Retrieves a list of all groups, with optional filtering, ordering, and pagination.
     /// </summary>
-    /// <param name="orderModel">provides order for list of groups</param>
-    /// <param name="filterModel">provides filters for filtering groups</param>
+    /// <param name="filterModel">Supported filters: f_name, f_name-equals</param>
+    /// <param name="orderModel">Supported orders: name</param>
+    /// <param name="pageModel">Paging params: page, page-size</param>
     /// <returns>List of groups</returns>
     [HttpGet("")]
     [QueryValuesReader<DefaultOrderOptions>]
     [AllowAnonymous]
-    public async Task<ActionResult<IEnumerable<GroupViewModel>>> GetAll(OrderModel? orderModel,[FilterModelBinder] FilterModel? filterModel)
+    public async Task<ActionResult<IEnumerable<GroupViewModel>>> GetAll(FilterViewModel? filterModel, OrderViewModel? orderModel, PageViewModel? pageModel)
     {
-        var groups = await _groupsService.GetAll(orderModel, filterModel);
-
+        var groups = await _groupsService.GetAll(filterModel, orderModel, pageModel);
         return _mapper.Map<List<GroupViewModel>>(groups);
     }
 
+    /// <summary>
+    /// Counts the total number of groups based on optional filter criteria.
+    /// </summary>
+    /// <param name="filterModel">Supported filters: f_name, f_name-equals</param>
+    /// <returns>Total count of groups matching the criteria</returns>
+    [HttpGet("count")]
+    [QueryValuesReader<DefaultOrderOptions>]
+    [AllowAnonymous]
+    public async Task<IActionResult> Count(FilterViewModel? filterModel)
+    {
+        return Ok(await _groupsService.Count(filterModel));
+    }
+    
+    /// <summary>
+    /// Retrieves a specific group by its ID.
+    /// </summary>
+    /// <param name="groupId">ID of group</param>
+    /// <returns></returns>
     [HttpGet("{groupId:guid}")]
+    [AllowAnonymous]
     public async Task<ActionResult<GroupViewModel>> Get(Guid groupId)
     {
         var group = await _groupsService.GetById(groupId);
@@ -58,7 +75,7 @@ public class GroupsController : ApiController
     /// <param name="createGroupModel">group model to create</param>
     /// <returns>Created if group was successfully created otherwise returns problem</returns>
     [HttpPost("")]
-    [Authorize(Roles = "Root,Admin")]
+    [AuthorizeVerifiedRoles(Role.Admin, Role.Root)]
     public async Task<IActionResult> Create(CreateGroupModel createGroupModel)
     {
         var result = await _groupsService.Create(_mapper.Map<Group>(createGroupModel));
@@ -82,14 +99,22 @@ public class GroupsController : ApiController
         });
     }
 
-    [HttpPut("")]
-    [Authorize(Roles = "Root,Admin")]
-    public async Task<IActionResult> Update([FromForm] UpdateGroupModel updateGroupModel)
+    /// <summary>
+    /// Updates group by <see cref="groupId"/>
+    /// </summary>
+    /// <param name="groupId">ID of group</param>
+    /// <param name="updateGroupModel">model for updating group</param>
+    /// <returns>updated group id update was successful</returns>
+    [HttpPut("{groupId:guid}")]
+    [AuthorizeVerifiedRoles(Role.Admin, Role.Root)]
+    public async Task<IActionResult> Update(Guid groupId, UpdateGroupModel updateGroupModel)
     {
-        var result = await _groupsService.Update(_mapper.Map<Group>(updateGroupModel));
+        var group = _mapper.Map<Group>(updateGroupModel);
+        group.Id = groupId;
+        var result = await _groupsService.Update(group);
         
         if (result.IsSuccessful) 
-            return NoContent();
+            return Ok(group);
         
         if (result.Exception is AlreadyExistsException)
             return Problem("Group already exists", statusCode: 400);
@@ -106,8 +131,13 @@ public class GroupsController : ApiController
         });
     }
 
+    /// <summary>
+    /// Deletes group by <see cref="groupId"/>
+    /// </summary>
+    /// <param name="groupId">ID of group</param>
+    /// <returns>no content if successfully deleted otherwise problem</returns>
     [HttpDelete("{groupId:guid}")]
-    [Authorize(Roles = "Root,Admin")]
+    [AuthorizeVerifiedRoles(Role.Admin, Role.Root)]
     public async Task<IActionResult> Delete(Guid groupId)
     {
         var result = await _groupsService.Delete(groupId);

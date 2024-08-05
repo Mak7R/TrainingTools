@@ -73,7 +73,7 @@
 
 @{
     var groupColors = new Dictionary<Guid, string>();
-    var colorGenerator = new ColorGenerator(10);
+    var colorGenerator = new ColorGenerator(7);
 
     string GetGroupColor(Guid groupId)
     {
@@ -105,7 +105,7 @@
         Actions:
         @if (Model.Author.UserName == User.Identity?.Name)
         {
-            <a class="btn btn-primary me-2 mb-1" asp-controller="TrainingPlans" asp-action="Update" asp-route-author="@Model.Author.UserName" asp-route-title="@Model.Title">Update</a>
+            <a class="btn btn-primary me-2 mb-1" asp-controller="TrainingPlans" asp-action="Update" asp-route-planId="@Model.Id">Update</a>
             <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deletePlanModal">
                 Delete
             </button>
@@ -122,15 +122,14 @@
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Cancel</button>
-                            <a type="button" class="btn btn-danger  me-2 mb-1" asp-controller="TrainingPlans" asp-action="Delete" asp-route-author="@Model.Author.UserName" asp-route-title="@Model.Title">Delete</a>
+                            <a type="button" class="btn btn-danger  me-2 mb-1" asp-controller="TrainingPlans" asp-action="Delete" asp-route-planId="@Model.Id">Delete</a>
                         </div>
                     </div>
                 </div>
             </div>
         }
-        
-        <a class="btn btn-primary me-2 mb-1" asp-controller="TrainingPlans" asp-action="GetTrainingPlanAsPdf" asp-route-author="@Model.Author.UserName" asp-route-title="@Model.Title">Download as PDF</a>
     </div>
+    
     
 
     <div class="table-responsive border border-1 border-black">
@@ -139,7 +138,7 @@
             <tr>
                 @foreach (var block in Model.TrainingPlanBlocks)
                 {
-                    <th>@block.Name</th>
+                    <th>@block.Title</th>
                 }
             </tr>
             </thead>

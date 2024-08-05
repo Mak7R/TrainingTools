@@ -1,4 +1,4 @@
-namespace Application.Interfaces.ServiceInterfaces;
+namespace Application.Interfaces.Services;
 
 public interface IReferencedContentProvider
 {

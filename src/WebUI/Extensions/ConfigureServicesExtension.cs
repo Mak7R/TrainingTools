@@ -1,23 +1,38 @@
 ﻿using System.Globalization;
+using System.Text;
 using Application.Interfaces.Repositories;
-using Application.Interfaces.ServiceInterfaces;
 using Application.Interfaces.Services;
+using Application.Models;
+using Application.Options;
 using Application.Services;
 using Application.Services.ReferencedContentProviders;
 using Domain.Identity;
 using Domain.Models;
+using Domain.Models.Friendship;
+using Domain.Models.TrainingPlan;
 using Infrastructure.Data;
 using Infrastructure.Mapping.Profiles;
 using Infrastructure.Repositories;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.HttpLogging;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.AspNetCore.Mvc.Versioning;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using WebUI.Mapping.Profiles;
 using WebUI.ModelBinding.Providers;
+using WebUI.Policies.Handlers;
+using WebUI.Policies.Requirements;
 
 namespace WebUI.Extensions;
 
@@ -28,24 +43,29 @@ public static class ConfigureServicesExtension
         services.AddLocalization(options => options.ResourcesPath = "Resources");
         
         var activeConnection = configuration["ActiveConnection"] ?? "DefaultConnection";
-        var connectionString = configuration.GetConnectionString(activeConnection) ?? throw new InvalidOperationException($"Connection string '{activeConnection}' not found.");
+        var sqlServerConnectionString = configuration.GetConnectionString(activeConnection) ?? throw new InvalidOperationException($"Connection string '{activeConnection}' not found.");
 
         services.AddDbContext<ApplicationDbContext>(options =>
-            options.UseSqlServer(connectionString)
+            options.UseSqlServer(sqlServerConnectionString)
         );
-        
-        services.AddControllersWithViews(options =>
-        {
-            options.ModelBinderProviders.Insert(0, new UpdateTrainingPlanModelBinderProvider());
-            options.ModelBinderProviders.Insert(0, new FOPModelBindersProvider());
-            
-            // option.Filters
-        })
+
+        services.AddHealthChecks()
+            .AddSqlServer(sqlServerConnectionString, name: "SQL Server");
+
+        var mvcBuilder = services.AddControllersWithViews(options =>
+            {
+                options.ModelBinderProviders.Insert(0, new UpdateTrainingPlanModelBinderProvider());
+                options.ModelBinderProviders.Insert(0, new FilterModelBinderProvider());
+
+                // option.Filters
+            })
             .AddViewLocalization(LanguageViewLocationExpanderFormat.Suffix)
-            .AddDataAnnotationsLocalization()
-            .AddRazorRuntimeCompilation();
+            .AddDataAnnotationsLocalization();
+        
+        if (configuration["RazorRuntimeCompilation"] == "True") mvcBuilder.AddRazorRuntimeCompilation();
 
         services.AddHttpContextAccessor();
+        services.TryAddSingleton<IActionContextAccessor, ActionContextAccessor>();
 
         services.Configure<RequestLocalizationOptions>(options =>
         {
@@ -78,12 +98,21 @@ public static class ConfigureServicesExtension
 
                 options.User.AllowedUserNameCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.!#$%^&*()_-+=";
                 options.User.RequireUniqueEmail = true;
+                
+                options.Tokens.EmailConfirmationTokenProvider = "emailconfirmation";
+                options.SignIn.RequireConfirmedEmail = true;
             })
-            .AddUserManager<SpecializedUserManager>()
+            .AddUserManager<ApplicationUserManager>()
             .AddEntityFrameworkStores<ApplicationDbContext>()
             .AddUserStore<UserStore<ApplicationUser, ApplicationRole, ApplicationDbContext, Guid>>()
-            .AddRoleStore<RoleStore<ApplicationRole, ApplicationDbContext, Guid>>();
+            .AddRoleStore<RoleStore<ApplicationRole, ApplicationDbContext, Guid>>()
+            .AddDefaultTokenProviders()
+            .AddTokenProvider<EmailTokenProvider<ApplicationUser>>("emailconfirmation");
 
+        services.Configure<DataProtectionTokenProviderOptions>(options =>
+        {
+            options.TokenLifespan = TimeSpan.FromDays(3);
+        });
 
         services.ConfigureApplicationCookie(options =>
         {
@@ -94,6 +123,57 @@ public static class ConfigureServicesExtension
             options.AccessDeniedPath = "/access-denied";
         });
 
+        services.AddAuthentication()
+            .AddCookie(CookieAuthenticationDefaults.AuthenticationScheme, options =>
+            {
+                options.Cookie.HttpOnly = true;
+                options.LoginPath = "/login";
+                options.LogoutPath = "/logout";
+                options.AccessDeniedPath = "/access-denied";
+            })
+            .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>
+            {
+                var tokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["Jwt:SecretKey"] ??
+                        throw new NullReferenceException("SecretKey can't be null")))
+                };
+
+                if (string.IsNullOrWhiteSpace(configuration["Jwt:Audience"]))
+                {
+                    tokenValidationParameters.ValidateAudience = false;
+                }
+                else
+                {
+                    tokenValidationParameters.ValidateAudience = true;
+                    tokenValidationParameters.ValidAudience = configuration["Jwt:Audience"];
+                }
+
+                if (string.IsNullOrWhiteSpace(configuration["Jwt:Issuer"]))
+                {
+                    tokenValidationParameters.ValidateIssuer = false;
+                }
+                else
+                {
+                    tokenValidationParameters.ValidateIssuer = true;
+                    tokenValidationParameters.ValidIssuer = configuration["Jwt:Issuer"];
+                }
+                
+                options.TokenValidationParameters = tokenValidationParameters;
+            })
+            .AddGoogle(options =>
+            {
+                var googleOAuth = configuration.GetSection("OAuth2:Google");
+                options.ClientId = googleOAuth["ClientId"] ?? throw new InvalidOperationException("ClientId cannot be empty");
+                options.ClientSecret = googleOAuth["ClientSecret"] ?? throw new InvalidOperationException("ClientSecret cannot be empty");
+                options.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+            });
+
+        services.AddAuthorizationBuilder()
+            .AddPolicy(nameof(VerifyClaimsRequirement), policy => policy.AddRequirements(new VerifyClaimsRequirement()));
+        
         services.AddApiVersioning(config =>
         {
             config.ApiVersionReader = new UrlSegmentApiVersionReader();
@@ -101,15 +181,55 @@ public static class ConfigureServicesExtension
             config.AssumeDefaultVersionWhenUnspecified = true;
         });
 
+        services.AddCors(options =>
+        {
+            options.AddDefaultPolicy(builder =>
+            {
+                builder.WithOrigins(configuration.GetSection("AllowedOrigins").Get<string[]>() ?? throw new InvalidOperationException("AllowedOrigins was not found"));
+                builder.WithHeaders(configuration.GetSection("AllowedHeaders").Get<string[]>() ?? throw new InvalidOperationException("AllowedHeaders was not found"));
+                builder.WithMethods(configuration.GetSection("AllowedMethods").Get<string[]>() ?? throw new InvalidOperationException("AllowedMethods was not found"));
+            });
+        });
+
         // setup swagger
         services.AddEndpointsApiExplorer();
         services.AddSwaggerGen(options => {
             options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, "api-docs.xml"));
             
-            options.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo{ Title = "Training Tools Web API", Version = "1.0" });
+            options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+            {
+                Description = @"JWT Authorization header using the Bearer scheme. \r\n\r\n 
+                      Enter 'Bearer' [space] and then your token in the text input below.
+                      \r\n\r\nExample: 'Bearer 12345abcdef'",
+                Name = "Authorization",
+                In = ParameterLocation.Header,
+                Type = SecuritySchemeType.ApiKey,
+                Scheme = "Bearer"
+            });
+
+            options.AddSecurityRequirement(new OpenApiSecurityRequirement()
+            {
+                {
+                    new OpenApiSecurityScheme
+                    {
+                        Reference = new OpenApiReference
+                        {
+                            Type = ReferenceType.SecurityScheme,
+                            Id = "Bearer"
+                        },
+                        Scheme = "oauth2",
+                        Name = "Bearer",
+                        In = ParameterLocation.Header,
+
+                    },
+                    new List<string>()
+                }
+            });
+            
+            options.SwaggerDoc("v1", new OpenApiInfo{ Title = "Training Tools Web API V1", Version = "1.0" });
         });
         services.AddVersionedApiExplorer(options => {
-            options.GroupNameFormat = "'v'VVV"; //v1
+            options.GroupNameFormat = "'v'VVV";
             options.SubstituteApiVersionInUrl = true;
         });
 
@@ -121,26 +241,37 @@ public static class ConfigureServicesExtension
         services.AddHttpLogging(options =>
         {
             options.LoggingFields = HttpLoggingFields.RequestPath | HttpLoggingFields.ResponseStatusCode;
-        }); // required for http logging
+        });
         
         return services;
     }
     
     private static void AddApplicationServices(this IServiceCollection services, IConfiguration configuration)
     {
+        services.Configure<ConfirmationEmailOptions>(configuration.GetSection("Emails:Confirmation"));
+        
         services.AddScoped<IRepository<Group, Guid>, GroupsRepository>();
+        services.AddScoped<IRepository<Exercise, Guid>, ExercisesRepository>();
+        services.AddScoped<IRepository<TrainingPlan, Guid>, TrainingPlansRepository>();
+        services.AddScoped<IRepository<FriendInvitation, (Guid, Guid)>, FriendInvitationsRepository>();
+        services.AddScoped<IRepository<Friendship, (Guid, Guid)>, FriendshipsRepository>();
+        services.AddScoped<IRepository<ExerciseResult, (Guid, Guid)>, ExerciseResultsRepository>();
+        
         services.AddScoped<IGroupsService, GroupsService>();
-        services.AddScoped<IFriendsRepository, FriendsRepository>();
         services.AddScoped<IUsersService, UsersService>();
-        services.AddScoped<IFriendsService, FriendsService>();
-        services.AddScoped<IExercisesRepository, ExercisesRepository>();
+        services.AddScoped<IFriendsService, FriendshipsService>();
         services.AddScoped<IExercisesService, ExercisesService>();
-        services.AddScoped<IExerciseResultsRepository, ExerciseResultsRepository>();
         services.AddScoped<IExerciseResultsService, ExerciseResultsService>();
-        services.AddScoped<ITrainingPlansRepository, TrainingPlansRepository>();
         services.AddScoped<ITrainingPlansService, TrainingPlansService>();
         
         services.AddScoped<IReferencedContentProvider, ImagesAndVideosReferencedContentProvider>();
-        services.AddTransient<IExerciseResultsToExсelExporter, ExerciseResultsToExcelExporter>();
+        services.AddSingleton<IAuthTokenService<TokenGenerationInfo>, JwtService>();
+        services.AddSingleton<IExerciseResultsToExсelExporter, ExerciseResultsToExcelExporter>();
+        
+        services.AddTransient<IEmailSender, EmailSender>();
+        services.AddScoped<IAuthorizationHandler, VerifyClaimsRequirementHandler>();
+
+
+        services.AddSingleton<ISmtpClientFactory, SmtpClientFactory>();
     }
 }

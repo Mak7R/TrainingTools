@@ -6,8 +6,8 @@ namespace Application.Models.Shared;
 
 public class OrderModel
 {
-    public string? OrderOption { get; set; }
-    public string? OrderBy { get; set; }
+    public virtual string? OrderOption { get; set; }
+    public virtual string? OrderBy { get; set; }
 
     public IQueryable<T> Order<T>(IQueryable<T> queryable, IEnumerable<KeyValuePair<OrderModel, Func<IQueryable<T>, IQueryable<T>>>> orders)
     {

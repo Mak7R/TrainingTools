@@ -31,6 +31,7 @@ public class GroupsRepository : IRepository<Group, Guid>
         new(new Dictionary<string, Func<string, Expression<Func<GroupEntity, bool>>>>
         {
             { FilterOptionNames.Group.Name, value => p => p.Name.Contains(value) },
+            { FilterOptionNames.Group.NameEquals, value => p => p.Name == value }
         });
 
     private static readonly
@@ -55,7 +56,7 @@ public class GroupsRepository : IRepository<Group, Guid>
             if (pageModel is not null)
                 query = pageModel.TakePage(query);
             
-            return await query.Select(g => _mapper.Map<Group>(g)).ToListAsync();
+            return (await query.ToListAsync()).Select(g => _mapper.Map<Group>(g));
         }
         catch (Exception e)
         {
@@ -80,15 +81,18 @@ public class GroupsRepository : IRepository<Group, Guid>
             _logger.LogError(e, "Exception was thrown while receiving groups count by filter '{filter}' from database", filterModel);
             throw new DataBaseException("Error while receiving groups count from database", e);
         }
-        
     }
 
     public async Task<Group?> GetById(Guid id)
     {
         try
         {
-            var groupEntity = await _dbContext.Groups.AsNoTracking().FirstOrDefaultAsync(g => g.Id == id);
-            return _mapper.Map<Group>(groupEntity);
+            var group = await _dbContext.Groups
+                .AsNoTracking()
+                
+                .FirstOrDefaultAsync(g => g.Id == id);
+
+            return group == null ? null : _mapper.Map<Group>(group);
         }
         catch (Exception e)
         {
@@ -114,7 +118,7 @@ public class GroupsRepository : IRepository<Group, Guid>
         }
         catch (AlreadyExistsException alreadyExistsException)
         {
-            _logger.LogWarning(alreadyExistsException, "Group with name '{groupName}' already exist in database", group.Name);
+            _logger.LogInformation(alreadyExistsException, "Group with name '{groupName}' already exist in database", group.Name);
             return DefaultOperationResult.FromException(alreadyExistsException);
         }
         catch (Exception e)
@@ -151,12 +155,12 @@ public class GroupsRepository : IRepository<Group, Guid>
         }
         catch (NotFoundException notFoundException)
         {
-            _logger.LogWarning(notFoundException, "NotFoundException was thrown for {entity} with id '{entityId}'", "Group", group.Id);
+            _logger.LogInformation(notFoundException, "NotFoundException was thrown for {entity} with id '{entityId}'", "Group", group.Id);
             return DefaultOperationResult.FromException(notFoundException);
         }
         catch (AlreadyExistsException alreadyExistsException)
         {
-            _logger.LogWarning(alreadyExistsException, "Group with name '{groupName}' already exist in database", group.Name);
+            _logger.LogInformation(alreadyExistsException, "Group with name '{groupName}' already exist in database", group.Name);
             return DefaultOperationResult.FromException(alreadyExistsException);
         }
         catch (Exception e)
@@ -185,7 +189,7 @@ public class GroupsRepository : IRepository<Group, Guid>
         }
         catch (NotFoundException notFoundException)
         {
-            _logger.LogWarning(notFoundException, "NotFoundException was thrown for {entity} with id '{entityId}'", "Group", id);
+            _logger.LogInformation(notFoundException, "NotFoundException was thrown for {entity} with id '{entityId}'", "Group", id);
             return DefaultOperationResult.FromException(notFoundException);
         }
         catch (Exception e)

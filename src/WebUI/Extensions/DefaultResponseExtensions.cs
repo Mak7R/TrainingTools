@@ -4,27 +4,28 @@ namespace WebUI.Extensions;
 
 public static class DefaultResponseExtensions
 {
-    public static IActionResult BadRequestView(this Controller controller, IEnumerable<string> errors)
+    public static IActionResult BadRequestRedirect(this Controller controller, IEnumerable<string> messages)
     {
-        controller.Response.StatusCode = StatusCodes.Status400BadRequest;
-        return controller.View(@"ErrorViews\BadRequest", errors);
-    }
-    
-    public static IActionResult NotFoundView(this Controller controller, string error)
-    {
-        controller.Response.StatusCode = StatusCodes.Status404NotFound;
-        return controller.View(@"ErrorViews\NotFound", new []{error});
+        return controller.RedirectToAction("Info", "Home", new { statusCode = 400, messages });
     }
 
-    public static IActionResult NotFoundView(this Controller controller, IEnumerable<string> errors)
+    public static IActionResult NotFoundRedirect(this Controller controller, IEnumerable<string> messages)
     {
-        controller.Response.StatusCode = StatusCodes.Status404NotFound;
-        return controller.View(@"ErrorViews\NotFound", errors);
+        return controller.RedirectToAction("Info", "Home", new { statusCode = 404, messages });
     }
     
-    public static IActionResult ErrorView(this Controller controller, int statusCode, IEnumerable<string> errors)
+    public static IActionResult ErrorRedirect(this Controller controller, int statusCode, IEnumerable<string> messages)
     {
-        controller.Response.StatusCode = statusCode;
-        return controller.View(@"ErrorViews\Error", errors);
+        return controller.RedirectToAction("Info", "Home", new { statusCode, messages });
+    }
+
+    public static IActionResult InfoRedirect(this Controller controller, int statusCode, IEnumerable<string> messages)
+    {
+        return controller.RedirectToAction("Info", "Home", new { statusCode, messages });
+    }
+
+    public static IActionResult ForbiddenRedirect(this Controller controller, IEnumerable<string> messages)
+    {
+        return controller.RedirectToAction("Info", "Home", new { statusCode = 403, messages });
     }
 }

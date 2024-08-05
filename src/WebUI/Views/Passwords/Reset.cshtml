@@ -1,0 +1,27 @@
+﻿@model ResetPasswordModel
+
+@{
+    ViewBag.Title = "Reset password";
+}
+
+<div class="container mt-3">
+    <h2>Reset password</h2>
+    
+    <form asp-controller="Passwords" asp-action="Reset" method="post">
+        <input asp-for="Email" hidden/>
+        <input asp-for="Token" hidden/>
+        
+        <div class="mb-3">
+            <label asp-for="NewPassword" class="form-label">Password: </label>
+            <input class="form-control" asp-for="NewPassword"/>
+            <span asp-validation-for="NewPassword" class="text-danger"></span>
+            <div id="form-all-errors" asp-validation-summary="All" class="text-danger">
+
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <button type="submit" class="btn btn-success">Reset password</button>
+        </div>
+    </form>
+</div>
