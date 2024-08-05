@@ -40,13 +40,13 @@ jobs:
           include-prerelease: true
 
       - name: Restore dependencies
-        run: dotnet restore
+        run: dotnet restore src/WebUI/WebUI.csproj
 
       - name: Build with dotnet
-        run: dotnet build --configuration Release --no-restore
+        run: dotnet build src/WebUI/WebUI.csproj --configuration Release --no-restore
 
       - name: dotnet publish
-        run: dotnet publish -c Release -o ${{env.DOTNET_ROOT}}/myapp
+        run: dotnet publish src/WebUI/WebUI.csproj -c Release -o ${{env.DOTNET_ROOT}}/myapp
 
       - name: Upload artifact for test and deployment jobs
         uses: actions/upload-artifact@v3
@@ -94,6 +94,6 @@ jobs:
           password: ${{ secrets.SOMEE_FTP_PASSWORD }}
           remote_folder: ${{ secrets.SOMEE_FTP_REMOTE_DIR }}
           local_folder: ./
-          cleanup: true
+          cleanup: false
           exclude: '["**/appsettings.Production.json"]'
           passive: true
