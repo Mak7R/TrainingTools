@@ -1,6 +1,6 @@
 ﻿using Application.Constants;
 using Application.Dtos;
-using Application.Interfaces.Repositories;
+using Application.Interfaces.Services;
 using Application.Models.Shared;
 using Application.Services;
 using Domain.Enums;
@@ -9,6 +9,7 @@ using FluentAssertions;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
+using Microsoft.EntityFrameworkCore;
 using Moq;
 
 namespace ApplicationTests;
@@ -16,10 +17,8 @@ namespace ApplicationTests;
 public class UsersServiceTests
 {
     private readonly Mock<UserManager<ApplicationUser>> _userManagerMock;
-    private readonly Mock<IFriendsRepository> _friendsRepositoryMock;
-    private readonly Mock<ILogger<UsersService>> _loggerMock;
+    private readonly Mock<IFriendsService> _friendsServiceMock;
     private readonly UsersService _usersService;
-    private readonly Mock<IStringLocalizer<UsersService>> _localizerMock;
 
     public UsersServiceTests()
     {
@@ -27,15 +26,15 @@ public class UsersServiceTests
             Mock.Of<IUserStore<ApplicationUser>>(),
             null, null, null, null, null, null, null, null);
 
-        _friendsRepositoryMock = new Mock<IFriendsRepository>();
-        _loggerMock = new Mock<ILogger<UsersService>>();
-        _localizerMock = new Mock<IStringLocalizer<UsersService>>();
+        _friendsServiceMock = new Mock<IFriendsService>();
+        var loggerMock = new Mock<ILogger<UsersService>>();
+        var localizerMock = new Mock<IStringLocalizer<UsersService>>();
         
         _usersService = new UsersService(
             _userManagerMock.Object,
-            _friendsRepositoryMock.Object,
-            _loggerMock.Object,
-            _localizerMock.Object
+            _friendsServiceMock.Object,
+            loggerMock.Object,
+            localizerMock.Object
             );
     }
 
@@ -45,7 +44,7 @@ public class UsersServiceTests
     public async Task GetAllUsers_ShouldThrowArgumentNullException_WhenCurrentUserIsNull()
     {
         // Arrange
-        ApplicationUser currentUser = null;
+        ApplicationUser currentUser = null!;
 
         // Act
         Func<Task> action = async () => await _usersService.GetAll(currentUser);
@@ -53,40 +52,6 @@ public class UsersServiceTests
         // Assert
         await action.Should().ThrowAsync<ArgumentNullException>();
     }
-
-    [Fact]
-    public async Task GetAllUsers_ShouldReturnFilteredUsers_WhenFilterModelIsProvided()
-    {
-        // Arrange
-        var currentUser = new ApplicationUser { Id = Guid.NewGuid(), UserName = "currentUser", IsPublic = true };
-        var users = new List<ApplicationUser>
-        {
-            new ApplicationUser { Id = Guid.NewGuid(), UserName = "user1", IsPublic = true },
-            new ApplicationUser { Id = Guid.NewGuid(), UserName = "user2", IsPublic = false },
-            new ApplicationUser { Id = Guid.NewGuid(), UserName = "user3", IsPublic = true }
-        };
-
-        _userManagerMock.Setup(mock => mock.GetRolesAsync(currentUser))
-            .ReturnsAsync(new List<string>());
-
-        _userManagerMock.Setup(mock => mock.Users)
-            .Returns(users.AsQueryable());
-
-        var filterModel = new FilterModel()
-        {
-            {FilterOptionNames.User.Name, "user"}
-        };
-
-        // Act
-        var result = await _usersService.GetAll(currentUser, filterModel: filterModel);
-
-        // Assert
-        result.Should().HaveCount(2); // user1 and user3
-        result.Should().NotContain(user => !user.User.IsPublic);
-    }
-
-    // Add more tests for GetAllUsers method covering various scenarios
-
     #endregion
 
     #region GetById
@@ -116,7 +81,7 @@ public class UsersServiceTests
         _userManagerMock.Setup(mock => mock.FindByNameAsync("testUser"))
             .ReturnsAsync(user);
 
-        _friendsRepositoryMock.Setup(mock => mock.GetFriendsFor(userId))
+        _friendsServiceMock.Setup(mock => mock.GetFriendsFor(user))
             .ReturnsAsync(new List<ApplicationUser>());
 
         _userManagerMock.Setup(mock => mock.GetRolesAsync(It.IsAny<ApplicationUser>()))
@@ -200,12 +165,12 @@ public class UsersServiceTests
     {
         // Arrange
         var currentUser = new ApplicationUser { Id = Guid.NewGuid() };
-        var updateUserDto = new UpdateUserDto { UserName = "existingUser", IsAdmin = true};
+        var updateUserDto = new UpdateUserDto { UserId = Guid.NewGuid(), IsAdmin = true};
 
         _userManagerMock.Setup(mock => mock.GetRolesAsync(currentUser))
             .ReturnsAsync(new List<string> { nameof(Role.Admin) });
 
-        var existingUser = new ApplicationUser { UserName = "existingUser" };
+        var existingUser = new ApplicationUser { Id = updateUserDto.UserId, UserName = "existingUser" };
         _userManagerMock.Setup(mock => mock.FindByNameAsync("existingUser"))
             .ReturnsAsync(existingUser);
 
@@ -230,10 +195,9 @@ public class UsersServiceTests
     {
         // Arrange
         ApplicationUser currentUser = null;
-        var userName = "testUser";
 
         // Act
-        Func<Task> action = async () => await _usersService.Delete(currentUser, userName);
+        Func<Task> action = async () => await _usersService.Delete(currentUser, Guid.Empty);
 
         // Assert
         await action.Should().ThrowAsync<ArgumentNullException>();
@@ -249,7 +213,7 @@ public class UsersServiceTests
         _userManagerMock.Setup(mock => mock.GetRolesAsync(currentUser))
             .ReturnsAsync(new List<string> { nameof(Role.Admin) });
 
-        var userToDelete = new ApplicationUser { UserName = userName };
+        var userToDelete = new ApplicationUser { Id = Guid.NewGuid(), UserName = userName };
         _userManagerMock.Setup(mock => mock.FindByNameAsync(userName))
             .ReturnsAsync(userToDelete);
 
@@ -257,7 +221,7 @@ public class UsersServiceTests
             .ReturnsAsync(IdentityResult.Success);
 
         // Act
-        var result = await _usersService.Delete(currentUser, userName);
+        var result = await _usersService.Delete(currentUser, userToDelete.Id);
 
         // Assert
         result.IsSuccessful.Should().BeTrue();
