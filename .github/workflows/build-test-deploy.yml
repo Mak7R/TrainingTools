@@ -37,12 +37,21 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
     steps:
-      - name: Download artifact from build job
-        uses: actions/download-artifact@v3
-        with:
-          name: .net-app
+      - uses: actions/checkout@v4
 
-      - name: Run tests
+      - name: Set up .NET Core
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.x'
+          include-prerelease: true
+
+      - name: Restore dependencies
+        run: dotnet restore
+        
+      - name: Build
+        run: dotnet build --no-restore
+        
+      - name: Test
         run: dotnet test --no-build --verbosity normal
 
   deploy-to-azure:
