@@ -15,26 +15,28 @@ public class ExercisesService : IExercisesService
         _exercisesRepository = exercisesRepository;
     }
 
-    public async Task<IEnumerable<Exercise>> GetAll(FilterModel? filterModel = null, OrderModel? orderModel = null, PageModel? pageModel = null)
+    public async Task<IEnumerable<Exercise>> GetAll(FilterModel? filterModel = null, OrderModel? orderModel = null,
+        PageModel? pageModel = null)
     {
         return await _exercisesRepository.GetAll(filterModel, orderModel, pageModel);
     }
 
     public async Task<Exercise?> GetByName(string? name)
     {
-        return (await _exercisesRepository.GetAll(new FilterModel{{FilterOptionNames.Exercise.NameEquals, name}}, null, new PageModel{PageSize = 1})).SingleOrDefault();
+        return (await _exercisesRepository.GetAll(new FilterModel { { FilterOptionNames.Exercise.NameEquals, name } },
+            null, new PageModel { PageSize = 1 })).SingleOrDefault();
     }
 
     public async Task<Exercise?> GetById(Guid id)
     {
         return await _exercisesRepository.GetById(id);
     }
-    
+
     public async Task<int> Count(FilterModel? filterModel = null)
     {
         return await _exercisesRepository.Count(filterModel);
     }
-    
+
     public async Task<OperationResult> Create(Exercise? exercise)
     {
         ArgumentNullException.ThrowIfNull(exercise);
@@ -47,7 +49,7 @@ public class ExercisesService : IExercisesService
     {
         ArgumentNullException.ThrowIfNull(exercise);
         ArgumentNullException.ThrowIfNull(exercise.Group);
-        
+
         exercise.Name = exercise.Name?.Trim();
         return await _exercisesRepository.Update(exercise);
     }

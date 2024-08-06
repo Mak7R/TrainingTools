@@ -1,13 +1,14 @@
-﻿@model WebUI.Models.TrainingPlan.TrainingPlanViewModel
+﻿@model TrainingPlanViewModel
 
 @{
     ViewBag.Title = "Training Plan";
 }
 
 @functions {
+
     public class ColorGenerator
     {
-        private int _groupCount;
+        private readonly int _groupCount;
         private int _currentIndex;
         private const int DefaultMove = 124;
 
@@ -26,9 +27,9 @@
 
         private string HslToRgb(double hue, double saturation, double lightness)
         {
-            double chroma = (1 - Math.Abs(2 * lightness - 1)) * saturation;
-            double x = chroma * (1 - Math.Abs((hue / 60.0) % 2 - 1));
-            double m = lightness - chroma / 2;
+            var chroma = (1 - Math.Abs(2 * lightness - 1)) * saturation;
+            var x = chroma * (1 - Math.Abs(hue / 60.0 % 2 - 1));
+            var m = lightness - chroma / 2;
             double r = 0, g = 0, b = 0;
 
             if (0 <= hue && hue < 60)
@@ -69,6 +70,7 @@
             return $"#{(int)(r * 255):X2}{(int)(g * 255):X2}{(int)(b * 255):X2}";
         }
     }
+
 }
 
 @{
@@ -82,6 +84,7 @@
             color = colorGenerator.NextColor();
             groupColors[groupId] = color;
         }
+
         return groupColors[groupId];
     }
 }
@@ -90,7 +93,7 @@
     <h2 class="text-center mb-3">@Model.Author.UserName/@Model.Title</h2>
 
     <div class="mb-3">
-        State: 
+        State:
         @if (Model.IsPublic)
         {
             <span class="badge rounded-pill text-bg-primary">public</span>
@@ -100,7 +103,7 @@
             <span class="badge rounded-pill text-bg-secondary">private</span>
         }
     </div>
-    
+
     <div>
         Actions:
         @if (Model.Author.UserName == User.Identity?.Name)
@@ -129,8 +132,7 @@
             </div>
         }
     </div>
-    
-    
+
 
     <div class="table-responsive border border-1 border-black">
         <table class="table table-bordered m-0" style="min-height: 60vh">
@@ -146,7 +148,7 @@
             @{
                 var maxEntriesCount = Model.TrainingPlanBlocks.Any() ? Model.TrainingPlanBlocks.Max(b => b.TrainingPlanBlockEntries.Count) : 0;
             }
-            @for (int i = 0; i < maxEntriesCount; i++)
+            @for (var i = 0; i < maxEntriesCount; i++)
             {
                 <tr>
                     @foreach (var block in Model.TrainingPlanBlocks)
@@ -156,14 +158,18 @@
                             var entry = block.TrainingPlanBlockEntries[i];
                             var color = GetGroupColor(entry.Group.Id);
                             <td style="background-color: @color">
-                                <div><strong>Group: </strong><a asp-controller="Exercises" asp-action="GetAll" asp-route-f_group="@entry.Group.Id">@entry.Group.Name</a></div>
-                                <div><strong>Description: </strong>@entry.Description</div>
+                                <div>
+                                    <strong>Group: </strong><a asp-controller="Exercises" asp-action="GetAll" asp-route-f_group="@entry.Group.Id">@entry.Group.Name</a>
+                                </div>
+                                <div>
+                                    <strong>Description: </strong>@entry.Description
+                                </div>
                             </td>
                         }
                         else
                         {
                             <td>
-                            
+
                             </td>
                         }
                     }

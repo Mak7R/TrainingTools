@@ -6,7 +6,7 @@
     <members>
         <member name="M:WebUI.Controllers.Api.v1.AccountController.Register(WebUI.Models.Account.RegisterDto,Microsoft.AspNetCore.Identity.UI.Services.IEmailSender)">
             <summary>
-            Registers a new user.
+                Registers a new user.
             </summary>
             <param name="registerDto">The registration data transfer object.</param>
             <param name="emailSender">Service for sending letter</param>
@@ -14,20 +14,20 @@
         </member>
         <member name="M:WebUI.Controllers.Api.v1.AccountController.Login(WebUI.Models.Account.LoginDto)">
             <summary>
-            Logs in a user account.
+                Logs in a user account.
             </summary>
             <param name="loginDto">The login data transfer object.</param>
             <returns>The action result.</returns>
         </member>
         <member name="M:WebUI.Controllers.Api.v1.AccountController.Profile">
             <summary>
-            Gets the profile of the currently logged-in user.
+                Gets the profile of the currently logged-in user.
             </summary>
             <returns>The action result.</returns>
         </member>
         <member name="M:WebUI.Controllers.Api.v1.AccountController.UpdateProfile(WebUI.Models.Account.UpdateProfileDto,Microsoft.AspNetCore.Identity.UI.Services.IEmailSender)">
             <summary>
-            Updates the profile of the currently logged-in user.
+                Updates the profile of the currently logged-in user.
             </summary>
             <param name="updateProfileDto">The update profile data transfer object.</param>
             <param name="emailSender">Service for sending letter</param>
@@ -35,28 +35,28 @@
         </member>
         <member name="M:WebUI.Controllers.Api.v1.AccountController.DeleteAccount(System.String)">
             <summary>
-            Deletes the account of the currently logged-in user.
+                Deletes the account of the currently logged-in user.
             </summary>
             <param name="password">The user's password.</param>
             <returns>The action result.</returns>
         </member>
         <member name="M:WebUI.Controllers.Api.v1.AccountController.IsEmailFree(System.String)">
             <summary>
-            Checks if the email is free for registration.
+                Checks if the email is free for registration.
             </summary>
             <param name="email">The email to check.</param>
             <returns>The action result.</returns>
         </member>
         <member name="M:WebUI.Controllers.Api.v1.AccountController.IsUserNameFree(System.String)">
             <summary>
-            Checks if the username is free for registration.
+                Checks if the username is free for registration.
             </summary>
             <param name="userName">The username to check.</param>
             <returns>The action result.</returns>
         </member>
         <member name="M:WebUI.Controllers.Api.v1.EmailConfirmationController.ResendEmailConfirmationLetter(System.String,Microsoft.AspNetCore.Identity.UI.Services.IEmailSender)">
             <summary>
-            Resends the confirmation letter to email.
+                Resends the confirmation letter to email.
             </summary>
             <param name="email">The email address.</param>
             <param name="emailSender">Service for sending letter</param>
@@ -64,7 +64,7 @@
         </member>
         <member name="M:WebUI.Controllers.Api.v1.EmailConfirmationController.ConfirmEmail(System.Guid,System.String)">
             <summary>
-            Confirms the user's email.
+                Confirms the user's email.
             </summary>
             <param name="userId">The user ID.</param>
             <param name="token">The confirmation token.</param>
@@ -72,7 +72,7 @@
         </member>
         <member name="M:WebUI.Controllers.Api.v1.ExerciseResultsController.GetUserResults(WebUI.Models.Shared.FilterViewModel,WebUI.Models.Shared.OrderViewModel,WebUI.Models.Shared.PageViewModel)">
             <summary>
-            Gets exercise results for current user.
+                Gets exercise results for current user.
             </summary>
             <param name="filterModel">Supported filters: f_exercise-id, f_full-name, f_full-name-equals</param>
             <param name="orderModel">Supported orders: group-name, owner</param>
@@ -81,7 +81,7 @@
         </member>
         <member name="M:WebUI.Controllers.Api.v1.ExerciseResultsController.GetUserResults(System.String,WebUI.Models.Shared.FilterViewModel,WebUI.Models.Shared.OrderViewModel,Application.Models.Shared.PageModel)">
             <summary>
-            Gets exercise results for a specified user.
+                Gets exercise results for a specified user.
             </summary>
             <param name="userName">The username of the user whose results are requested</param>
             <param name="filterModel">Supported filters: f_exercise-id, f_full-name, f_full-name-equals</param>
@@ -91,14 +91,14 @@
         </member>
         <member name="M:WebUI.Controllers.Api.v1.ExerciseResultsController.GetUserResultsAsExcel(Application.Interfaces.Services.IExerciseResultsToExсelExporter)">
             <summary>
-            Exports exercise results for the current user to an Excel file.
+                Exports exercise results for the current user to an Excel file.
             </summary>
             <param name="exсelExporter">Service for exporting results to Excel</param>
             <returns>An Excel file with exercise results</returns>
         </member>
         <member name="M:WebUI.Controllers.Api.v1.ExerciseResultsController.GetFriendsResultsForExercise(System.Guid,WebUI.Models.Shared.FilterViewModel,WebUI.Models.Shared.OrderViewModel,WebUI.Models.Shared.PageViewModel)">
             <summary>
-            Gets friends' exercise results for a specified exercise.
+                Gets friends' exercise results for a specified exercise.
             </summary>
             <param name="exerciseId">ID of the exercise</param>
             <param name="filterModel">Supported filters: f_full-name, f_full-name-equals, f_owner, f_owner-equals</param>
@@ -108,21 +108,21 @@
         </member>
         <member name="M:WebUI.Controllers.Api.v1.ExerciseResultsController.Create(System.Guid)">
             <summary>
-            Creates a new exercise result for the specified exercise.
+                Creates a new exercise result for the specified exercise.
             </summary>
             <param name="exerciseId">ID of the exercise</param>
             <returns>Created result or an error response</returns>
         </member>
         <member name="M:WebUI.Controllers.Api.v1.ExerciseResultsController.Delete(System.Guid)">
             <summary>
-            Deletes the exercise result for the specified exercise.
+                Deletes the exercise result for the specified exercise.
             </summary>
             <param name="exerciseId">ID of the exercise</param>
             <returns>No content or an error response</returns>
         </member>
         <member name="M:WebUI.Controllers.Api.v1.ExerciseResultsController.Update(System.Guid,WebUI.Models.ExerciseResult.UpdateResultsModel)">
             <summary>
-            Updates the exercise result for the specified exercise.
+                Updates the exercise result for the specified exercise.
             </summary>
             <param name="exerciseId">ID of the exercise</param>
             <param name="updateResultsModel">Model containing the updated result data</param>
@@ -130,7 +130,7 @@
         </member>
         <member name="M:WebUI.Controllers.Api.v1.ExercisesController.GetAll(WebUI.Models.Shared.FilterViewModel,WebUI.Models.Shared.OrderViewModel,WebUI.Models.Shared.PageViewModel)">
             <summary>
-            Retrieves a list of all exercises, with optional filtering, ordering, and pagination.
+                Retrieves a list of all exercises, with optional filtering, ordering, and pagination.
             </summary>
             <param name="filterModel">Supported filters: f_name, f_name-equals, f_group</param>
             <param name="orderModel">Supported orders: name, group-name</param>
@@ -139,21 +139,21 @@
         </member>
         <member name="M:WebUI.Controllers.Api.v1.ExercisesController.Count(WebUI.Models.Shared.FilterViewModel)">
             <summary>
-            Counts the total number of exercises based on optional filter criteria.
+                Counts the total number of exercises based on optional filter criteria.
             </summary>
             <param name="filterModel">Supported filters: f_name, f_name-equals, f_group</param>
             <returns>Total count of exercises matching the criteria</returns>
         </member>
         <member name="M:WebUI.Controllers.Api.v1.ExercisesController.Get(System.Guid)">
             <summary>
-            Retrieves a specific exercise by its ID.
+                Retrieves a specific exercise by its ID.
             </summary>
             <param name="exerciseId">ID of the exercise</param>
             <returns>The exercise with the specified ID</returns>
         </member>
         <member name="M:WebUI.Controllers.Api.v1.ExercisesController.RenderAboutPreview(System.String,Application.Interfaces.Services.IReferencedContentProvider)">
             <summary>
-            Renders a preview of the "about" content, parsed for references.
+                Renders a preview of the "about" content, parsed for references.
             </summary>
             <param name="about">Content to be parsed</param>
             <param name="referencedContentProvider">Provider for parsing referenced content</param>
@@ -161,14 +161,14 @@
         </member>
         <member name="M:WebUI.Controllers.Api.v1.ExercisesController.Create(WebUI.Models.Exercise.CreateExerciseModel)">
             <summary>
-            Creates a new exercise with the specified details.
+                Creates a new exercise with the specified details.
             </summary>
             <param name="createExerciseModel">Model containing details of the new exercise</param>
             <returns>Created exercise or an error response</returns>
         </member>
         <member name="M:WebUI.Controllers.Api.v1.ExercisesController.Update(System.Guid,WebUI.Models.Exercise.UpdateExerciseModel)">
             <summary>
-            Updates the details of an existing exercise.
+                Updates the details of an existing exercise.
             </summary>
             <param name="exerciseId">ID of the exercise to update</param>
             <param name="updateExerciseModel">Model containing updated details of the exercise</param>
@@ -176,73 +176,73 @@
         </member>
         <member name="M:WebUI.Controllers.Api.v1.ExercisesController.DeleteExercise(System.Guid)">
             <summary>
-            Deletes an existing exercise by its ID.
+                Deletes an existing exercise by its ID.
             </summary>
             <param name="exerciseId">ID of the exercise to delete</param>
             <returns>No content or an error response</returns>
         </member>
         <member name="M:WebUI.Controllers.Api.v1.FriendsController.Invite(System.Guid)">
             <summary>
-            Invite user to friendship. Creates friend invitation between current user and user with <see cref="!:userId"/>
+                Invite user to friendship. Creates friend invitation between current user and user with <see cref="!:userId" />
             </summary>
             <param name="userId">represents id of user which is invited by current user</param>
             <returns>User id or error response</returns>
         </member>
         <member name="M:WebUI.Controllers.Api.v1.FriendsController.Accept(System.Guid)">
             <summary>
-            Accepts invitation of user with id <see cref="!:userId"/>
+                Accepts invitation of user with id <see cref="!:userId" />
             </summary>
             <param name="userId">represents id of user which has invited current user</param>
             <returns>User id or error response</returns>
         </member>
         <member name="M:WebUI.Controllers.Api.v1.FriendsController.Refuse(System.Guid)">
             <summary>
-            Refuses invitation of user with id <see cref="!:userId"/>
+                Refuses invitation of user with id <see cref="!:userId" />
             </summary>
             <param name="userId">represents id of user which has invited current user</param>
             <returns>User id or error response</returns>
         </member>
         <member name="M:WebUI.Controllers.Api.v1.FriendsController.Cancel(System.Guid)">
             <summary>
-            Cancels invitation to user with id <see cref="!:userId"/>
+                Cancels invitation to user with id <see cref="!:userId" />
             </summary>
             <param name="userId">represents id of user which was invited by current user</param>
             <returns>User id or error response</returns>
         </member>
         <member name="M:WebUI.Controllers.Api.v1.FriendsController.RemoveFriendship(System.Guid)">
             <summary>
-            Removes friendship between current user and user with <see cref="!:userId"/>
+                Removes friendship between current user and user with <see cref="!:userId" />
             </summary>
             <param name="userId">represents user which is friend to current</param>
             <returns>User id or error response</returns>
         </member>
         <member name="M:WebUI.Controllers.Api.v1.FriendsController.Index">
             <summary>
-            Get all friends for current user 
+                Get all friends for current user
             </summary>
             <returns>List of friends</returns>
         </member>
         <member name="M:WebUI.Controllers.Api.v1.FriendsController.InvitationsFor">
             <summary>
-            Get all invitations for current user (current user is invited)
+                Get all invitations for current user (current user is invited)
             </summary>
             <returns>List of invitations where user is invited</returns>
         </member>
         <member name="M:WebUI.Controllers.Api.v1.FriendsController.InvitationsOf">
             <summary>
-            Get all invitations of current user (current user is invitor)
+                Get all invitations of current user (current user is invitor)
             </summary>
             <returns>List of invitations where user is invitor</returns>
         </member>
         <member name="M:WebUI.Controllers.Api.v1.GoogleAuthenticationController.HandleGoogleResponse">
             <summary>
-            Authenticate user in application by Google JWT Access Token
+                Authenticate user in application by Google JWT Access Token
             </summary>
-            <returns>authentication info with jwt access token of type <see cref="T:WebUI.Models.Api.Account.AuthenticationResponse"/></returns>
+            <returns>authentication info with jwt access token of type <see cref="T:WebUI.Models.Api.Account.AuthenticationResponse" /></returns>
         </member>
         <member name="M:WebUI.Controllers.Api.v1.GroupsController.GetAll(WebUI.Models.Shared.FilterViewModel,WebUI.Models.Shared.OrderViewModel,WebUI.Models.Shared.PageViewModel)">
             <summary>
-            Retrieves a list of all groups, with optional filtering, ordering, and pagination.
+                Retrieves a list of all groups, with optional filtering, ordering, and pagination.
             </summary>
             <param name="filterModel">Supported filters: f_name, f_name-equals</param>
             <param name="orderModel">Supported orders: name</param>
@@ -251,28 +251,28 @@
         </member>
         <member name="M:WebUI.Controllers.Api.v1.GroupsController.Count(WebUI.Models.Shared.FilterViewModel)">
             <summary>
-            Counts the total number of groups based on optional filter criteria.
+                Counts the total number of groups based on optional filter criteria.
             </summary>
             <param name="filterModel">Supported filters: f_name, f_name-equals</param>
             <returns>Total count of groups matching the criteria</returns>
         </member>
         <member name="M:WebUI.Controllers.Api.v1.GroupsController.Get(System.Guid)">
             <summary>
-            Retrieves a specific group by its ID.
+                Retrieves a specific group by its ID.
             </summary>
             <param name="groupId">ID of group</param>
             <returns></returns>
         </member>
         <member name="M:WebUI.Controllers.Api.v1.GroupsController.Create(WebUI.Models.Group.CreateGroupModel)">
             <summary>
-            Creates new group. 
+                Creates new group.
             </summary>
             <param name="createGroupModel">group model to create</param>
             <returns>Created if group was successfully created otherwise returns problem</returns>
         </member>
         <member name="M:WebUI.Controllers.Api.v1.GroupsController.Update(System.Guid,WebUI.Models.Group.UpdateGroupModel)">
             <summary>
-            Updates group by <see cref="!:groupId"/>
+                Updates group by <see cref="!:groupId" />
             </summary>
             <param name="groupId">ID of group</param>
             <param name="updateGroupModel">model for updating group</param>
@@ -280,36 +280,38 @@
         </member>
         <member name="M:WebUI.Controllers.Api.v1.GroupsController.Delete(System.Guid)">
             <summary>
-            Deletes group by <see cref="!:groupId"/>
+                Deletes group by <see cref="!:groupId" />
             </summary>
             <param name="groupId">ID of group</param>
             <returns>no content if successfully deleted otherwise problem</returns>
         </member>
         <member name="M:WebUI.Controllers.Api.v1.PasswordsController.Forgot(System.String,Microsoft.AspNetCore.Identity.UI.Services.IEmailSender)">
             <summary>
-            Send link for reset password to <see cref="!:email"/>
+                Send link for reset password to <see cref="!:email" />
             </summary>
             <param name="email">to this email will be sent link for reset password</param>
             <param name="emailSender">Service for sending letter</param>
-            <returns><see cref="!:email"/></returns>
+            <returns>
+                <see cref="!:email" />
+            </returns>
         </member>
         <member name="M:WebUI.Controllers.Api.v1.PasswordsController.Reset(WebUI.Models.Account.ResetPasswordModel)">
             <summary>
-            Resets password if reset token is valid for current email
+                Resets password if reset token is valid for current email
             </summary>
             <param name="resetPasswordModel">represents all necessary info for resetting password</param>
             <returns>ok</returns>
         </member>
         <member name="M:WebUI.Controllers.Api.v1.PasswordsController.Change(WebUI.Models.Account.ChangePasswordModel)">
             <summary>
-            Changes current password to new password
+                Changes current password to new password
             </summary>
             <param name="changePasswordModel">represents info for changing password</param>
             <returns></returns>
         </member>
         <member name="M:WebUI.Controllers.Api.v1.TrainingPlansController.GetAll(WebUI.Models.Shared.FilterViewModel,WebUI.Models.Shared.OrderViewModel,WebUI.Models.Shared.PageViewModel)">
             <summary>
-            Retrieves all public training plans with optional filtering, ordering, and pagination.
+                Retrieves all public training plans with optional filtering, ordering, and pagination.
             </summary>
             <param name="filterModel">Supported filters: f_title, f_title_equals, f_author-id, f_author, f_author-equals</param>
             <param name="orderModel">Supported orders: title, owner</param>
@@ -318,21 +320,21 @@
         </member>
         <member name="M:WebUI.Controllers.Api.v1.TrainingPlansController.Count(WebUI.Models.Shared.FilterViewModel)">
             <summary>
-            Counts all public training plans with optional filtering.
+                Counts all public training plans with optional filtering.
             </summary>
             <param name="filterModel">Supported filters: f_title, f_title_equals, f_author-id, f_author, f_author-equals</param>
             <returns>The count of training plans.</returns>
         </member>
         <member name="M:WebUI.Controllers.Api.v1.TrainingPlansController.UserPlansCount(WebUI.Models.Shared.FilterViewModel)">
             <summary>
-            Counts all training plans created by the current user.
+                Counts all training plans created by the current user.
             </summary>
             <param name="filterModel">Supported filters: f_title, f_title_equals, f_public-only</param>
             <returns>The count of user-specific training plans.</returns>
         </member>
         <member name="M:WebUI.Controllers.Api.v1.TrainingPlansController.GetUserTrainingPlans(WebUI.Models.Shared.FilterViewModel,WebUI.Models.Shared.OrderViewModel,WebUI.Models.Shared.PageViewModel)">
             <summary>
-            Retrieves training plans created by the current user with optional filtering, ordering, and pagination.
+                Retrieves training plans created by the current user with optional filtering, ordering, and pagination.
             </summary>
             <param name="filterModel">Supported filters: f_title, f_title_equals, f_public-only</param>
             <param name="orderModel">Supported orders: title</param>
@@ -341,21 +343,21 @@
         </member>
         <member name="M:WebUI.Controllers.Api.v1.TrainingPlansController.GetTrainingPlan(System.Guid)">
             <summary>
-            Retrieves a specific training plan by its ID.
+                Retrieves a specific training plan by its ID.
             </summary>
             <param name="planId">The ID of the training plan.</param>
             <returns>The training plan details.</returns>
         </member>
         <member name="M:WebUI.Controllers.Api.v1.TrainingPlansController.Create(WebUI.Models.TrainingPlan.CreateTrainingPlanModel)">
             <summary>
-            Creates a new training plan.
+                Creates a new training plan.
             </summary>
             <param name="creationModel">The model containing the training plan creation details.</param>
             <returns>A redirection to the user's training plans page.</returns>
         </member>
         <member name="M:WebUI.Controllers.Api.v1.TrainingPlansController.Update(System.Guid,WebUI.Models.TrainingPlan.UpdateTrainingPlanModel)">
             <summary>
-            Updates an existing training plan.
+                Updates an existing training plan.
             </summary>
             <param name="planId">The ID of the training plan to update.</param>
             <param name="updateTrainingPlanModel">The model containing the training plan update details.</param>
@@ -363,14 +365,14 @@
         </member>
         <member name="M:WebUI.Controllers.Api.v1.TrainingPlansController.Delete(System.Guid)">
             <summary>
-            Deletes an existing training plan.
+                Deletes an existing training plan.
             </summary>
             <param name="planId">The ID of the training plan to delete.</param>
             <returns>The details of the deleted training plan.</returns>
         </member>
         <member name="M:WebUI.Controllers.Api.v1.UsersController.GetAll(WebUI.Models.Shared.FilterViewModel,WebUI.Models.Shared.OrderViewModel,WebUI.Models.Shared.PageViewModel)">
             <summary>
-            Retrieves a list of all groups, with optional filtering, ordering, and pagination.
+                Retrieves a list of all groups, with optional filtering, ordering, and pagination.
             </summary>
             <param name="filterModel">Supported filters: f_id, f_name, f_name-equals, f_role, f_relationships</param>
             <param name="orderModel">Supported orders: name, role, relationships</param>
@@ -379,34 +381,34 @@
         </member>
         <member name="M:WebUI.Controllers.Api.v1.UsersController.Count(WebUI.Models.Shared.FilterViewModel)">
             <summary>
-            Counts the total number of users based on optional filter criteria.
+                Counts the total number of users based on optional filter criteria.
             </summary>
             <param name="filterModel">Supported filters: f_id, f_name, f_name-equals, f_role, f_relationships</param>
             <returns></returns>
         </member>
         <member name="M:WebUI.Controllers.Api.v1.UsersController.GetAllAsCsv">
             <summary>
-            Gets all users in csv format
+                Gets all users in csv format
             </summary>
             <returns>csv file with all users</returns>
         </member>
         <member name="M:WebUI.Controllers.Api.v1.UsersController.Get(System.String)">
             <summary>
-            Gets user by its userName
+                Gets user by its userName
             </summary>
             <param name="userName">userName of user</param>
             <returns>user</returns>
         </member>
         <member name="M:WebUI.Controllers.Api.v1.UsersController.Get(System.Guid)">
             <summary>
-            Gets user by its <see cref="!:userId"/>
+                Gets user by its <see cref="!:userId" />
             </summary>
             <param name="userId">ID of user</param>
             <returns>user</returns>
         </member>
         <member name="M:WebUI.Controllers.Api.v1.UsersController.Update(System.Guid,WebUI.Models.User.UpdateUserModel)">
             <summary>
-            Updates user by <see cref="!:userId"/>.
+                Updates user by <see cref="!:userId" />.
             </summary>
             <param name="userId">ID of user</param>
             <param name="updateUserModel">model for updating user</param>
@@ -414,7 +416,7 @@
         </member>
         <member name="M:WebUI.Controllers.Api.v1.UsersController.Delete(System.Guid)">
             <summary>
-            Deletes user by id
+                Deletes user by id
             </summary>
             <param name="userId">ID of user</param>
             <returns>ok if successful deleted</returns>

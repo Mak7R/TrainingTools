@@ -1,5 +1,4 @@
-@using WebUI.Models.Group
-@model WebUI.Models.Exercise.CreateExerciseModel
+@model CreateExerciseModel
 
 @{
     ViewBag.Title = "Add exercise";
@@ -24,7 +23,7 @@
             </select>
             <span asp-validation-for="GroupId" class="text-danger"></span>
         </div>
-        
+
         <div class="mb-3">
             <div class="mb-3">
                 <label asp-for="About" class="form-label">About: </label>
@@ -41,7 +40,7 @@
             <a class="btn btn-secondary" asp-controller="Exercises" asp-action="GetAll">Cancel</a>
             <button type="submit" class="btn btn-success">Create</button>
         </div>
-        
+
         <div class="mb-3">
             <div asp-validation-summary="All" class="text-danger"></div>
         </div>
@@ -49,6 +48,6 @@
 </div>
 
 @section Scripts {
-    <script async src='https://www.tiktok.com/embed.js'></script>
+    <script async src="https://www.tiktok.com/embed.js"></script>
     <script>new PreviewController('aboutTextArea', 'previewPlaceholder');</script>
 }

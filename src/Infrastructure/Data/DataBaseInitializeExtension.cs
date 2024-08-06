@@ -15,11 +15,11 @@ public static class DataBaseInitializeExtension
 
     public static async Task InitializeRoles(this IServiceProvider serviceProvider, IEnumerable<string> roles)
     {
-        var rolesManager = serviceProvider.GetRequiredService<RoleManager<ApplicationRole>>(); 
+        var rolesManager = serviceProvider.GetRequiredService<RoleManager<ApplicationRole>>();
         foreach (var roleName in roles)
         {
             if (await rolesManager.FindByNameAsync(roleName) is not null) continue;
-            await rolesManager.CreateAsync(new ApplicationRole{ Name = roleName });
+            await rolesManager.CreateAsync(new ApplicationRole { Name = roleName });
         }
     }
 
@@ -37,8 +37,9 @@ public static class DataBaseInitializeExtension
             await dbContext.SaveChangesAsync();
         }
     }
-    
-    public static async Task InitializeDataBase<T>(this IServiceProvider serviceProvider, IEnumerable<string> roles) where T: DbContext
+
+    public static async Task InitializeDataBase<T>(this IServiceProvider serviceProvider, IEnumerable<string> roles)
+        where T : DbContext
     {
         var dbContext = serviceProvider.GetRequiredService<T>();
         await dbContext.Database.EnsureCreatedAsync();

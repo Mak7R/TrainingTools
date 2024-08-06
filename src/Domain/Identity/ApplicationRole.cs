@@ -4,5 +4,4 @@ namespace Domain.Identity;
 
 public class ApplicationRole : IdentityRole<Guid>
 {
-    
 }

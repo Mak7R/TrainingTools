@@ -6,5 +6,4 @@ namespace WebUI.Models.Shared;
 [FilterModelBinder]
 public class FilterViewModel : FilterModel
 {
-    
 }

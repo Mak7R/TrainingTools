@@ -7,7 +7,6 @@ using WebUI.Models.Shared;
 
 namespace WebUI.Controllers;
 
-
 [Controller]
 [AllowAnonymous]
 public class HomeController : Controller
@@ -23,7 +22,7 @@ public class HomeController : Controller
     {
         return View();
     }
-    
+
     [HttpGet("/set-lang")]
     public IActionResult SetLanguage(string culture, string returnUrl)
     {
@@ -37,10 +36,10 @@ public class HomeController : Controller
         }
         catch (Exception e)
         {
-            return this.BadRequestRedirect(new []{e.Message});
+            return this.BadRequestRedirect(new[] { e.Message });
         }
-        
-        if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl)) 
+
+        if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
             return LocalRedirect(returnUrl);
         return RedirectToAction("Index", "Home");
     }
@@ -50,33 +49,27 @@ public class HomeController : Controller
     [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
     public IActionResult Info(int statusCode = 500, string[]? messages = null)
     {
-        if (statusCode is >= 200 and < 600)
-        {
-            Response.StatusCode = statusCode;
-        }
-        
+        if (statusCode is >= 200 and < 600) Response.StatusCode = statusCode;
+
         return View("Info", new InfoViewModel
         {
-            StatusCode = statusCode, 
-            Messages = messages ?? [], 
+            StatusCode = statusCode,
+            Messages = messages ?? [],
             RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier
         });
     }
-    
+
     [Route("/error")]
     [Route("/error/{statusCode:int}")]
     [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
     public IActionResult Error(int statusCode = 500, string[]? messages = null)
     {
-        if (statusCode is >= 200 and < 600)
-        {
-            Response.StatusCode = statusCode;
-        }
-        
+        if (statusCode is >= 200 and < 600) Response.StatusCode = statusCode;
+
         return View("Info", new InfoViewModel
         {
-            StatusCode = statusCode, 
-            Messages = messages ?? [], 
+            StatusCode = statusCode,
+            Messages = messages ?? [],
             RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier
         });
     }

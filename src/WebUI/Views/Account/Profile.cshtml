@@ -6,10 +6,10 @@
 
 <div class="container mt-3">
     <h1>Profile</h1>
-    
+
     <p class="fs-4">Username: @Model.UserName</p>
     <p class="fs-5">About: @Model.About</p>
-    
+
     <p class="fs-5">Email: @Model.Email</p>
     <p class="fs-5">Phone: @Model.Phone</p>
     <p class="fs-6">Id: @Model.Id</p>
@@ -35,11 +35,11 @@
             <span class="badge rounded-pill text-bg-secondary">private</span>
         }
     </p>
-    
+
     <a class="btn btn-primary me-2" asp-controller="Account" asp-action="UpdateProfile">Update Profile</a>
-    
-    <a class="btn btn-primary me-2" asp-controller="Account" asp-action="ChangePassword">Change Password</a>
-    
+
+    <a class="btn btn-primary me-2" asp-controller="Passwords" asp-action="Change">Change Password</a>
+
     <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteAccountModal">Delete Account</button>
     <div class="modal fade" id="deleteAccountModal" tabindex="-1" aria-labelledby="deleteAccountModalLabel" aria-hidden="true">
         <div class="modal-dialog">

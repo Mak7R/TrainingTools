@@ -1,5 +1,4 @@
-﻿using Domain.Enums;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 
 namespace WebUI.Policies.Requirements;
 

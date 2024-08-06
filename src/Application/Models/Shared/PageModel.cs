@@ -1,7 +1,4 @@
-﻿using Application.Constants;
-using Microsoft.AspNetCore.Mvc;
-
-namespace Application.Models.Shared;
+﻿namespace Application.Models.Shared;
 
 public class PageModel
 {
@@ -12,7 +9,7 @@ public class PageModel
     public IEnumerable<T> TakePage<T>(IEnumerable<T> enumerable)
     {
         var result = enumerable;
-        
+
         if (CurrentPage > 0 && PageSize > 0)
             result = result.Skip(CurrentPage * PageSize);
         if (PageSize > 0)
@@ -20,11 +17,11 @@ public class PageModel
 
         return result;
     }
-    
+
     public IQueryable<T> TakePage<T>(IQueryable<T> queryable)
     {
         var result = queryable;
-        
+
         if (CurrentPage > 0 && PageSize > 0)
             result = result.Skip(CurrentPage * PageSize);
         if (PageSize > 0)

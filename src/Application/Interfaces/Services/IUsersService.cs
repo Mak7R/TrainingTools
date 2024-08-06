@@ -7,7 +7,9 @@ namespace Application.Interfaces.Services;
 
 public interface IUsersService
 {
-    Task<IEnumerable<UserInfo>> GetAll(ApplicationUser? currentUser, FilterModel? filterModel = null, OrderModel? orderModel = null, PageModel? pageModel = null);
+    Task<IEnumerable<UserInfo>> GetAll(ApplicationUser? currentUser, FilterModel? filterModel = null,
+        OrderModel? orderModel = null, PageModel? pageModel = null);
+
     Task<Stream> GetAllUsersAsCsv();
 
     Task<UserInfo?> GetById(ApplicationUser? currentUser, Guid id);

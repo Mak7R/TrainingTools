@@ -11,9 +11,7 @@ public class UpdateTrainingPlanModelBinderProvider : IModelBinderProvider
         ArgumentNullException.ThrowIfNull(context);
 
         if (context.Metadata.ModelType == typeof(UpdateTrainingPlanModel))
-        {
             return new UpdateTrainingPlanModelBinderAttribute();
-        }
 
         return null;
     }

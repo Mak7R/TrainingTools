@@ -1,8 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-using Microsoft.AspNetCore.Mvc;
-using static Domain.Rules.DataSizes.ApplicationUserDataSizes;
-
-namespace Application.Dtos;
+﻿namespace Application.Dtos;
 
 public class CreateUserDto
 {

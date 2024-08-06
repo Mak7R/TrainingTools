@@ -1,6 +1,8 @@
+using System.Drawing;
 using Application.Interfaces.Services;
 using Domain.Models;
 using OfficeOpenXml;
+using OfficeOpenXml.Style;
 
 namespace Application.Services;
 
@@ -12,17 +14,18 @@ public class ExerciseResultsToExcelExporter : IExerciseResultsToExсelExporter
         using var excelPackage = new ExcelPackage(stream);
         foreach (var result in results)
         {
-            var worksheet = excelPackage.Workbook.Worksheets.Add($"{result.Exercise.Group.Name}-{result.Exercise.Name}");
+            var worksheet =
+                excelPackage.Workbook.Worksheets.Add($"{result.Exercise.Group.Name}-{result.Exercise.Name}");
 
             worksheet.Cells[1, 1].Value = "№";
             worksheet.Cells[1, 2].Value = "Weight";
             worksheet.Cells[1, 3].Value = "Count";
             worksheet.Cells[1, 4].Value = "Comment";
 
-            using (ExcelRange headerCells = worksheet.Cells[1, 1, 1, 4])
+            using (var headerCells = worksheet.Cells[1, 1, 1, 4])
             {
-                headerCells.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
-                headerCells.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.DodgerBlue);
+                headerCells.Style.Fill.PatternType = ExcelFillStyle.Solid;
+                headerCells.Style.Fill.BackgroundColor.SetColor(Color.DodgerBlue);
                 headerCells.Style.Font.Bold = true;
             }
 
@@ -35,19 +38,19 @@ public class ExerciseResultsToExcelExporter : IExerciseResultsToExсelExporter
                 worksheet.Cells[row, 4].Value = approachInfo.Comment;
                 row++;
             }
-            
-            using (ExcelRange headerCells = worksheet.Cells[2, 1, row-1, 1])
+
+            using (var headerCells = worksheet.Cells[2, 1, row - 1, 1])
             {
-                headerCells.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
-                headerCells.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.CornflowerBlue);
+                headerCells.Style.Fill.PatternType = ExcelFillStyle.Solid;
+                headerCells.Style.Fill.BackgroundColor.SetColor(Color.CornflowerBlue);
             }
-            
-            using (ExcelRange headerCells = worksheet.Cells[2, 2, row-1, 4])
+
+            using (var headerCells = worksheet.Cells[2, 2, row - 1, 4])
             {
-                headerCells.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
-                headerCells.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.SkyBlue);
+                headerCells.Style.Fill.PatternType = ExcelFillStyle.Solid;
+                headerCells.Style.Fill.BackgroundColor.SetColor(Color.SkyBlue);
             }
-            
+
             worksheet.Cells[1, 1, row - 1, 4].AutoFitColumns();
         }
 

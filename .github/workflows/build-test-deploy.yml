@@ -76,7 +76,6 @@ jobs:
           package: .
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_84482AE746004F7BA92B08B2C841F1D9 }}
 
-          
   deploy-to-somee:
     runs-on: ubuntu-latest
     needs: [test, build-production]

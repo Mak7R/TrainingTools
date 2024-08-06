@@ -20,7 +20,7 @@
         <div class="input-group mb-1">
             <label for="filter-by-name-input" hidden></label>
             <input id="filter-by-name-input" class="form-control rounded-start-5 me-1" name="@Filters.Name.AsFilterName()" value="@ViewData[Filters.Name.AsFilterName()]" placeholder="search"/>
-            
+
             <label for="filter-by-roles-input" hidden></label>
             @{ var currentFilterRole = ViewData[Filters.Role.AsFilterName()] as string; }
             <select id="filter-by-roles-input" class="form-select  me-1" style="max-width: 20%;" name="@Filters.Role.AsFilterName()">
@@ -59,7 +59,9 @@
                 }
             </select>
 
-            <button type="submit" class="btn btn-primary rounded-end-5"><img style="width: 2em;height: 2em;" src="/img/icons/search.svg" alt="Search"/></button>
+            <button type="submit" class="btn btn-primary rounded-end-5">
+                <img style="width: 2em;height: 2em;" src="/img/icons/search.svg" alt="Search"/>
+            </button>
         </div>
     </form>
 
@@ -73,7 +75,7 @@
                 @await Html.PartialAsync("Partials/DefaultOrderFormPartialView", (Orders.Role, "Role"))
             </th>
             <th class="col-1 fs-5">
-                 @await Html.PartialAsync("Partials/DefaultOrderFormPartialView", (Orders.RelationshipsState, "Relationships"))
+                @await Html.PartialAsync("Partials/DefaultOrderFormPartialView", (Orders.RelationshipsState, "Relationships"))
             </th>
         </tr>
         </thead>

@@ -13,7 +13,7 @@ public class ExerciseEntityConfiguration : IEntityTypeConfiguration<ExerciseEnti
             .HasIndex(e => e.Name);
 
         builder
-            .HasIndex(e => new {e.Name, e.GroupId})
+            .HasIndex(e => new { e.Name, e.GroupId })
             .IsUnique();
     }
 }

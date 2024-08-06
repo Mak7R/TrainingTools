@@ -11,13 +11,13 @@ public class FriendshipEntityConfiguration : IEntityTypeConfiguration<Friendship
         builder
             .ToTable("Friendship")
             .HasKey(fr => new { fr.FirstFriendId, fr.SecondFriendId });
-        
+
         builder
             .HasOne(fr => fr.FirstFriend)
             .WithMany()
             .HasForeignKey(fr => fr.FirstFriendId)
             .OnDelete(DeleteBehavior.NoAction);
-        
+
         builder
             .HasOne(fr => fr.SecondFriend)
             .WithMany()

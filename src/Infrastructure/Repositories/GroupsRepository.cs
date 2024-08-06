@@ -16,17 +16,6 @@ namespace Infrastructure.Repositories;
 
 public class GroupsRepository : IRepository<Group, Guid>
 {
-    private readonly ApplicationDbContext _dbContext;
-    private readonly ILogger<GroupsRepository> _logger;
-    private readonly IMapper _mapper;
-    
-    public GroupsRepository(ApplicationDbContext dbContext, ILogger<GroupsRepository> logger, IMapper mapper)
-    {
-        _dbContext = dbContext;
-        _logger = logger;
-        _mapper = mapper;
-    }
-    
     private static readonly ReadOnlyDictionary<string, Func<string, Expression<Func<GroupEntity, bool>>>> GroupFilters =
         new(new Dictionary<string, Func<string, Expression<Func<GroupEntity, bool>>>>
         {
@@ -38,10 +27,31 @@ public class GroupsRepository : IRepository<Group, Guid>
         ReadOnlyDictionary<OrderModel, Func<IQueryable<GroupEntity>, IQueryable<GroupEntity>>> GroupOrders =
             new(new Dictionary<OrderModel, Func<IQueryable<GroupEntity>, IQueryable<GroupEntity>>>
             {
-                {new OrderModel{OrderBy = OrderOptionNames.Group.Name, OrderOption = OrderOptionNames.Shared.Ascending}, query => query.OrderBy(g => g.Name)},
-                {new OrderModel{OrderBy = OrderOptionNames.Group.Name, OrderOption = OrderOptionNames.Shared.Descending}, query => query.OrderByDescending(g => g.Name)},
+                {
+                    new OrderModel
+                        { OrderBy = OrderOptionNames.Group.Name, OrderOption = OrderOptionNames.Shared.Ascending },
+                    query => query.OrderBy(g => g.Name)
+                },
+                {
+                    new OrderModel
+                        { OrderBy = OrderOptionNames.Group.Name, OrderOption = OrderOptionNames.Shared.Descending },
+                    query => query.OrderByDescending(g => g.Name)
+                }
             });
-    public async Task<IEnumerable<Group>> GetAll(FilterModel? filterModel = null, OrderModel? orderModel = null, PageModel? pageModel = null)
+
+    private readonly ApplicationDbContext _dbContext;
+    private readonly ILogger<GroupsRepository> _logger;
+    private readonly IMapper _mapper;
+
+    public GroupsRepository(ApplicationDbContext dbContext, ILogger<GroupsRepository> logger, IMapper mapper)
+    {
+        _dbContext = dbContext;
+        _logger = logger;
+        _mapper = mapper;
+    }
+
+    public async Task<IEnumerable<Group>> GetAll(FilterModel? filterModel = null, OrderModel? orderModel = null,
+        PageModel? pageModel = null)
     {
         try
         {
@@ -55,7 +65,7 @@ public class GroupsRepository : IRepository<Group, Guid>
 
             if (pageModel is not null)
                 query = pageModel.TakePage(query);
-            
+
             return (await query.ToListAsync()).Select(g => _mapper.Map<Group>(g));
         }
         catch (Exception e)
@@ -78,7 +88,8 @@ public class GroupsRepository : IRepository<Group, Guid>
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Exception was thrown while receiving groups count by filter '{filter}' from database", filterModel);
+            _logger.LogError(e, "Exception was thrown while receiving groups count by filter '{filter}' from database",
+                filterModel);
             throw new DataBaseException("Error while receiving groups count from database", e);
         }
     }
@@ -89,7 +100,6 @@ public class GroupsRepository : IRepository<Group, Guid>
         {
             var group = await _dbContext.Groups
                 .AsNoTracking()
-                
                 .FirstOrDefaultAsync(g => g.Id == id);
 
             return group == null ? null : _mapper.Map<Group>(group);
@@ -100,31 +110,33 @@ public class GroupsRepository : IRepository<Group, Guid>
             throw new DataBaseException("Error while receiving group from database", e);
         }
     }
-    
+
     public async Task<OperationResult> Create(Group group)
     {
         ArgumentNullException.ThrowIfNull(group);
         ArgumentException.ThrowIfNullOrWhiteSpace(group.Name);
-        
+
         var groupEntity = _mapper.Map<GroupEntity>(group);
         try
         {
             var sameName = await _dbContext.Groups.AsNoTracking().FirstOrDefaultAsync(g => g.Name == group.Name);
             if (sameName != null)
                 throw new AlreadyExistsException($"Group with name '{group.Name}' already exist in database");
-            
+
             await _dbContext.Groups.AddAsync(groupEntity);
             await _dbContext.SaveChangesAsync();
         }
         catch (AlreadyExistsException alreadyExistsException)
         {
-            _logger.LogInformation(alreadyExistsException, "Group with name '{groupName}' already exist in database", group.Name);
+            _logger.LogInformation(alreadyExistsException, "Group with name '{groupName}' already exist in database",
+                group.Name);
             return DefaultOperationResult.FromException(alreadyExistsException);
         }
         catch (Exception e)
         {
             _logger.LogError(e, "Exception was thrown while adding new group '{groupName}' to database", group.Name);
-            return DefaultOperationResult.FromException(new DataBaseException("Error while adding group to database", e));
+            return DefaultOperationResult.FromException(
+                new DataBaseException("Error while adding group to database", e));
         }
 
         return new DefaultOperationResult(group);
@@ -150,23 +162,26 @@ public class GroupsRepository : IRepository<Group, Guid>
             }
 
             _mapper.Map(group, groupEntity);
-            
+
             await _dbContext.SaveChangesAsync();
         }
         catch (NotFoundException notFoundException)
         {
-            _logger.LogInformation(notFoundException, "NotFoundException was thrown for {entity} with id '{entityId}'", "Group", group.Id);
+            _logger.LogInformation(notFoundException, "NotFoundException was thrown for {entity} with id '{entityId}'",
+                "Group", group.Id);
             return DefaultOperationResult.FromException(notFoundException);
         }
         catch (AlreadyExistsException alreadyExistsException)
         {
-            _logger.LogInformation(alreadyExistsException, "Group with name '{groupName}' already exist in database", group.Name);
+            _logger.LogInformation(alreadyExistsException, "Group with name '{groupName}' already exist in database",
+                group.Name);
             return DefaultOperationResult.FromException(alreadyExistsException);
         }
         catch (Exception e)
         {
             _logger.LogError(e, "Exception was thrown while updating group with id '{groupId}'", group.Id);
-            return DefaultOperationResult.FromException(new DataBaseException("Error while updating group in database", e));
+            return DefaultOperationResult.FromException(new DataBaseException("Error while updating group in database",
+                e));
         }
 
         return new DefaultOperationResult(group);
@@ -183,13 +198,14 @@ public class GroupsRepository : IRepository<Group, Guid>
                 throw new NotFoundException($"Group with id '{id}' was not found");
 
             group = _mapper.Map<Group>(groupEntity);
-            
+
             _dbContext.Groups.Remove(groupEntity);
             await _dbContext.SaveChangesAsync();
         }
         catch (NotFoundException notFoundException)
         {
-            _logger.LogInformation(notFoundException, "NotFoundException was thrown for {entity} with id '{entityId}'", "Group", id);
+            _logger.LogInformation(notFoundException, "NotFoundException was thrown for {entity} with id '{entityId}'",
+                "Group", id);
             return DefaultOperationResult.FromException(notFoundException);
         }
         catch (Exception e)

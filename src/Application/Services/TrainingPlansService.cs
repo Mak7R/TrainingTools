@@ -16,7 +16,8 @@ public class TrainingPlansService : ITrainingPlansService
         _trainingPlansRepository = trainingPlansRepository;
     }
 
-    public async Task<IEnumerable<TrainingPlan>> GetAll(FilterModel? filterModel = null, OrderModel? orderModel = null, PageModel? pageModel = null)
+    public async Task<IEnumerable<TrainingPlan>> GetAll(FilterModel? filterModel = null, OrderModel? orderModel = null,
+        PageModel? pageModel = null)
     {
         return await _trainingPlansRepository.GetAll(filterModel, orderModel, pageModel);
     }
@@ -31,9 +32,9 @@ public class TrainingPlansService : ITrainingPlansService
         return (await _trainingPlansRepository.GetAll(
                 new FilterModel
                 {
-                    {FilterOptionNames.TrainingPlan.AuthorNameEquals, authorName},
-                    {FilterOptionNames.TrainingPlan.TitleEquals, title}
-                }, null, new PageModel{PageSize = 1}))
+                    { FilterOptionNames.TrainingPlan.AuthorNameEquals, authorName },
+                    { FilterOptionNames.TrainingPlan.TitleEquals, title }
+                }, null, new PageModel { PageSize = 1 }))
             .FirstOrDefault();
     }
 

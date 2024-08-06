@@ -7,66 +7,66 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="AutoMapper" Version="12.0.1" />
-      <PackageReference Include="CsvHelper" Version="33.0.1" />
-      <PackageReference Include="EPPlus" Version="7.2.2" />
-      <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="8.0.7" />
-      <PackageReference Include="Microsoft.AspNetCore.Mvc.ViewFeatures" Version="2.2.0" />
-      <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.7" />
-      <PackageReference Include="Microsoft.IdentityModel.JsonWebTokens" Version="8.0.1" />
-      <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.0.1" />
+        <PackageReference Include="AutoMapper" Version="12.0.1"/>
+        <PackageReference Include="CsvHelper" Version="33.0.1"/>
+        <PackageReference Include="EPPlus" Version="7.2.2"/>
+        <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="8.0.7"/>
+        <PackageReference Include="Microsoft.AspNetCore.Mvc.ViewFeatures" Version="2.2.0"/>
+        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.7"/>
+        <PackageReference Include="Microsoft.IdentityModel.JsonWebTokens" Version="8.0.1"/>
+        <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.0.1"/>
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Domain\Domain.csproj" />
+        <ProjectReference Include="..\Domain\Domain.csproj"/>
     </ItemGroup>
 
     <ItemGroup>
-      <EmbeddedResource Update="Resources\UsersService\UsersService.en-US.resx">
-        <Generator>ResXFileCodeGenerator</Generator>
-        <LastGenOutput>UsersService.Designer.cs</LastGenOutput>
-      </EmbeddedResource>
-      <EmbeddedResource Update="Resources\UsersService\UsersService.uk-UA.resx">
-        <Generator>ResXFileCodeGenerator</Generator>
-        <LastGenOutput>UsersService.uk-UA.Designer.cs</LastGenOutput>
-      </EmbeddedResource>
-      <EmbeddedResource Update="Application\Resources\Services\UsersService\UsersService.en-US.resx">
-        <Generator>ResXFileCodeGenerator</Generator>
-        <LastGenOutput>UsersService.en-US.Designer.cs</LastGenOutput>
-      </EmbeddedResource>
-      <EmbeddedResource Update="Application\Resources\Services\UsersService\UsersService.uk-UA.resx">
-        <Generator>ResXFileCodeGenerator</Generator>
-        <LastGenOutput>UsersService.uk-UA.Designer.cs</LastGenOutput>
-      </EmbeddedResource>
-      <EmbeddedResource Update="Resources\Services\UsersService\UsersService.en-US.resx">
-        <Generator>ResXFileCodeGenerator</Generator>
-        <LastGenOutput>UsersService.en-US.Designer.cs</LastGenOutput>
-      </EmbeddedResource>
-      <EmbeddedResource Update="Resources\Services\UsersService\UsersService.uk-UA.resx">
-        <Generator>ResXFileCodeGenerator</Generator>
-        <LastGenOutput>UsersService.uk-UA.Designer.cs</LastGenOutput>
-      </EmbeddedResource>
-      <EmbeddedResource Update="Resources\Services\UsersService.en-US.resx">
-        <Generator>ResXFileCodeGenerator</Generator>
-        <LastGenOutput>UsersService.en-US.Designer.cs</LastGenOutput>
-      </EmbeddedResource>
-      <EmbeddedResource Update="Resources\Services\UsersService.uk-UA.resx">
-        <Generator>ResXFileCodeGenerator</Generator>
-        <LastGenOutput>UsersService.uk-UA.Designer.cs</LastGenOutput>
-      </EmbeddedResource>
+        <EmbeddedResource Update="Resources\UsersService\UsersService.en-US.resx">
+            <Generator>ResXFileCodeGenerator</Generator>
+            <LastGenOutput>UsersService.Designer.cs</LastGenOutput>
+        </EmbeddedResource>
+        <EmbeddedResource Update="Resources\UsersService\UsersService.uk-UA.resx">
+            <Generator>ResXFileCodeGenerator</Generator>
+            <LastGenOutput>UsersService.uk-UA.Designer.cs</LastGenOutput>
+        </EmbeddedResource>
+        <EmbeddedResource Update="Application\Resources\Services\UsersService\UsersService.en-US.resx">
+            <Generator>ResXFileCodeGenerator</Generator>
+            <LastGenOutput>UsersService.en-US.Designer.cs</LastGenOutput>
+        </EmbeddedResource>
+        <EmbeddedResource Update="Application\Resources\Services\UsersService\UsersService.uk-UA.resx">
+            <Generator>ResXFileCodeGenerator</Generator>
+            <LastGenOutput>UsersService.uk-UA.Designer.cs</LastGenOutput>
+        </EmbeddedResource>
+        <EmbeddedResource Update="Resources\Services\UsersService\UsersService.en-US.resx">
+            <Generator>ResXFileCodeGenerator</Generator>
+            <LastGenOutput>UsersService.en-US.Designer.cs</LastGenOutput>
+        </EmbeddedResource>
+        <EmbeddedResource Update="Resources\Services\UsersService\UsersService.uk-UA.resx">
+            <Generator>ResXFileCodeGenerator</Generator>
+            <LastGenOutput>UsersService.uk-UA.Designer.cs</LastGenOutput>
+        </EmbeddedResource>
+        <EmbeddedResource Update="Resources\Services\UsersService.en-US.resx">
+            <Generator>ResXFileCodeGenerator</Generator>
+            <LastGenOutput>UsersService.en-US.Designer.cs</LastGenOutput>
+        </EmbeddedResource>
+        <EmbeddedResource Update="Resources\Services\UsersService.uk-UA.resx">
+            <Generator>ResXFileCodeGenerator</Generator>
+            <LastGenOutput>UsersService.uk-UA.Designer.cs</LastGenOutput>
+        </EmbeddedResource>
     </ItemGroup>
 
     <ItemGroup>
-      <Compile Update="Resources\UsersService\UsersService.en-US.Designer.cs">
-        <DesignTime>True</DesignTime>
-        <AutoGen>True</AutoGen>
-        <DependentUpon>UsersService.en-US.resx</DependentUpon>
-      </Compile>
-      <Compile Update="Resources\UsersService\UsersService.uk-UA.Designer.cs">
-        <DesignTime>True</DesignTime>
-        <AutoGen>True</AutoGen>
-        <DependentUpon>UsersService.uk-UA.resx</DependentUpon>
-      </Compile>
+        <Compile Update="Resources\UsersService\UsersService.en-US.Designer.cs">
+            <DesignTime>True</DesignTime>
+            <AutoGen>True</AutoGen>
+            <DependentUpon>UsersService.en-US.resx</DependentUpon>
+        </Compile>
+        <Compile Update="Resources\UsersService\UsersService.uk-UA.Designer.cs">
+            <DesignTime>True</DesignTime>
+            <AutoGen>True</AutoGen>
+            <DependentUpon>UsersService.uk-UA.resx</DependentUpon>
+        </Compile>
     </ItemGroup>
 
 </Project>

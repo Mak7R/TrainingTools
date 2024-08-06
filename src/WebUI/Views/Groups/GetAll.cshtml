@@ -1,4 +1,4 @@
-﻿
+﻿@using Domain.Rules
 @using Filters = Application.Constants.FilterOptionNames.Group
 @using Orders = Application.Constants.OrderOptionNames.Group
 @inject IViewLocalizer Localizer
@@ -16,8 +16,10 @@
         <div class="input-group mb-1">
             <label for="filter-by-name-input"></label>
             <input id="filter-by-name-input" class="form-control rounded-start-5 me-1" name="@Filters.Name.AsFilterName()" value="@ViewData[Filters.Name.AsFilterName()]" placeholder="search"/>
-            <button type="submit" class="btn btn-primary rounded-end-5"><img style="width: 2em;height: 2em;" src="/img/icons/search.svg" alt="Search"/></button>
-            
+            <button type="submit" class="btn btn-primary rounded-end-5">
+                <img style="width: 2em;height: 2em;" src="/img/icons/search.svg" alt="Search"/>
+            </button>
+
             <input name="@PagingOptionNames.CurrentPage" value="0" hidden/>
         </div>
     </form>
@@ -41,7 +43,9 @@
                 <td>
                     @if (isUserAdmin)
                     {
-                        <a type="button" class="link-dark" data-bs-toggle="modal" data-bs-target="#edtGroupModal-@group.Id"><span class="fs-5">@group.Name</span></a>
+                        <a type="button" class="link-dark" data-bs-toggle="modal" data-bs-target="#edtGroupModal-@group.Id">
+                            <span class="fs-5">@group.Name</span>
+                        </a>
                     }
                     else
                     {
@@ -57,7 +61,7 @@
                     </td>
                 }
             </tr>
-            
+
             @if (isUserAdmin)
             {
                 <div class="modal fade" id="deleteGroup-@group.Id-Modal" tabindex="-1" aria-labelledby="deleteGroup-@group.Id-ModalLabel" aria-hidden="true">
@@ -85,7 +89,7 @@
                                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
                             <div class="modal-body">
-                                <form method="post" asp-action="Update" asp-controller="Groups" id="edit-group-form-@group.Id">
+                                <form method="post" asp-action="Update" asp-controller="Groups" asp-route-groupId="@group.Id" id="edit-group-form-@group.Id">
                                     <div class="mb-3">
                                         <input name="id" value="@group.Id" hidden/>
 
@@ -106,9 +110,9 @@
         }
         </tbody>
     </table>
-    
+
     @await Html.PartialAsync("Partials/DefaultPagingFormPartialView", ViewBag.GroupsCount, ViewData)
-    
+
     @if (isUserAdmin)
     {
         <button type="button" class="btn btn-success w-100 d-block" data-bs-toggle="modal" data-bs-target="#addGroupModal">Add new group</button>
@@ -145,11 +149,11 @@
             function submitEditForm(id){
                 const nameInput = document.getElementById(`edit-group-name-${id}-input`);
                 const nameValue = nameInput.value.trim();
-                const minLength = @Domain.Rules.DataSizes.GroupDataSizes.MinNameSize;
-                const maxLength = @Domain.Rules.DataSizes.GroupDataSizes.MaxNameSize;
+                const minLength = @DataSizes.GroupDataSizes.MinNameSize;
+                const maxLength = @DataSizes.GroupDataSizes.MaxNameSize;
 
                 if (nameValue.length < minLength || nameValue.length > maxLength) {
-                    document.getElementById(`edit-group-name-${id}-errors`).innerText = "Name length must be from @Domain.Rules.DataSizes.GroupDataSizes.MinNameSize to @Domain.Rules.DataSizes.GroupDataSizes.MaxNameSize characters";
+                    document.getElementById(`edit-group-name-${id}-errors`).innerText = "Name length must be from @DataSizes.GroupDataSizes.MinNameSize to @DataSizes.GroupDataSizes.MaxNameSize characters";
                 }
                 else{
                     document.getElementById(`edit-group-form-${id}`).submit();
@@ -158,11 +162,11 @@
             function submitForm() {
                 const nameInput = document.getElementById("add-group-name-input");
                 const nameValue = nameInput.value.trim();
-                const minLength = @Domain.Rules.DataSizes.GroupDataSizes.MinNameSize;
-                const maxLength = @Domain.Rules.DataSizes.GroupDataSizes.MaxNameSize;
+                const minLength = @DataSizes.GroupDataSizes.MinNameSize;
+                const maxLength = @DataSizes.GroupDataSizes.MaxNameSize;
 
                 if (nameValue.length < minLength || nameValue.length > maxLength) {
-                    document.getElementById('add-group-name-errors').innerText = "Name length must be from @Domain.Rules.DataSizes.GroupDataSizes.MinNameSize to @Domain.Rules.DataSizes.GroupDataSizes.MaxNameSize characters";
+                    document.getElementById('add-group-name-errors').innerText = "Name length must be from @DataSizes.GroupDataSizes.MinNameSize to @DataSizes.GroupDataSizes.MaxNameSize characters";
                 }
                 else{
                     document.getElementById('add-group-form').submit();

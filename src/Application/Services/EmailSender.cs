@@ -8,28 +8,28 @@ namespace Application.Services;
 
 public class EmailSender : IEmailSender
 {
-    private readonly ISmtpClientFactory _smtpClientFactory;
     private readonly ConfirmationEmailOptions _confirmationEmailOptions;
+    private readonly ISmtpClientFactory _smtpClientFactory;
 
     public EmailSender(ISmtpClientFactory smtpClientFactory, IOptions<ConfirmationEmailOptions> options)
     {
         _smtpClientFactory = smtpClientFactory;
         _confirmationEmailOptions = options.Value;
     }
-    
+
     public async Task SendEmailAsync(string email, string subject, string htmlMessage)
     {
         using var smtpClient = _smtpClientFactory.Create(_confirmationEmailOptions);
-        
+
         var mailMessage = new MailMessage
         {
             To = { email },
             From = new MailAddress(_confirmationEmailOptions.Email),
             Subject = subject,
             Body = htmlMessage,
-            IsBodyHtml = true,
+            IsBodyHtml = true
         };
-        
+
         await smtpClient.SendMailAsync(mailMessage);
     }
 }

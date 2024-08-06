@@ -1,6 +1,6 @@
 ﻿@using Filters = Application.Constants.FilterOptionNames.TrainingPlan
 @using Orders = Application.Constants.OrderOptionNames.TrainingPlan
-@model IEnumerable<WebUI.Models.TrainingPlan.TrainingPlanViewModel>
+@model IEnumerable<TrainingPlanViewModel>
 
 @{
     ViewBag.Title = "Training Plans";
@@ -13,16 +13,18 @@
         <div class="input-group mb-1">
             <label for="filter-by-author-input"></label>
             <input id="filter-by-author-input" class="form-control rounded-start-5 me-1" name="@Filters.AuthorName.AsFilterName()" value="@ViewData[Filters.AuthorName.AsFilterName()]" placeholder="author"/>
-            
+
             <label for="filter-by-title-input"></label>
             <input id="filter-by-title-input" class="form-control me-1" name="@Filters.Title.AsFilterName()" value="@ViewData[Filters.Title.AsFilterName()]" placeholder="title"/>
-            
-            <button type="submit" class="btn btn-primary rounded-end-5"><img style="width: 2em;height: 2em;" src="/img/icons/search.svg" alt="Search"/></button>
+
+            <button type="submit" class="btn btn-primary rounded-end-5">
+                <img style="width: 2em;height: 2em;" src="/img/icons/search.svg" alt="Search"/>
+            </button>
 
             <input name="@PagingOptionNames.CurrentPage" value="0" hidden/>
         </div>
     </form>
-    
+
     <table class="table table-striped table-hover">
         <thead>
         <tr>

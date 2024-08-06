@@ -12,150 +12,150 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="AspNetCore.HealthChecks.SqlServer" Version="8.0.2" />
-        <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.1" />
-        <PackageReference Include="Microsoft.AspNetCore.Authentication.Google" Version="8.0.7" />
-        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.7" />
-        <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="8.0.7" />
-        <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.7" />
-        <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="8.0.7" />
-        <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="8.0.7" />
-        <PackageReference Include="Microsoft.AspNetCore.Mvc.Versioning.ApiExplorer" Version="5.1.0" />
-        <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.7" />
+        <PackageReference Include="AspNetCore.HealthChecks.SqlServer" Version="8.0.2"/>
+        <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.1"/>
+        <PackageReference Include="Microsoft.AspNetCore.Authentication.Google" Version="8.0.7"/>
+        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.7"/>
+        <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="8.0.7"/>
+        <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.7"/>
+        <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="8.0.7"/>
+        <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="8.0.7"/>
+        <PackageReference Include="Microsoft.AspNetCore.Mvc.Versioning.ApiExplorer" Version="5.1.0"/>
+        <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.7"/>
         <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.7">
-          <PrivateAssets>all</PrivateAssets>
-          <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks" Version="8.0.7" />
-        <PackageReference Include="Serilog" Version="4.0.1" />
-        <PackageReference Include="Serilog.AspNetCore" Version="8.0.2" />
-        <PackageReference Include="Serilog.Extensions.Hosting" Version="8.0.0" />
-        <PackageReference Include="Serilog.Sinks.Seq" Version="8.0.0" />
-        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.7.0" />
+        <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks" Version="8.0.7"/>
+        <PackageReference Include="Serilog" Version="4.0.1"/>
+        <PackageReference Include="Serilog.AspNetCore" Version="8.0.2"/>
+        <PackageReference Include="Serilog.Extensions.Hosting" Version="8.0.0"/>
+        <PackageReference Include="Serilog.Sinks.Seq" Version="8.0.0"/>
+        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.7.0"/>
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="logs\" />
+        <Folder Include="logs\"/>
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Application\Application.csproj" />
-      <ProjectReference Include="..\Infrastructure\Infrastructure.csproj" />
+        <ProjectReference Include="..\Application\Application.csproj"/>
+        <ProjectReference Include="..\Infrastructure\Infrastructure.csproj"/>
     </ItemGroup>
 
     <ItemGroup>
-      <_ContentIncludedByDefault Remove="Areas\Admin\Views\AdminHome\Index.cshtml" />
-      <_ContentIncludedByDefault Remove="wwwroot\Rotativa\wkhtmltopdf.exe" />
+        <_ContentIncludedByDefault Remove="Areas\Admin\Views\AdminHome\Index.cshtml"/>
+        <_ContentIncludedByDefault Remove="wwwroot\Rotativa\wkhtmltopdf.exe"/>
     </ItemGroup>
 
     <ItemGroup>
-      <EmbeddedResource Update="Resources\Views\Home\Index.en-US.resx">
-        <Generator>ResXFileCodeGenerator</Generator>
-        <LastGenOutput>Index.en.Designer.cs</LastGenOutput>
-      </EmbeddedResource>
-      <EmbeddedResource Update="Resources\Views\Home\Index.uk-UA.resx">
-        <Generator>ResXFileCodeGenerator</Generator>
-        <LastGenOutput>Index.uk.Designer.cs</LastGenOutput>
-      </EmbeddedResource>
-      <EmbeddedResource Update="Application\Resources\Services\UsersService\UsersService.en-US.resx">
-        <Generator>ResXFileCodeGenerator</Generator>
-        <LastGenOutput>UsersService.en-US.Designer.cs</LastGenOutput>
-      </EmbeddedResource>
-      <EmbeddedResource Update="Application\Resources\Services\UsersService\UsersService.uk-UA.resx">
-        <Generator>ResXFileCodeGenerator</Generator>
-        <LastGenOutput>UsersService.uk-UA.Designer.cs</LastGenOutput>
-      </EmbeddedResource>
-      <EmbeddedResource Update="Resources\Views\Groups\GetAll.en-US.resx">
-        <Generator>ResXFileCodeGenerator</Generator>
-        <LastGenOutput>GetAll.en-US.Designer.cs</LastGenOutput>
-      </EmbeddedResource>
-      <EmbeddedResource Update="Resources\Views\Groups\GetAll.uk-UA.resx">
-        <Generator>ResXFileCodeGenerator</Generator>
-        <LastGenOutput>GetAll.uk-UA.Designer.cs</LastGenOutput>
-      </EmbeddedResource>
-      <EmbeddedResource Update="Resources\Views\Shared\_Layout.en-US.resx">
-        <Generator>ResXFileCodeGenerator</Generator>
-        <LastGenOutput>_Layout.en-US.Designer.cs</LastGenOutput>
-      </EmbeddedResource>
-      <EmbeddedResource Update="Resources\Views\Shared\_Layout.uk-UA.resx">
-        <Generator>ResXFileCodeGenerator</Generator>
-        <LastGenOutput>_Layout.uk-UA.Designer.cs</LastGenOutput>
-      </EmbeddedResource>
-      <EmbeddedResource Update="Resources\Controllers\AccountController.uk-UA.resx">
-        <Generator>ResXFileCodeGenerator</Generator>
-        <LastGenOutput>Account.uk-UA.Designer.cs</LastGenOutput>
-      </EmbeddedResource>
-      <EmbeddedResource Update="Resources\Controllers\AccountController.en-US.resx">
-        <Generator>ResXFileCodeGenerator</Generator>
-        <LastGenOutput>Account.en-US.Designer.cs</LastGenOutput>
-      </EmbeddedResource>
-      <EmbeddedResource Update="Resources\Controllers\PasswordsController.en-US.resx">
-        <Generator>ResXFileCodeGenerator</Generator>
-        <LastGenOutput>PasswordController.en-US.Designer.cs</LastGenOutput>
-      </EmbeddedResource>
-      <EmbeddedResource Update="Resources\Controllers\PasswordsController.uk-UA.resx">
-        <Generator>ResXFileCodeGenerator</Generator>
-        <LastGenOutput>PasswordsController.uk-UA.Designer.cs</LastGenOutput>
-      </EmbeddedResource>
+        <EmbeddedResource Update="Resources\Views\Home\Index.en-US.resx">
+            <Generator>ResXFileCodeGenerator</Generator>
+            <LastGenOutput>Index.en.Designer.cs</LastGenOutput>
+        </EmbeddedResource>
+        <EmbeddedResource Update="Resources\Views\Home\Index.uk-UA.resx">
+            <Generator>ResXFileCodeGenerator</Generator>
+            <LastGenOutput>Index.uk.Designer.cs</LastGenOutput>
+        </EmbeddedResource>
+        <EmbeddedResource Update="Application\Resources\Services\UsersService\UsersService.en-US.resx">
+            <Generator>ResXFileCodeGenerator</Generator>
+            <LastGenOutput>UsersService.en-US.Designer.cs</LastGenOutput>
+        </EmbeddedResource>
+        <EmbeddedResource Update="Application\Resources\Services\UsersService\UsersService.uk-UA.resx">
+            <Generator>ResXFileCodeGenerator</Generator>
+            <LastGenOutput>UsersService.uk-UA.Designer.cs</LastGenOutput>
+        </EmbeddedResource>
+        <EmbeddedResource Update="Resources\Views\Groups\GetAll.en-US.resx">
+            <Generator>ResXFileCodeGenerator</Generator>
+            <LastGenOutput>GetAll.en-US.Designer.cs</LastGenOutput>
+        </EmbeddedResource>
+        <EmbeddedResource Update="Resources\Views\Groups\GetAll.uk-UA.resx">
+            <Generator>ResXFileCodeGenerator</Generator>
+            <LastGenOutput>GetAll.uk-UA.Designer.cs</LastGenOutput>
+        </EmbeddedResource>
+        <EmbeddedResource Update="Resources\Views\Shared\_Layout.en-US.resx">
+            <Generator>ResXFileCodeGenerator</Generator>
+            <LastGenOutput>_Layout.en-US.Designer.cs</LastGenOutput>
+        </EmbeddedResource>
+        <EmbeddedResource Update="Resources\Views\Shared\_Layout.uk-UA.resx">
+            <Generator>ResXFileCodeGenerator</Generator>
+            <LastGenOutput>_Layout.uk-UA.Designer.cs</LastGenOutput>
+        </EmbeddedResource>
+        <EmbeddedResource Update="Resources\Controllers\AccountController.uk-UA.resx">
+            <Generator>ResXFileCodeGenerator</Generator>
+            <LastGenOutput>Account.uk-UA.Designer.cs</LastGenOutput>
+        </EmbeddedResource>
+        <EmbeddedResource Update="Resources\Controllers\AccountController.en-US.resx">
+            <Generator>ResXFileCodeGenerator</Generator>
+            <LastGenOutput>Account.en-US.Designer.cs</LastGenOutput>
+        </EmbeddedResource>
+        <EmbeddedResource Update="Resources\Controllers\PasswordsController.en-US.resx">
+            <Generator>ResXFileCodeGenerator</Generator>
+            <LastGenOutput>PasswordController.en-US.Designer.cs</LastGenOutput>
+        </EmbeddedResource>
+        <EmbeddedResource Update="Resources\Controllers\PasswordsController.uk-UA.resx">
+            <Generator>ResXFileCodeGenerator</Generator>
+            <LastGenOutput>PasswordsController.uk-UA.Designer.cs</LastGenOutput>
+        </EmbeddedResource>
     </ItemGroup>
 
     <ItemGroup>
-      <Compile Update="Resources\Views\Home\Index.en-US.Designer.cs">
-        <DesignTime>True</DesignTime>
-        <AutoGen>True</AutoGen>
-        <DependentUpon>Index.en-US.resx</DependentUpon>
-      </Compile>
-      <Compile Update="Resources\Views\Home\Index.uk-UA.Designer.cs">
-        <DesignTime>True</DesignTime>
-        <AutoGen>True</AutoGen>
-        <DependentUpon>Index.uk-UA.resx</DependentUpon>
-      </Compile>
-      <Compile Update="Resources\Views\Groups\GetAll.en-US.Designer.cs">
-        <DesignTime>True</DesignTime>
-        <AutoGen>True</AutoGen>
-        <DependentUpon>GetAll.en-US.resx</DependentUpon>
-      </Compile>
-      <Compile Update="Resources\Views\Groups\GetAll.uk-UA.Designer.cs">
-        <DesignTime>True</DesignTime>
-        <AutoGen>True</AutoGen>
-        <DependentUpon>GetAll.uk-UA.resx</DependentUpon>
-      </Compile>
-      <Compile Update="Resources\Views\Shared\_Layout.en-US.Designer.cs">
-        <DesignTime>True</DesignTime>
-        <AutoGen>True</AutoGen>
-        <DependentUpon>_Layout.en-US.resx</DependentUpon>
-      </Compile>
-      <Compile Update="Resources\Views\Shared\_Layout.uk-UA.Designer.cs">
-        <DesignTime>True</DesignTime>
-        <AutoGen>True</AutoGen>
-        <DependentUpon>_Layout.uk-UA.resx</DependentUpon>
-      </Compile>
-      <Compile Update="Resources\Controllers\AccountController.uk-UA.Designer.cs">
-        <DesignTime>True</DesignTime>
-        <AutoGen>True</AutoGen>
-        <DependentUpon>AccountController.uk-UA.resx</DependentUpon>
-      </Compile>
-      <Compile Update="Resources\Controllers\AccountController.en-US.Designer.cs">
-        <DesignTime>True</DesignTime>
-        <AutoGen>True</AutoGen>
-        <DependentUpon>AccountController.en-US.resx</DependentUpon>
-      </Compile>
-      <Compile Update="Resources\Controllers\PasswordsController.en-US.Designer.cs">
-        <DesignTime>True</DesignTime>
-        <AutoGen>True</AutoGen>
-        <DependentUpon>PasswordsController.en-US.resx</DependentUpon>
-      </Compile>
-      <Compile Update="Resources\Controllers\PasswordsController.uk-UA.Designer.cs">
-        <DesignTime>True</DesignTime>
-        <AutoGen>True</AutoGen>
-        <DependentUpon>PasswordsController.uk-UA.resx</DependentUpon>
-      </Compile>
+        <Compile Update="Resources\Views\Home\Index.en-US.Designer.cs">
+            <DesignTime>True</DesignTime>
+            <AutoGen>True</AutoGen>
+            <DependentUpon>Index.en-US.resx</DependentUpon>
+        </Compile>
+        <Compile Update="Resources\Views\Home\Index.uk-UA.Designer.cs">
+            <DesignTime>True</DesignTime>
+            <AutoGen>True</AutoGen>
+            <DependentUpon>Index.uk-UA.resx</DependentUpon>
+        </Compile>
+        <Compile Update="Resources\Views\Groups\GetAll.en-US.Designer.cs">
+            <DesignTime>True</DesignTime>
+            <AutoGen>True</AutoGen>
+            <DependentUpon>GetAll.en-US.resx</DependentUpon>
+        </Compile>
+        <Compile Update="Resources\Views\Groups\GetAll.uk-UA.Designer.cs">
+            <DesignTime>True</DesignTime>
+            <AutoGen>True</AutoGen>
+            <DependentUpon>GetAll.uk-UA.resx</DependentUpon>
+        </Compile>
+        <Compile Update="Resources\Views\Shared\_Layout.en-US.Designer.cs">
+            <DesignTime>True</DesignTime>
+            <AutoGen>True</AutoGen>
+            <DependentUpon>_Layout.en-US.resx</DependentUpon>
+        </Compile>
+        <Compile Update="Resources\Views\Shared\_Layout.uk-UA.Designer.cs">
+            <DesignTime>True</DesignTime>
+            <AutoGen>True</AutoGen>
+            <DependentUpon>_Layout.uk-UA.resx</DependentUpon>
+        </Compile>
+        <Compile Update="Resources\Controllers\AccountController.uk-UA.Designer.cs">
+            <DesignTime>True</DesignTime>
+            <AutoGen>True</AutoGen>
+            <DependentUpon>AccountController.uk-UA.resx</DependentUpon>
+        </Compile>
+        <Compile Update="Resources\Controllers\AccountController.en-US.Designer.cs">
+            <DesignTime>True</DesignTime>
+            <AutoGen>True</AutoGen>
+            <DependentUpon>AccountController.en-US.resx</DependentUpon>
+        </Compile>
+        <Compile Update="Resources\Controllers\PasswordsController.en-US.Designer.cs">
+            <DesignTime>True</DesignTime>
+            <AutoGen>True</AutoGen>
+            <DependentUpon>PasswordsController.en-US.resx</DependentUpon>
+        </Compile>
+        <Compile Update="Resources\Controllers\PasswordsController.uk-UA.Designer.cs">
+            <DesignTime>True</DesignTime>
+            <AutoGen>True</AutoGen>
+            <DependentUpon>PasswordsController.uk-UA.resx</DependentUpon>
+        </Compile>
     </ItemGroup>
 
     <ItemGroup>
-      <Content Include="..\..\.dockerignore">
-        <Link>.dockerignore</Link>
-      </Content>
+        <Content Include="..\..\.dockerignore">
+            <Link>.dockerignore</Link>
+        </Content>
     </ItemGroup>
 
 </Project>

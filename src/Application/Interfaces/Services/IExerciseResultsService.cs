@@ -1,5 +1,4 @@
 ﻿using Application.Models.Shared;
-using Domain.Identity;
 using Domain.Models;
 
 namespace Application.Interfaces.Services;
@@ -14,7 +13,7 @@ public interface IExerciseResultsService
 
     Task<IEnumerable<ExerciseResult>> GetOnlyUserAndFriendsResultForExercise(Guid userId, Guid exerciseId,
         FilterModel? filterModel = null, OrderModel? orderModel = null, PageModel? pageModel = null);
-    
+
     Task<OperationResult> Create(ExerciseResult result);
     Task<OperationResult> Update(ExerciseResult result);
     Task<OperationResult> Delete(Guid ownerId, Guid exerciseId);
