@@ -89,7 +89,7 @@
                                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
                             <div class="modal-body">
-                                <form method="post" asp-action="Update" asp-controller="Groups" id="edit-group-form-@group.Id">
+                                <form method="post" asp-action="Update" asp-controller="Groups" asp-route-groupId="@group.Id" id="edit-group-form-@group.Id">
                                     <div class="mb-3">
                                         <input name="id" value="@group.Id" hidden/>
 

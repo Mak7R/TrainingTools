@@ -101,8 +101,7 @@
                 Gets friends' exercise results for a specified exercise.
             </summary>
             <param name="exerciseId">ID of the exercise</param>
-            <param name="filterModel">Supported filters: f_full-name, f_full-name-equals, f_owner, f_owner-equals
-            </param>
+            <param name="filterModel">Supported filters: f_full-name, f_full-name-equals, f_owner, f_owner-equals</param>
             <param name="orderModel">Supported orders: group-name, owner</param>
             <param name="pageModel">Paging params: page, page-size</param>
             <returns>List of friends' exercise results for the specified exercise</returns>
@@ -184,40 +183,35 @@
         </member>
         <member name="M:WebUI.Controllers.Api.v1.FriendsController.Invite(System.Guid)">
             <summary>
-                Invite user to friendship. Creates friend invitation between current user and user with
-                <see cref="!:userId"/>
+                Invite user to friendship. Creates friend invitation between current user and user with <see cref="!:userId" />
             </summary>
             <param name="userId">represents id of user which is invited by current user</param>
             <returns>User id or error response</returns>
         </member>
         <member name="M:WebUI.Controllers.Api.v1.FriendsController.Accept(System.Guid)">
             <summary>
-                Accepts invitation of user with id
-                <see cref="!:userId"/>
+                Accepts invitation of user with id <see cref="!:userId" />
             </summary>
             <param name="userId">represents id of user which has invited current user</param>
             <returns>User id or error response</returns>
         </member>
         <member name="M:WebUI.Controllers.Api.v1.FriendsController.Refuse(System.Guid)">
             <summary>
-                Refuses invitation of user with id
-                <see cref="!:userId"/>
+                Refuses invitation of user with id <see cref="!:userId" />
             </summary>
             <param name="userId">represents id of user which has invited current user</param>
             <returns>User id or error response</returns>
         </member>
         <member name="M:WebUI.Controllers.Api.v1.FriendsController.Cancel(System.Guid)">
             <summary>
-                Cancels invitation to user with id
-                <see cref="!:userId"/>
+                Cancels invitation to user with id <see cref="!:userId" />
             </summary>
             <param name="userId">represents id of user which was invited by current user</param>
             <returns>User id or error response</returns>
         </member>
         <member name="M:WebUI.Controllers.Api.v1.FriendsController.RemoveFriendship(System.Guid)">
             <summary>
-                Removes friendship between current user and user with
-                <see cref="!:userId"/>
+                Removes friendship between current user and user with <see cref="!:userId" />
             </summary>
             <param name="userId">represents user which is friend to current</param>
             <returns>User id or error response</returns>
@@ -244,9 +238,7 @@
             <summary>
                 Authenticate user in application by Google JWT Access Token
             </summary>
-            <returns>authentication info with jwt access token of type
-                <see cref="T:WebUI.Models.Api.Account.AuthenticationResponse"/>
-            </returns>
+            <returns>authentication info with jwt access token of type <see cref="T:WebUI.Models.Api.Account.AuthenticationResponse" /></returns>
         </member>
         <member name="M:WebUI.Controllers.Api.v1.GroupsController.GetAll(WebUI.Models.Shared.FilterViewModel,WebUI.Models.Shared.OrderViewModel,WebUI.Models.Shared.PageViewModel)">
             <summary>
@@ -280,8 +272,7 @@
         </member>
         <member name="M:WebUI.Controllers.Api.v1.GroupsController.Update(System.Guid,WebUI.Models.Group.UpdateGroupModel)">
             <summary>
-                Updates group by
-                <see cref="!:groupId"/>
+                Updates group by <see cref="!:groupId" />
             </summary>
             <param name="groupId">ID of group</param>
             <param name="updateGroupModel">model for updating group</param>
@@ -289,21 +280,19 @@
         </member>
         <member name="M:WebUI.Controllers.Api.v1.GroupsController.Delete(System.Guid)">
             <summary>
-                Deletes group by
-                <see cref="!:groupId"/>
+                Deletes group by <see cref="!:groupId" />
             </summary>
             <param name="groupId">ID of group</param>
             <returns>no content if successfully deleted otherwise problem</returns>
         </member>
         <member name="M:WebUI.Controllers.Api.v1.PasswordsController.Forgot(System.String,Microsoft.AspNetCore.Identity.UI.Services.IEmailSender)">
             <summary>
-                Send link for reset password to
-                <see cref="!:email"/>
+                Send link for reset password to <see cref="!:email" />
             </summary>
             <param name="email">to this email will be sent link for reset password</param>
             <param name="emailSender">Service for sending letter</param>
             <returns>
-                <see cref="!:email"/>
+                <see cref="!:email" />
             </returns>
         </member>
         <member name="M:WebUI.Controllers.Api.v1.PasswordsController.Reset(WebUI.Models.Account.ResetPasswordModel)">
@@ -324,9 +313,7 @@
             <summary>
                 Retrieves all public training plans with optional filtering, ordering, and pagination.
             </summary>
-            <param name="filterModel">Supported filters: f_title, f_title_equals, f_author-id, f_author,
-                f_author-equals
-            </param>
+            <param name="filterModel">Supported filters: f_title, f_title_equals, f_author-id, f_author, f_author-equals</param>
             <param name="orderModel">Supported orders: title, owner</param>
             <param name="pageModel">Paging params: page, page-size</param>
             <returns>A list of training plans.</returns>
@@ -335,9 +322,7 @@
             <summary>
                 Counts all public training plans with optional filtering.
             </summary>
-            <param name="filterModel">Supported filters: f_title, f_title_equals, f_author-id, f_author,
-                f_author-equals
-            </param>
+            <param name="filterModel">Supported filters: f_title, f_title_equals, f_author-id, f_author, f_author-equals</param>
             <returns>The count of training plans.</returns>
         </member>
         <member name="M:WebUI.Controllers.Api.v1.TrainingPlansController.UserPlansCount(WebUI.Models.Shared.FilterViewModel)">
@@ -416,15 +401,14 @@
         </member>
         <member name="M:WebUI.Controllers.Api.v1.UsersController.Get(System.Guid)">
             <summary>
-                Gets user by its
-                <see cref="!:userId"/>
+                Gets user by its <see cref="!:userId" />
             </summary>
             <param name="userId">ID of user</param>
             <returns>user</returns>
         </member>
         <member name="M:WebUI.Controllers.Api.v1.UsersController.Update(System.Guid,WebUI.Models.User.UpdateUserModel)">
             <summary>
-                Updates user by<see cref="!:userId"/>.
+                Updates user by <see cref="!:userId" />.
             </summary>
             <param name="userId">ID of user</param>
             <param name="updateUserModel">model for updating user</param>
@@ -439,400 +423,392 @@
         </member>
         <member name="T:WebUI.Resources.Controllers.AccountController_en_US">
             <summary>
-                A strongly-typed resource class, for looking up localized strings, etc.
+              A strongly-typed resource class, for looking up localized strings, etc.
             </summary>
         </member>
         <member name="P:WebUI.Resources.Controllers.AccountController_en_US.ResourceManager">
             <summary>
-                Returns the cached ResourceManager instance used by this class.
+              Returns the cached ResourceManager instance used by this class.
             </summary>
         </member>
         <member name="P:WebUI.Resources.Controllers.AccountController_en_US.Culture">
             <summary>
-                Overrides the current thread's CurrentUICulture property for all
-                resource lookups using this strongly typed resource class.
+              Overrides the current thread's CurrentUICulture property for all
+              resource lookups using this strongly typed resource class.
             </summary>
         </member>
         <member name="P:WebUI.Resources.Controllers.AccountController_en_US.ConfirmEmailText">
             <summary>
-                Looks up a localized string similar to Please confirm your email by clicking the link &lt;a href=&apos;{0}&apos;&gt;Confirm
-                Email&lt;/a&gt;.
+              Looks up a localized string similar to Please confirm your email by clicking the link &lt;a href=&apos;{0}&apos;&gt;Confirm Email&lt;/a&gt;.
             </summary>
         </member>
         <member name="P:WebUI.Resources.Controllers.AccountController_en_US.ConfirmEmailTitle">
             <summary>
-                Looks up a localized string similar to Confirm email on Training Tools.
+              Looks up a localized string similar to Confirm email on Training Tools.
             </summary>
         </member>
         <member name="T:WebUI.Resources.Controllers.AccountController_uk_UA">
             <summary>
-                A strongly-typed resource class, for looking up localized strings, etc.
+              A strongly-typed resource class, for looking up localized strings, etc.
             </summary>
         </member>
         <member name="P:WebUI.Resources.Controllers.AccountController_uk_UA.ResourceManager">
             <summary>
-                Returns the cached ResourceManager instance used by this class.
+              Returns the cached ResourceManager instance used by this class.
             </summary>
         </member>
         <member name="P:WebUI.Resources.Controllers.AccountController_uk_UA.Culture">
             <summary>
-                Overrides the current thread's CurrentUICulture property for all
-                resource lookups using this strongly typed resource class.
+              Overrides the current thread's CurrentUICulture property for all
+              resource lookups using this strongly typed resource class.
             </summary>
         </member>
         <member name="P:WebUI.Resources.Controllers.AccountController_uk_UA.ConfirmEmailText">
             <summary>
-                Looks up a localized string similar to Будь ласка, підтвердіть вашу електронну пошту, клікнувши на
-                посилання &lt;a href=&apos;{0}&apos;&gt;Підтвердити пошту&lt;/a&gt;.
+              Looks up a localized string similar to Будь ласка, підтвердіть вашу електронну пошту, клікнувши на посилання &lt;a href=&apos;{0}&apos;&gt;Підтвердити пошту&lt;/a&gt;.
             </summary>
         </member>
         <member name="P:WebUI.Resources.Controllers.AccountController_uk_UA.ConfirmEmailTitle">
             <summary>
-                Looks up a localized string similar to Підтвердіть вашу електронну пошту на сайті Training Tools.
+              Looks up a localized string similar to Підтвердіть вашу електронну пошту на сайті Training Tools.
             </summary>
         </member>
         <member name="T:WebUI.Resources.Controllers.PasswordsController_en_US">
             <summary>
-                A strongly-typed resource class, for looking up localized strings, etc.
+              A strongly-typed resource class, for looking up localized strings, etc.
             </summary>
         </member>
         <member name="P:WebUI.Resources.Controllers.PasswordsController_en_US.ResourceManager">
             <summary>
-                Returns the cached ResourceManager instance used by this class.
+              Returns the cached ResourceManager instance used by this class.
             </summary>
         </member>
         <member name="P:WebUI.Resources.Controllers.PasswordsController_en_US.Culture">
             <summary>
-                Overrides the current thread's CurrentUICulture property for all
-                resource lookups using this strongly typed resource class.
+              Overrides the current thread's CurrentUICulture property for all
+              resource lookups using this strongly typed resource class.
             </summary>
         </member>
         <member name="P:WebUI.Resources.Controllers.PasswordsController_en_US.ResetPasswordText">
             <summary>
-                Looks up a localized string similar to To change your password, follow this &lt;a href=&quot;{0}&quot;&gt;link&lt;/a&gt;.
-                &lt;br&gt; If you did not request a password change, simply ignore this email..
+              Looks up a localized string similar to To change your password, follow this &lt;a href=&quot;{0}&quot;&gt;link&lt;/a&gt;. &lt;br&gt; If you did not request a password change, simply ignore this email..
             </summary>
         </member>
         <member name="P:WebUI.Resources.Controllers.PasswordsController_en_US.ResetPasswordTitle">
             <summary>
-                Looks up a localized string similar to Password change link.
+              Looks up a localized string similar to Password change link.
             </summary>
         </member>
         <member name="T:WebUI.Resources.Controllers.PasswordsController_uk_UA">
             <summary>
-                A strongly-typed resource class, for looking up localized strings, etc.
+              A strongly-typed resource class, for looking up localized strings, etc.
             </summary>
         </member>
         <member name="P:WebUI.Resources.Controllers.PasswordsController_uk_UA.ResourceManager">
             <summary>
-                Returns the cached ResourceManager instance used by this class.
+              Returns the cached ResourceManager instance used by this class.
             </summary>
         </member>
         <member name="P:WebUI.Resources.Controllers.PasswordsController_uk_UA.Culture">
             <summary>
-                Overrides the current thread's CurrentUICulture property for all
-                resource lookups using this strongly typed resource class.
+              Overrides the current thread's CurrentUICulture property for all
+              resource lookups using this strongly typed resource class.
             </summary>
         </member>
         <member name="P:WebUI.Resources.Controllers.PasswordsController_uk_UA.ResetPasswordText">
             <summary>
-                Looks up a localized string similar to Для зміни паролю перейдітья за &lt;a href=&quot;{0}&quot;&gt;посиланням&lt;/a&gt;.
-                &lt;br&gt; Якщо ви не запитували зміни паролю просто проігноруйте цей лист..
+              Looks up a localized string similar to Для зміни паролю перейдітья за &lt;a href=&quot;{0}&quot;&gt;посиланням&lt;/a&gt;. &lt;br&gt; Якщо ви не запитували зміни паролю просто проігноруйте цей лист..
             </summary>
         </member>
         <member name="P:WebUI.Resources.Controllers.PasswordsController_uk_UA.ResetPasswordTitle">
             <summary>
-                Looks up a localized string similar to Посилання для зміни паролю.
+              Looks up a localized string similar to Посилання для зміни паролю.
             </summary>
         </member>
         <member name="T:WebUI.Resources.Views.Groups.GetAll_en_US">
             <summary>
-                A strongly-typed resource class, for looking up localized strings, etc.
+              A strongly-typed resource class, for looking up localized strings, etc.
             </summary>
         </member>
         <member name="P:WebUI.Resources.Views.Groups.GetAll_en_US.ResourceManager">
             <summary>
-                Returns the cached ResourceManager instance used by this class.
+              Returns the cached ResourceManager instance used by this class.
             </summary>
         </member>
         <member name="P:WebUI.Resources.Views.Groups.GetAll_en_US.Culture">
             <summary>
-                Overrides the current thread's CurrentUICulture property for all
-                resource lookups using this strongly typed resource class.
+              Overrides the current thread's CurrentUICulture property for all
+              resource lookups using this strongly typed resource class.
             </summary>
         </member>
         <member name="P:WebUI.Resources.Views.Groups.GetAll_en_US.groups">
             <summary>
-                Looks up a localized string similar to Muscle groups.
+              Looks up a localized string similar to Muscle groups.
             </summary>
         </member>
         <member name="T:WebUI.Resources.Views.Groups.GetAll_uk_UA">
             <summary>
-                A strongly-typed resource class, for looking up localized strings, etc.
+              A strongly-typed resource class, for looking up localized strings, etc.
             </summary>
         </member>
         <member name="P:WebUI.Resources.Views.Groups.GetAll_uk_UA.ResourceManager">
             <summary>
-                Returns the cached ResourceManager instance used by this class.
+              Returns the cached ResourceManager instance used by this class.
             </summary>
         </member>
         <member name="P:WebUI.Resources.Views.Groups.GetAll_uk_UA.Culture">
             <summary>
-                Overrides the current thread's CurrentUICulture property for all
-                resource lookups using this strongly typed resource class.
+              Overrides the current thread's CurrentUICulture property for all
+              resource lookups using this strongly typed resource class.
             </summary>
         </member>
         <member name="P:WebUI.Resources.Views.Groups.GetAll_uk_UA.groups">
             <summary>
-                Looks up a localized string similar to Группи м&apos;язів.
+              Looks up a localized string similar to Группи м&apos;язів.
             </summary>
         </member>
         <member name="T:WebUI.Resources.Views.Home.Index_en_US">
             <summary>
-                A strongly-typed resource class, for looking up localized strings, etc.
+              A strongly-typed resource class, for looking up localized strings, etc.
             </summary>
         </member>
         <member name="P:WebUI.Resources.Views.Home.Index_en_US.ResourceManager">
             <summary>
-                Returns the cached ResourceManager instance used by this class.
+              Returns the cached ResourceManager instance used by this class.
             </summary>
         </member>
         <member name="P:WebUI.Resources.Views.Home.Index_en_US.Culture">
             <summary>
-                Overrides the current thread's CurrentUICulture property for all
-                resource lookups using this strongly typed resource class.
+              Overrides the current thread's CurrentUICulture property for all
+              resource lookups using this strongly typed resource class.
             </summary>
         </member>
         <member name="P:WebUI.Resources.Views.Home.Index_en_US.title">
             <summary>
-                Looks up a localized string similar to Home Page.
+              Looks up a localized string similar to Home Page.
             </summary>
         </member>
         <member name="P:WebUI.Resources.Views.Home.Index_en_US.welcome">
             <summary>
-                Looks up a localized string similar to Welcome.
+              Looks up a localized string similar to Welcome.
             </summary>
         </member>
         <member name="T:WebUI.Resources.Views.Home.Index_uk_UA">
             <summary>
-                A strongly-typed resource class, for looking up localized strings, etc.
+              A strongly-typed resource class, for looking up localized strings, etc.
             </summary>
         </member>
         <member name="P:WebUI.Resources.Views.Home.Index_uk_UA.ResourceManager">
             <summary>
-                Returns the cached ResourceManager instance used by this class.
+              Returns the cached ResourceManager instance used by this class.
             </summary>
         </member>
         <member name="P:WebUI.Resources.Views.Home.Index_uk_UA.Culture">
             <summary>
-                Overrides the current thread's CurrentUICulture property for all
-                resource lookups using this strongly typed resource class.
+              Overrides the current thread's CurrentUICulture property for all
+              resource lookups using this strongly typed resource class.
             </summary>
         </member>
         <member name="P:WebUI.Resources.Views.Home.Index_uk_UA.title">
             <summary>
-                Looks up a localized string similar to Домашня сторінка.
+              Looks up a localized string similar to Домашня сторінка.
             </summary>
         </member>
         <member name="P:WebUI.Resources.Views.Home.Index_uk_UA.welcome">
             <summary>
-                Looks up a localized string similar to Ласкаво просимо.
+              Looks up a localized string similar to Ласкаво просимо.
             </summary>
         </member>
         <member name="T:WebUI.Resources.Views.Shared._Layout_en_US">
             <summary>
-                A strongly-typed resource class, for looking up localized strings, etc.
+              A strongly-typed resource class, for looking up localized strings, etc.
             </summary>
         </member>
         <member name="P:WebUI.Resources.Views.Shared._Layout_en_US.ResourceManager">
             <summary>
-                Returns the cached ResourceManager instance used by this class.
+              Returns the cached ResourceManager instance used by this class.
             </summary>
         </member>
         <member name="P:WebUI.Resources.Views.Shared._Layout_en_US.Culture">
             <summary>
-                Overrides the current thread's CurrentUICulture property for all
-                resource lookups using this strongly typed resource class.
+              Overrides the current thread's CurrentUICulture property for all
+              resource lookups using this strongly typed resource class.
             </summary>
         </member>
         <member name="P:WebUI.Resources.Views.Shared._Layout_en_US.description">
             <summary>
-                Looks up a localized string similar to TrainingTools allows you to manage the results of sports
-                exercises and create training plans. You can also view the results of your friends and use many other
-                training tools..
+              Looks up a localized string similar to TrainingTools allows you to manage the results of sports exercises and create training plans. You can also view the results of your friends and use many other training tools..
             </summary>
         </member>
         <member name="P:WebUI.Resources.Views.Shared._Layout_en_US.Exercises">
             <summary>
-                Looks up a localized string similar to Exercises.
+              Looks up a localized string similar to Exercises.
             </summary>
         </member>
         <member name="P:WebUI.Resources.Views.Shared._Layout_en_US.Friends">
             <summary>
-                Looks up a localized string similar to Friends.
+              Looks up a localized string similar to Friends.
             </summary>
         </member>
         <member name="P:WebUI.Resources.Views.Shared._Layout_en_US.Groups">
             <summary>
-                Looks up a localized string similar to Muscle groups.
+              Looks up a localized string similar to Muscle groups.
             </summary>
         </member>
         <member name="P:WebUI.Resources.Views.Shared._Layout_en_US.Help">
             <summary>
-                Looks up a localized string similar to Help.
+              Looks up a localized string similar to Help.
             </summary>
         </member>
         <member name="P:WebUI.Resources.Views.Shared._Layout_en_US.Home">
             <summary>
-                Looks up a localized string similar to Home.
+              Looks up a localized string similar to Home.
             </summary>
         </member>
         <member name="P:WebUI.Resources.Views.Shared._Layout_en_US.Login">
             <summary>
-                Looks up a localized string similar to Log in.
+              Looks up a localized string similar to Log in.
             </summary>
         </member>
         <member name="P:WebUI.Resources.Views.Shared._Layout_en_US.Logout">
             <summary>
-                Looks up a localized string similar to Logout.
+              Looks up a localized string similar to Logout.
             </summary>
         </member>
         <member name="P:WebUI.Resources.Views.Shared._Layout_en_US.MyTrainingPlans">
             <summary>
-                Looks up a localized string similar to My TrainingPlans.
+              Looks up a localized string similar to My TrainingPlans.
             </summary>
         </member>
         <member name="P:WebUI.Resources.Views.Shared._Layout_en_US.OpenApi">
             <summary>
-                Looks up a localized string similar to Api documentation for developers.
+              Looks up a localized string similar to Api documentation for developers.
             </summary>
         </member>
         <member name="P:WebUI.Resources.Views.Shared._Layout_en_US.Privacy">
             <summary>
-                Looks up a localized string similar to Privacy Policy and Terms of Use.
+              Looks up a localized string similar to Privacy Policy and Terms of Use.
             </summary>
         </member>
         <member name="P:WebUI.Resources.Views.Shared._Layout_en_US.Profile">
             <summary>
-                Looks up a localized string similar to Profile.
+              Looks up a localized string similar to Profile.
             </summary>
         </member>
         <member name="P:WebUI.Resources.Views.Shared._Layout_en_US.Register">
             <summary>
-                Looks up a localized string similar to Register.
+              Looks up a localized string similar to Register.
             </summary>
         </member>
         <member name="P:WebUI.Resources.Views.Shared._Layout_en_US.Results">
             <summary>
-                Looks up a localized string similar to My Results.
+              Looks up a localized string similar to My Results.
             </summary>
         </member>
         <member name="P:WebUI.Resources.Views.Shared._Layout_en_US.TrainingPlans">
             <summary>
-                Looks up a localized string similar to Training plans.
+              Looks up a localized string similar to Training plans.
             </summary>
         </member>
         <member name="P:WebUI.Resources.Views.Shared._Layout_en_US.Users">
             <summary>
-                Looks up a localized string similar to Users.
+              Looks up a localized string similar to Users.
             </summary>
         </member>
         <member name="T:WebUI.Resources.Views.Shared._Layout_uk_UA">
             <summary>
-                A strongly-typed resource class, for looking up localized strings, etc.
+              A strongly-typed resource class, for looking up localized strings, etc.
             </summary>
         </member>
         <member name="P:WebUI.Resources.Views.Shared._Layout_uk_UA.ResourceManager">
             <summary>
-                Returns the cached ResourceManager instance used by this class.
+              Returns the cached ResourceManager instance used by this class.
             </summary>
         </member>
         <member name="P:WebUI.Resources.Views.Shared._Layout_uk_UA.Culture">
             <summary>
-                Overrides the current thread's CurrentUICulture property for all
-                resource lookups using this strongly typed resource class.
+              Overrides the current thread's CurrentUICulture property for all
+              resource lookups using this strongly typed resource class.
             </summary>
         </member>
         <member name="P:WebUI.Resources.Views.Shared._Layout_uk_UA.description">
             <summary>
-                Looks up a localized string similar to TrainingTools дозволяє керувати результатами спортивних вправ і
-                створювати плани тренувань. Ви також можете переглядати результати своїх друзів і використовувати багато
-                інших інструментів навчання..
+              Looks up a localized string similar to TrainingTools дозволяє керувати результатами спортивних вправ і створювати плани тренувань. Ви також можете переглядати результати своїх друзів і використовувати багато інших інструментів навчання..
             </summary>
         </member>
         <member name="P:WebUI.Resources.Views.Shared._Layout_uk_UA.Exercises">
             <summary>
-                Looks up a localized string similar to Вправи.
+              Looks up a localized string similar to Вправи.
             </summary>
         </member>
         <member name="P:WebUI.Resources.Views.Shared._Layout_uk_UA.Friends">
             <summary>
-                Looks up a localized string similar to Друзі.
+              Looks up a localized string similar to Друзі.
             </summary>
         </member>
         <member name="P:WebUI.Resources.Views.Shared._Layout_uk_UA.Groups">
             <summary>
-                Looks up a localized string similar to Групи м&apos;язів.
+              Looks up a localized string similar to Групи м&apos;язів.
             </summary>
         </member>
         <member name="P:WebUI.Resources.Views.Shared._Layout_uk_UA.Help">
             <summary>
-                Looks up a localized string similar to Допомога.
+              Looks up a localized string similar to Допомога.
             </summary>
         </member>
         <member name="P:WebUI.Resources.Views.Shared._Layout_uk_UA.Home">
             <summary>
-                Looks up a localized string similar to Головна.
+              Looks up a localized string similar to Головна.
             </summary>
         </member>
         <member name="P:WebUI.Resources.Views.Shared._Layout_uk_UA.Login">
             <summary>
-                Looks up a localized string similar to Увійти.
+              Looks up a localized string similar to Увійти.
             </summary>
         </member>
         <member name="P:WebUI.Resources.Views.Shared._Layout_uk_UA.Logout">
             <summary>
-                Looks up a localized string similar to Вийти.
+              Looks up a localized string similar to Вийти.
             </summary>
         </member>
         <member name="P:WebUI.Resources.Views.Shared._Layout_uk_UA.MyTrainingPlans">
             <summary>
-                Looks up a localized string similar to Мої плани тренувань.
+              Looks up a localized string similar to Мої плани тренувань.
             </summary>
         </member>
         <member name="P:WebUI.Resources.Views.Shared._Layout_uk_UA.OpenApi">
             <summary>
-                Looks up a localized string similar to Документація API для розробників.
+              Looks up a localized string similar to Документація API для розробників.
             </summary>
         </member>
         <member name="P:WebUI.Resources.Views.Shared._Layout_uk_UA.Privacy">
             <summary>
-                Looks up a localized string similar to Політика конфіденційності та умови використання.
+              Looks up a localized string similar to Політика конфіденційності та умови використання.
             </summary>
         </member>
         <member name="P:WebUI.Resources.Views.Shared._Layout_uk_UA.Profile">
             <summary>
-                Looks up a localized string similar to Профіль.
+              Looks up a localized string similar to Профіль.
             </summary>
         </member>
         <member name="P:WebUI.Resources.Views.Shared._Layout_uk_UA.Register">
             <summary>
-                Looks up a localized string similar to Зареєструватися.
+              Looks up a localized string similar to Зареєструватися.
             </summary>
         </member>
         <member name="P:WebUI.Resources.Views.Shared._Layout_uk_UA.Results">
             <summary>
-                Looks up a localized string similar to Мої результати.
+              Looks up a localized string similar to Мої результати.
             </summary>
         </member>
         <member name="P:WebUI.Resources.Views.Shared._Layout_uk_UA.TrainingPlans">
             <summary>
-                Looks up a localized string similar to Плани тренувань.
+              Looks up a localized string similar to Плани тренувань.
             </summary>
         </member>
         <member name="P:WebUI.Resources.Views.Shared._Layout_uk_UA.Users">
             <summary>
-                Looks up a localized string similar to Користувачі.
+              Looks up a localized string similar to Користувачі.
             </summary>
         </member>
     </members>

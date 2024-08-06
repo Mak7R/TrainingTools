@@ -69,12 +69,15 @@ public class GroupsController : Controller
 
     [HttpPost("update")]
     [AuthorizeVerifiedRoles(Role.Root, Role.Admin)]
-    public async Task<IActionResult> Update([FromForm] UpdateGroupModel updateGroupModel)
+    public async Task<IActionResult> Update([FromQuery] Guid groupId, [FromForm] UpdateGroupModel updateGroupModel)
     {
         if (!ModelState.IsValid)
             return this.BadRequestRedirect(ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage));
 
-        var result = await _groupsService.Update(_mapper.Map<Group>(updateGroupModel));
+        var group = _mapper.Map<Group>(updateGroupModel);
+        group.Id = groupId;
+        
+        var result = await _groupsService.Update(group);
 
         if (result.IsSuccessful)
             return RedirectToAction("GetAll", "Groups");

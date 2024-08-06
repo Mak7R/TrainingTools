@@ -97,7 +97,7 @@ public class FriendsController : Controller
         var user = await _userManager.GetUserAsync(HttpContext.User);
         if (user is null) return RedirectToAction("Login", "Account");
 
-        var target = await _userManager.FindByNameAsync(userId.ToString());
+        var target = await _userManager.FindByIdAsync(userId.ToString());
         if (target is null) return this.NotFoundRedirect(["User was not found"]);
 
         var result = await _friendsService.RemoveInvitation(user, target);
@@ -118,7 +118,7 @@ public class FriendsController : Controller
         var user = await _userManager.GetUserAsync(HttpContext.User);
         if (user is null) return RedirectToAction("Login", "Account");
 
-        var friend = await _userManager.FindByNameAsync(userId.ToString());
+        var friend = await _userManager.FindByIdAsync(userId.ToString());
         if (friend is null) return this.NotFoundRedirect(["User was not found"]);
 
         var result = await _friendsService.RemoveFriendship(user, friend);
