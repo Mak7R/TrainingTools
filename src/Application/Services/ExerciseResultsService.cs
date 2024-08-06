@@ -13,13 +13,14 @@ public class ExerciseResultsService : IExerciseResultsService
 {
     private readonly IRepository<ExerciseResult, (Guid, Guid)> _exerciseResultsRepository;
     private readonly IRepository<Friendship, (Guid, Guid)> _friendshipsRepository;
-    
-    public ExerciseResultsService(IRepository<ExerciseResult, (Guid, Guid)> exerciseResultsRepository, IRepository<Friendship, (Guid, Guid)> friendshipsRepository)
+
+    public ExerciseResultsService(IRepository<ExerciseResult, (Guid, Guid)> exerciseResultsRepository,
+        IRepository<Friendship, (Guid, Guid)> friendshipsRepository)
     {
         _exerciseResultsRepository = exerciseResultsRepository;
         _friendshipsRepository = friendshipsRepository;
     }
-    
+
     public async Task<ExerciseResult?> GetById(Guid ownerId, Guid exerciseId)
     {
         return await _exerciseResultsRepository.GetById((ownerId, exerciseId));
@@ -29,14 +30,16 @@ public class ExerciseResultsService : IExerciseResultsService
     {
         return await _exerciseResultsRepository.Count(filterModel);
     }
-    
-    
-    public async Task<IEnumerable<ExerciseResult>> GetAll(FilterModel? filterModel = null, OrderModel? orderModel = null, PageModel? pageModel = null)
+
+
+    public async Task<IEnumerable<ExerciseResult>> GetAll(FilterModel? filterModel = null,
+        OrderModel? orderModel = null, PageModel? pageModel = null)
     {
         return await _exerciseResultsRepository.GetAll(filterModel, orderModel, pageModel);
     }
-    
-    public async Task<IEnumerable<ExerciseResult>> GetOnlyUserAndFriendsResultForExercise(Guid userId, Guid exerciseId, FilterModel? filterModel = null, OrderModel? orderModel = null, PageModel? pageModel = null)
+
+    public async Task<IEnumerable<ExerciseResult>> GetOnlyUserAndFriendsResultForExercise(Guid userId, Guid exerciseId,
+        FilterModel? filterModel = null, OrderModel? orderModel = null, PageModel? pageModel = null)
     {
         filterModel ??= new FilterModel();
         filterModel[FilterOptionNames.ExerciseResults.ExerciseId] = exerciseId.ToString();
@@ -48,12 +51,13 @@ public class ExerciseResultsService : IExerciseResultsService
             .Select(f => f.FirstFriend.Id == userId ? f.SecondFriend.Id : f.FirstFriend.Id).ToList();
 
         userIds.Add(userId);
-        filterModel[FilterOptionNames.ExerciseResults.OwnerIds] = string.Join(FilterOptionNames.Shared.MultiplyFilterValuesSeparator, userIds); 
-        
+        filterModel[FilterOptionNames.ExerciseResults.OwnerIds] =
+            string.Join(FilterOptionNames.Shared.MultiplyFilterValuesSeparator, userIds);
+
         return await _exerciseResultsRepository.GetAll(filterModel, orderModel, pageModel);
     }
-    
-    
+
+
     public async Task<OperationResult> Create(ExerciseResult result)
     {
         ArgumentNullException.ThrowIfNull(result);
@@ -72,13 +76,12 @@ public class ExerciseResultsService : IExerciseResultsService
     {
         ArgumentNullException.ThrowIfNull(result);
         if (result.ApproachInfos.Any(
-                a => a.Count < 0 || 
-                a.Weight < 0 || 
-                (a.Comment?.Contains(SpecialConstants.DefaultSeparator) ?? false)))
-        {
-            return DefaultOperationResult.FromException(new InvalidOperationException("Weight and count cannot be less than 0"));
-        }
-        
+                a => a.Count < 0 ||
+                     a.Weight < 0 ||
+                     (a.Comment?.Contains(SpecialConstants.DefaultSeparator) ?? false)))
+            return DefaultOperationResult.FromException(
+                new InvalidOperationException("Weight and count cannot be less than 0"));
+
         return await _exerciseResultsRepository.Update(result);
     }
 

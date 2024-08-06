@@ -9,10 +9,7 @@ public class FilterModelBinderProvider : IModelBinderProvider
     public IModelBinder GetBinder(ModelBinderProviderContext context)
     {
         ArgumentNullException.ThrowIfNull(context);
-        if (context.Metadata.ModelType.IsAssignableTo(typeof(FilterModel)))
-        {
-            return new FilterModelBinderAttribute();
-        }
+        if (context.Metadata.ModelType.IsAssignableTo(typeof(FilterModel))) return new FilterModelBinderAttribute();
 
         return null;
     }

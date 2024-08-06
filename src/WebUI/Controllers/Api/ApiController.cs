@@ -9,5 +9,4 @@ namespace WebUI.Controllers.Api;
 [Authorize(AuthenticationSchemes = $"{JwtBearerDefaults.AuthenticationScheme}")]
 public class ApiController : ControllerBase
 {
-    
 }

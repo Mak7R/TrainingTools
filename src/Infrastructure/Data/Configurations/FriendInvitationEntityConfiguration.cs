@@ -11,14 +11,14 @@ public class FriendInvitationEntityConfiguration : IEntityTypeConfiguration<Frie
         builder
             .ToTable("FriendInvitation")
             .HasKey(fi => new { fi.InvitorId, TargetId = fi.InvitedId });
-        
+
 
         builder
             .HasOne(fi => fi.Invitor)
             .WithMany()
             .HasForeignKey(fi => fi.InvitorId)
             .OnDelete(DeleteBehavior.NoAction);
-        
+
         builder
             .HasOne(fi => fi.Invited)
             .WithMany()

@@ -1,5 +1,4 @@
 ﻿@using System.Globalization
-
 @inject IViewLocalizer Localizer
 
 <!doctype html>
@@ -17,7 +16,7 @@
     <link rel="stylesheet" href="/lib/bootstrap/dist/css/bootstrap.min.css"/>
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true"/>
     <link rel="stylesheet" href="~/css/referenced-sources.css" asp-append-version="true"/>
-    @await RenderSectionAsync("Styles", required: false)
+    @await RenderSectionAsync("Styles", false)
 </head>
 <body>
 <main style="min-height: 94vh; width: 100%;background-color: #f4f0fa">
@@ -41,14 +40,14 @@
                     </li>
                     @if (Context.User.Identity?.IsAuthenticated is true)
                     {
-                    <li class="nav-item">
-                        <a class="nav-link" asp-controller="TrainingPlans" asp-action="GetAll">
-                            @Localizer["TrainingPlans"]
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" asp-controller="Users" asp-action="GetAll">@Localizer["Users"]</a>
-                    </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="TrainingPlans" asp-action="GetAll">
+                                @Localizer["TrainingPlans"]
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="Users" asp-action="GetAll">@Localizer["Users"]</a>
+                        </li>
                     }
                     <li class="nav-item">
                         <a class="nav-link" asp-controller="Help" asp-action="Index">@Localizer["Help"]</a>
@@ -58,37 +57,37 @@
                 <ul class="navbar-nav">
                     @if (Context.User.Identity?.IsAuthenticated is true)
                     {
-                    <li class="nav-item">
-                        <a class="nav-link" asp-controller="Friends" asp-action="Index">@Localizer["Friends"]</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" asp-controller="ExerciseResults" asp-action="GetUserResults">@Localizer["Results"]</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" asp-controller="TrainingPlans" asp-action="GetUserTrainingPlans">
-                            @Localizer["MyTrainingPlans"]
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" asp-controller="Account" asp-action="Profile">@Localizer["Profile"]</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" asp-controller="Account" asp-action="Logout">@Localizer["Logout"]</a>
-                    </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="Friends" asp-action="Index">@Localizer["Friends"]</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="ExerciseResults" asp-action="GetUserResults">@Localizer["Results"]</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="TrainingPlans" asp-action="GetUserTrainingPlans">
+                                @Localizer["MyTrainingPlans"]
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="Account" asp-action="Profile">@Localizer["Profile"]</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="Account" asp-action="Logout">@Localizer["Logout"]</a>
+                        </li>
                     }
                     else
                     {
-                    <li class="nav-item">
-                        <a class="nav-link" asp-controller="Account" asp-action="Login">@Localizer["Login"]</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" asp-controller="Account" asp-action="Register">@Localizer["Register"]</a>
-                    </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="Account" asp-action="Login">@Localizer["Login"]</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="Account" asp-action="Register">@Localizer["Register"]</a>
+                        </li>
                     }
                 </ul>
             </div>
         </div>
-        
+
         <div class="nav-item dropdown justify-content-end ms-auto">
             <button class="btn btn-dark dropdown-toggle" data-bs-toggle="dropdown">
                 @switch (CultureInfo.CurrentUICulture.Name)
@@ -105,8 +104,12 @@
                 }
             </button>
             <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-start" style="max-width: 4em; min-width: 4em; width: 4em;">
-                <li><a class="dropdown-item" asp-controller="Home" asp-action="SetLanguage" asp-route-culture="uk-UA" asp-route-returnUrl="@Context.Request.Path">UA</a></li>
-                <li><a class="dropdown-item" asp-controller="Home" asp-action="SetLanguage" asp-route-culture="en-US" asp-route-returnUrl="@Context.Request.Path">EN</a></li>
+                <li>
+                    <a class="dropdown-item" asp-controller="Home" asp-action="SetLanguage" asp-route-culture="uk-UA" asp-route-returnUrl="@Context.Request.Path">UA</a>
+                </li>
+                <li>
+                    <a class="dropdown-item" asp-controller="Home" asp-action="SetLanguage" asp-route-culture="en-US" asp-route-returnUrl="@Context.Request.Path">EN</a>
+                </li>
             </ul>
         </div>
 
@@ -120,11 +123,13 @@
 </main>
 <footer class="border-top footer text-muted">
     <div class="container">
-        
+
     </div>
     <div class="container">
         <div class="row">
-            <p class="text-center m-3 col"><a target="_blank" href="/api-docs">@Localizer["OpenApi"]</a></p>
+            <p class="text-center m-3 col">
+                <a target="_blank" href="/api-docs">@Localizer["OpenApi"]</a>
+            </p>
             <p class="text-center m-3 col">&copy; 2024 - Training Tools - <a asp-area="" asp-controller="Home" asp-action="Privacy">@Localizer["Privacy"]</a></p>
         </div>
     </div>
@@ -140,6 +145,6 @@
       "url": "@Context.Request.Scheme://@Context.Request.Host"
     }
 </script>
-@await RenderSectionAsync("Scripts", required: false)
+@await RenderSectionAsync("Scripts", false)
 </body>
 </html>

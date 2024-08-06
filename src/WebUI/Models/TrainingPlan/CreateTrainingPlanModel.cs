@@ -10,6 +10,6 @@ public class CreateTrainingPlanModel
     [StringLength(MaxTitleSize, MinimumLength = MinTitleSize, ErrorMessage = "Title length is invalid")]
     [Remote("IsTitleFree", "TrainingPlans", ErrorMessage = "Training plan with this name already exists")]
     public string Title { get; set; }
-    
+
     public bool IsPublic { get; set; }
 }

@@ -5,8 +5,7 @@ namespace WebUI.Models.TrainingPlan;
 
 public class UpdateTrainingPlanBlockModel
 {
-    [StringLength(MaxBlockNameSize)]
-    public string Title { get; set; } = string.Empty;
-
     public List<UpdateTrainingPlanBlockEntryModel> Entries = [];
+
+    [StringLength(MaxBlockNameSize)] public string Title { get; set; } = string.Empty;
 }

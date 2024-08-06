@@ -8,10 +8,10 @@ public class ApplicationUser : IdentityUser<Guid>
 {
     [StringLength(MaxUsernameSize, MinimumLength = MinUsernameSize)]
     public override string? UserName { get; set; }
-    
-    [StringLength(MaxAboutSize)]
-    public string? About { get; set; }
+
+    [StringLength(MaxAboutSize)] public string? About { get; set; }
+
     public bool IsPublic { get; set; }
-    
+
     public DateTime RegistrationDateTime { get; set; }
 }

@@ -22,9 +22,9 @@ public class ExercisesController : ApiController
         _exercisesService = exercisesService;
         _mapper = mapper;
     }
-    
+
     /// <summary>
-    /// Retrieves a list of all exercises, with optional filtering, ordering, and pagination.
+    ///     Retrieves a list of all exercises, with optional filtering, ordering, and pagination.
     /// </summary>
     /// <param name="filterModel">Supported filters: f_name, f_name-equals, f_group</param>
     /// <param name="orderModel">Supported orders: name, group-name</param>
@@ -41,9 +41,9 @@ public class ExercisesController : ApiController
         var exercises = await _exercisesService.GetAll(filterModel, orderModel, pageModel);
         return Ok(_mapper.Map<List<ExerciseViewModel>>(exercises));
     }
-    
+
     /// <summary>
-    /// Counts the total number of exercises based on optional filter criteria.
+    ///     Counts the total number of exercises based on optional filter criteria.
     /// </summary>
     /// <param name="filterModel">Supported filters: f_name, f_name-equals, f_group</param>
     /// <returns>Total count of exercises matching the criteria</returns>
@@ -56,7 +56,7 @@ public class ExercisesController : ApiController
     }
 
     /// <summary>
-    /// Retrieves a specific exercise by its ID.
+    ///     Retrieves a specific exercise by its ID.
     /// </summary>
     /// <param name="exerciseId">ID of the exercise</param>
     /// <returns>The exercise with the specified ID</returns>
@@ -66,27 +66,28 @@ public class ExercisesController : ApiController
     {
         var exercise = await _exercisesService.GetById(exerciseId);
 
-        if (exercise is null) 
-            return Problem(detail:"Exercise was not found", statusCode:404, title:"Not found");
-        
+        if (exercise is null)
+            return Problem("Exercise was not found", statusCode: 404, title: "Not found");
+
         return Ok(_mapper.Map<ExerciseViewModel>(exercise));
     }
 
     /// <summary>
-    /// Renders a preview of the "about" content, parsed for references.
+    ///     Renders a preview of the "about" content, parsed for references.
     /// </summary>
     /// <param name="about">Content to be parsed</param>
     /// <param name="referencedContentProvider">Provider for parsing referenced content</param>
     /// <returns>Rendered content as plain text</returns>
     [HttpGet("render-about-preview")]
     [AllowAnonymous]
-    public async Task<IActionResult> RenderAboutPreview([FromBody] string? about, [FromServices] IReferencedContentProvider referencedContentProvider)
+    public async Task<IActionResult> RenderAboutPreview([FromBody] string? about,
+        [FromServices] IReferencedContentProvider referencedContentProvider)
     {
         return Content(await referencedContentProvider.ParseContentAsync(about));
     }
 
     /// <summary>
-    /// Creates a new exercise with the specified details.
+    ///     Creates a new exercise with the specified details.
     /// </summary>
     /// <param name="createExerciseModel">Model containing details of the new exercise</param>
     /// <returns>Created exercise or an error response</returns>
@@ -100,13 +101,11 @@ public class ExercisesController : ApiController
         if (result.IsSuccessful)
         {
             if (result.ResultObject is Exercise exercise)
-            {
-                return CreatedAtAction("Get", "Exercises", new {exerciseId = exercise.Id}, exercise);
-            }
+                return CreatedAtAction("Get", "Exercises", new { exerciseId = exercise.Id }, exercise);
 
             return Created();
         }
-        
+
         if (result.Exception is AlreadyExistsException)
             return Problem("Exercise already exists", statusCode: StatusCodes.Status400BadRequest,
                 title: "Already exists");
@@ -121,7 +120,7 @@ public class ExercisesController : ApiController
     }
 
     /// <summary>
-    /// Updates the details of an existing exercise.
+    ///     Updates the details of an existing exercise.
     /// </summary>
     /// <param name="exerciseId">ID of the exercise to update</param>
     /// <param name="updateExerciseModel">Model containing updated details of the exercise</param>
@@ -133,19 +132,19 @@ public class ExercisesController : ApiController
     {
         var exercise = _mapper.Map<Exercise>(updateExerciseModel);
         exercise.Id = exerciseId;
-        
+
         var result = await _exercisesService.Update(exercise);
-        
+
         if (result.IsSuccessful)
             return Ok(exercise);
-        
+
         if (result.Exception is AlreadyExistsException)
             return Problem("Exercise with this name already exists", statusCode: StatusCodes.Status400BadRequest,
                 title: "Already exists");
-        
+
         if (result.ResultObject is NotFoundException)
-            return Problem(detail:"Exercise was not found", statusCode:404, title:"Not found");
-        
+            return Problem("Exercise was not found", statusCode: 404, title: "Not found");
+
         return StatusCode(500,
             new ProblemDetails
             {
@@ -156,7 +155,7 @@ public class ExercisesController : ApiController
     }
 
     /// <summary>
-    /// Deletes an existing exercise by its ID.
+    ///     Deletes an existing exercise by its ID.
     /// </summary>
     /// <param name="exerciseId">ID of the exercise to delete</param>
     /// <returns>No content or an error response</returns>
@@ -174,8 +173,8 @@ public class ExercisesController : ApiController
         }
 
         if (result.ResultObject is NotFoundException)
-            return Problem(detail:"Exercise was not found", statusCode:404, title:"Not found");
-        
+            return Problem("Exercise was not found", statusCode: 404, title: "Not found");
+
         return StatusCode(500,
             new ProblemDetails
             {

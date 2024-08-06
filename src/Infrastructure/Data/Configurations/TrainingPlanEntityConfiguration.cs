@@ -18,7 +18,7 @@ public class TrainingPlanEntityConfiguration : IEntityTypeConfiguration<Training
 
         builder
             .HasIndex(plan => plan.Title);
-        
+
         builder
             .HasMany(p => p.TrainingPlanBlocks)
             .WithOne()

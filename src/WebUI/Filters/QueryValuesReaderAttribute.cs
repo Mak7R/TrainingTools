@@ -5,17 +5,18 @@ using WebUI.Models.Shared;
 
 namespace WebUI.Filters;
 
-[AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
+[AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
 public class QueryValuesReaderAttribute<TOrderOptions> : ActionFilterAttribute
-    where TOrderOptions: IOrderOptions
+    where TOrderOptions : IOrderOptions
 {
-    private readonly TOrderOptions _orderOptions = (TOrderOptions)(Activator.CreateInstance(typeof(TOrderOptions)) 
-                                                                   ?? throw new NullReferenceException("Null result of creating order options Instance"));
+    private readonly TOrderOptions _orderOptions = (TOrderOptions)(Activator.CreateInstance(typeof(TOrderOptions))
+                                                                   ?? throw new NullReferenceException(
+                                                                       "Null result of creating order options Instance"));
 
     public override void OnActionExecuted(ActionExecutedContext context)
     {
         if (context.Controller is not Controller controller) return;
-        
+
         foreach (var queryValues in context.HttpContext.Request.Query)
         {
             var key = queryValues.Key;
@@ -26,10 +27,10 @@ public class QueryValuesReaderAttribute<TOrderOptions> : ActionFilterAttribute
                 controller.ViewData["current_order"] = _orderOptions.Set(value).Current;
                 controller.ViewData[key] = _orderOptions.MoveNext().Current;
             }
-                
-            else if (!string.IsNullOrWhiteSpace(value) && 
-                     (key.Equals(OrderOptionNames.Shared.OrderBy, StringComparison.CurrentCultureIgnoreCase) || 
-                      key.Equals("page", StringComparison.CurrentCultureIgnoreCase) || 
+
+            else if (!string.IsNullOrWhiteSpace(value) &&
+                     (key.Equals(OrderOptionNames.Shared.OrderBy, StringComparison.CurrentCultureIgnoreCase) ||
+                      key.Equals("page", StringComparison.CurrentCultureIgnoreCase) ||
                       key.StartsWith("f_"))
                     )
             {

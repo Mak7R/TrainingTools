@@ -2,6 +2,7 @@
 using Application.Interfaces.Services;
 using Application.Models;
 using Domain.Identity;
+using Domain.Rules;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
@@ -16,19 +17,20 @@ namespace WebUI.Controllers.Api.v1;
 [AllowAnonymous]
 public class GoogleAuthenticationController : ApiController
 {
-    private readonly UserManager<ApplicationUser> _userManager;
     private readonly IAuthTokenService<TokenGenerationInfo> _tokenService;
+    private readonly UserManager<ApplicationUser> _userManager;
 
-    public GoogleAuthenticationController(UserManager<ApplicationUser> userManager, IAuthTokenService<TokenGenerationInfo> tokenService)
+    public GoogleAuthenticationController(UserManager<ApplicationUser> userManager,
+        IAuthTokenService<TokenGenerationInfo> tokenService)
     {
         _userManager = userManager;
         _tokenService = tokenService;
     }
-    
+
     /// <summary>
-    /// Authenticate user in application by Google JWT Access Token
+    ///     Authenticate user in application by Google JWT Access Token
     /// </summary>
-    /// <returns>authentication info with jwt access token of type <see cref="AuthenticationResponse"/></returns>
+    /// <returns>authentication info with jwt access token of type <see cref="AuthenticationResponse" /></returns>
     [HttpGet("google-response")]
     public async Task<IActionResult> HandleGoogleResponse()
     {
@@ -37,17 +39,17 @@ public class GoogleAuthenticationController : ApiController
         {
             var email = result.Principal.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
             if (string.IsNullOrWhiteSpace(email))
-                return Problem("Email was empty", statusCode:400);
-            
+                return Problem("Email was empty", statusCode: 400);
+
             var user = await _userManager.FindByEmailAsync(email);
             if (user is null)
             {
                 var userName = result.Principal.Claims.First(c => c.Type == ClaimTypes.GivenName).Value;
 
                 var existsUser = await _userManager.FindByNameAsync(userName);
-                if (existsUser is not null || userName.Length < Domain.Rules.DataSizes.ApplicationUserDataSizes.MinUsernameSize)
+                if (existsUser is not null || userName.Length < DataSizes.ApplicationUserDataSizes.MinUsernameSize)
                     userName += $"{userName}_{Guid.NewGuid()}";
-                
+
                 user = new ApplicationUser
                 {
                     UserName = userName,
@@ -73,11 +75,13 @@ public class GoogleAuthenticationController : ApiController
                 user.EmailConfirmed = true;
                 await _userManager.UpdateAsync(user);
             }
-            
+
             var roles = await _userManager.GetRolesAsync(user);
             var token = _tokenService.GenerateToken(new TokenGenerationInfo { User = user, Roles = roles });
-            return Ok(new AuthenticationResponse{UserName = user.UserName, Email = user.Email, Roles = roles, Token = token});
+            return Ok(new AuthenticationResponse
+                { UserName = user.UserName, Email = user.Email, Roles = roles, Token = token });
         }
-        return Problem("Authentication data was not found in request", statusCode:400);
+
+        return Problem("Authentication data was not found in request", statusCode: 400);
     }
 }

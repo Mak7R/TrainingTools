@@ -9,20 +9,22 @@ namespace Application.Services;
 public class GroupsService : IGroupsService
 {
     private readonly IRepository<Group, Guid> _groupsRepository;
-    
+
     public GroupsService(IRepository<Group, Guid> groupsRepository)
     {
         _groupsRepository = groupsRepository;
     }
-    
-    public async Task<IEnumerable<Group>> GetAll(FilterModel? filterModel = null, OrderModel? orderModel = null, PageModel? pageModel = null)
+
+    public async Task<IEnumerable<Group>> GetAll(FilterModel? filterModel = null, OrderModel? orderModel = null,
+        PageModel? pageModel = null)
     {
         return await _groupsRepository.GetAll(filterModel, orderModel, pageModel);
     }
-    
+
     public async Task<Group?> GetByName(string? name)
     {
-        return (await _groupsRepository.GetAll(new FilterModel{{FilterOptionNames.Group.NameEquals, name}}, null, new PageModel{PageSize = 1})).SingleOrDefault();
+        return (await _groupsRepository.GetAll(new FilterModel { { FilterOptionNames.Group.NameEquals, name } }, null,
+            new PageModel { PageSize = 1 })).SingleOrDefault();
     }
 
     public async Task<Group?> GetById(Guid id)

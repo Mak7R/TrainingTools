@@ -9,18 +9,18 @@ using WebUI.Models.Friend;
 
 namespace WebUI.Controllers;
 
-
 [Controller]
 [AuthorizeVerifiedRoles]
 [Route("friends")]
 public class FriendsController : Controller
 {
-    private readonly UserManager<ApplicationUser> _userManager;
     private readonly IFriendsService _friendsService;
     private readonly ILogger<FriendsController> _logger;
     private readonly IMapper _mapper;
+    private readonly UserManager<ApplicationUser> _userManager;
 
-    public FriendsController(UserManager<ApplicationUser> userManager, IFriendsService friendsService, ILogger<FriendsController> logger, IMapper mapper)
+    public FriendsController(UserManager<ApplicationUser> userManager, IFriendsService friendsService,
+        ILogger<FriendsController> logger, IMapper mapper)
     {
         _userManager = userManager;
         _friendsService = friendsService;
@@ -40,10 +40,9 @@ public class FriendsController : Controller
         var result = await _friendsService.CreateInvitation(user, targetUser);
 
         if (!result.IsSuccessful)
-        {
-            _logger.LogWarning("Create invitation was unsuccessful. Errors: {errors}", string.Join("; ", result.Errors));
-        }
-        
+            _logger.LogWarning("Create invitation was unsuccessful. Errors: {errors}",
+                string.Join("; ", result.Errors));
+
         if (!string.IsNullOrWhiteSpace(returnUrl) && Url.IsLocalUrl(returnUrl))
             return LocalRedirect(returnUrl);
 
@@ -60,18 +59,17 @@ public class FriendsController : Controller
         if (invitor is null) return this.NotFoundRedirect(["User was not found"]);
 
         var result = await _friendsService.AcceptInvitation(invitor, user);
-        
+
         if (!result.IsSuccessful)
-        {
-            _logger.LogWarning("Accept invitation was unsuccessful. Errors: {errors}", string.Join("; ", result.Errors));
-        }
-        
+            _logger.LogWarning("Accept invitation was unsuccessful. Errors: {errors}",
+                string.Join("; ", result.Errors));
+
         if (!string.IsNullOrWhiteSpace(returnUrl) && Url.IsLocalUrl(returnUrl))
             return LocalRedirect(returnUrl);
 
         return RedirectToAction("Index", "Home");
     }
-    
+
     [HttpGet("{userId:guid}/refuse")]
     public async Task<IActionResult> Refuse(Guid userId, string? returnUrl)
     {
@@ -82,12 +80,11 @@ public class FriendsController : Controller
         if (invitor is null) return this.NotFoundRedirect(["User was not found"]);
 
         var result = await _friendsService.RemoveInvitation(invitor, user);
-        
+
         if (!result.IsSuccessful)
-        {
-            _logger.LogWarning("Refuse invitation was unsuccessful. Errors: {errors}", string.Join("; ", result.Errors));
-        }
-        
+            _logger.LogWarning("Refuse invitation was unsuccessful. Errors: {errors}",
+                string.Join("; ", result.Errors));
+
         if (!string.IsNullOrWhiteSpace(returnUrl) && Url.IsLocalUrl(returnUrl))
             return LocalRedirect(returnUrl);
 
@@ -104,18 +101,17 @@ public class FriendsController : Controller
         if (target is null) return this.NotFoundRedirect(["User was not found"]);
 
         var result = await _friendsService.RemoveInvitation(user, target);
-        
+
         if (!result.IsSuccessful)
-        {
-            _logger.LogWarning("Cancel invitation was unsuccessful. Errors: {errors}", string.Join("; ", result.Errors));
-        }
-        
+            _logger.LogWarning("Cancel invitation was unsuccessful. Errors: {errors}",
+                string.Join("; ", result.Errors));
+
         if (!string.IsNullOrWhiteSpace(returnUrl) && Url.IsLocalUrl(returnUrl))
             return LocalRedirect(returnUrl);
 
         return RedirectToAction("Index", "Home");
     }
-    
+
     [HttpGet("{userId:guid}/remove")]
     public async Task<IActionResult> RemoveFriendship(Guid userId, string? returnUrl)
     {
@@ -126,24 +122,23 @@ public class FriendsController : Controller
         if (friend is null) return this.NotFoundRedirect(["User was not found"]);
 
         var result = await _friendsService.RemoveFriendship(user, friend);
-        
+
         if (!result.IsSuccessful)
-        {
-            _logger.LogWarning("Remove friendship was unsuccessful. Errors: {errors}", string.Join("; ", result.Errors));
-        }
-        
+            _logger.LogWarning("Remove friendship was unsuccessful. Errors: {errors}",
+                string.Join("; ", result.Errors));
+
         if (!string.IsNullOrWhiteSpace(returnUrl) && Url.IsLocalUrl(returnUrl))
             return LocalRedirect(returnUrl);
 
         return RedirectToAction("Index", "Home");
     }
-    
-    
+
+
     [HttpGet("")]
     public async Task<IActionResult> Index()
     {
         // todo add paging and filtering
-        
+
         var user = await _userManager.GetUserAsync(HttpContext.User);
         if (user is null) return RedirectToAction("Login", "Account");
 

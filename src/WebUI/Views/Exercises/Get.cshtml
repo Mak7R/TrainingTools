@@ -1,6 +1,6 @@
 @inject IReferencedContentProvider ReferencedContentProvider
 @using Application.Interfaces.Services
-@model WebUI.Models.Exercise.ExerciseViewModel
+@model ExerciseViewModel
 
 @{
     ViewBag.Title = $"Exercise {Model.Name}";
@@ -10,11 +10,11 @@
     <h2 class="mb-2">Exercise: @Model.Name</h2>
 
     <h3 class="mb-2">Group: @Model.Group.Name</h3>
-    
-    <h3 class="mb-2">About:</h3> 
+
+    <h3 class="mb-2">About:</h3>
     <div class="row fs-5">@Html.Raw(await ReferencedContentProvider.ParseContentAsync(Model.About))</div>
-    
-   
+
+
     <div class="mb-2">
         <h3>Actions</h3>
         <div class="row">
@@ -24,7 +24,6 @@
             </a>
             @if (User.IsInRole(nameof(Role.Admin)) || User.IsInRole(nameof(Role.Root)))
             {
-
                 <a class="col-auto btn btn-primary me-3" asp-controller="Exercises" asp-action="Update" asp-route-exerciseId="@Model.Id">Update</a>
                 <button class="col-auto btn btn-danger" type="button" data-bs-toggle="modal" data-bs-target="#deleteExerciseModal">
                     Delete
@@ -54,5 +53,5 @@
 
 @section Scripts
 {
-    <script async src='https://www.tiktok.com/embed.js'></script>
+    <script async src="https://www.tiktok.com/embed.js"></script>
 }

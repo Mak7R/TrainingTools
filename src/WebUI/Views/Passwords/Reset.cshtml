@@ -6,11 +6,11 @@
 
 <div class="container mt-3">
     <h2>Reset password</h2>
-    
+
     <form asp-controller="Passwords" asp-action="Reset" method="post">
         <input asp-for="Email" hidden/>
         <input asp-for="Token" hidden/>
-        
+
         <div class="mb-3">
             <label asp-for="NewPassword" class="form-label">Password: </label>
             <input class="form-control" asp-for="NewPassword"/>

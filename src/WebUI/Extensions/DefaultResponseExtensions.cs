@@ -13,7 +13,7 @@ public static class DefaultResponseExtensions
     {
         return controller.RedirectToAction("Info", "Home", new { statusCode = 404, messages });
     }
-    
+
     public static IActionResult ErrorRedirect(this Controller controller, int statusCode, IEnumerable<string> messages)
     {
         return controller.RedirectToAction("Info", "Home", new { statusCode, messages });

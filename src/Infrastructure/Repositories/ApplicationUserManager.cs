@@ -15,7 +15,8 @@ public class ApplicationUserManager : UserManager<ApplicationUser>
         IEnumerable<IPasswordValidator<ApplicationUser>> passwordValidators, ILookupNormalizer keyNormalizer,
         IdentityErrorDescriber errors, IServiceProvider services, ILogger<ApplicationUserManager> logger,
         ApplicationDbContext context)
-        : base(store, optionsAccessor, passwordHasher, userValidators, passwordValidators, keyNormalizer, errors, services, logger)
+        : base(store, optionsAccessor, passwordHasher, userValidators, passwordValidators, keyNormalizer, errors,
+            services, logger)
     {
         _context = context;
     }
@@ -42,7 +43,7 @@ public class ApplicationUserManager : UserManager<ApplicationUser>
         _context.Friendships.RemoveRange(friendships);
 
         await _context.SaveChangesAsync();
-        
+
         return await base.DeleteAsync(user);
     }
 }

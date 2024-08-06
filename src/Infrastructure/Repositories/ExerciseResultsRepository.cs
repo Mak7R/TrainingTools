@@ -16,74 +16,129 @@ namespace Infrastructure.Repositories;
 
 public class ExerciseResultsRepository : IRepository<ExerciseResult, (Guid OwnerId, Guid ExerciseId)>
 {
+    private static readonly ReadOnlyDictionary<string, Func<string, Expression<Func<ExerciseResultEntity, bool>>>>
+        ExerciseResultsFilters =
+            new(new Dictionary<string, Func<string, Expression<Func<ExerciseResultEntity, bool>>>>
+            {
+                {
+                    FilterOptionNames.ExerciseResults.OwnerName,
+                    value => r => r.Owner.UserName != null && r.Owner.UserName.Contains(value)
+                },
+                {
+                    FilterOptionNames.ExerciseResults.ExerciseId,
+                    value => Guid.TryParse(value, out var exerciseId) ? r => r.ExerciseId == exerciseId : _ => false
+                },
+                {
+                    FilterOptionNames.ExerciseResults.FullName, value =>
+                    {
+                        var nameParts = value.Split("/");
+                        if (nameParts.Length > 2)
+                            return _ => false;
+                        if (nameParts.Length == 1)
+                            return er =>
+                                er.Exercise.Group.Name.Contains(nameParts[0]) ||
+                                er.Exercise.Name.Contains(nameParts[0]);
+                        if (nameParts.Length == 2)
+                            return er =>
+                                er.Exercise.Group.Name.Contains(nameParts[0]) &&
+                                er.Exercise.Name.Contains(nameParts[1]);
+                        return _ => true;
+                    }
+                },
+                {
+                    FilterOptionNames.ExerciseResults.FullNameEquals, value =>
+                    {
+                        var nameParts = value.Split("/");
+                        if (nameParts.Length == 2)
+                            return er =>
+                                er.Exercise.Group.Name.Equals(nameParts[0]) && er.Exercise.Name.Contains(nameParts[1]);
+
+                        return _ => false;
+                    }
+                },
+                {
+                    FilterOptionNames.ExerciseResults.OwnerId,
+                    value => Guid.TryParse(value, out var ownerId) ? r => r.Owner.Id == ownerId : _ => false
+                },
+                {
+                    FilterOptionNames.ExerciseResults.OwnerIds, value =>
+                    {
+                        var ids = value.Split(FilterOptionNames.Shared.MultiplyFilterValuesSeparator);
+
+                        var guids = new List<Guid>();
+                        foreach (var id in ids)
+                            if (Guid.TryParse(id, out var guid))
+                                guids.Add(guid);
+
+                        return r => guids.Contains(r.OwnerId);
+                    }
+                },
+                {
+                    FilterOptionNames.ExerciseResults.OwnerNameEquals,
+                    value => er => er.Owner.UserName != null && er.Owner.UserName.Equals(value)
+                }
+            });
+
+    private static readonly
+        ReadOnlyDictionary<OrderModel, Func<IQueryable<ExerciseResultEntity>, IQueryable<ExerciseResultEntity>>>
+        ExerciseResultsOrders =
+            new(new Dictionary<OrderModel, Func<IQueryable<ExerciseResultEntity>, IQueryable<ExerciseResultEntity>>>
+            {
+                {
+                    new OrderModel
+                    {
+                        OrderBy = OrderOptionNames.ExerciseResults.OwnerName,
+                        OrderOption = OrderOptionNames.Shared.Ascending
+                    },
+                    query => query.OrderBy(e => e.Owner.UserName)
+                },
+                {
+                    new OrderModel
+                    {
+                        OrderBy = OrderOptionNames.ExerciseResults.OwnerName,
+                        OrderOption = OrderOptionNames.Shared.Descending
+                    },
+                    query => query.OrderByDescending(e => e.Owner.UserName)
+                },
+                {
+                    new OrderModel
+                    {
+                        OrderBy = OrderOptionNames.ExerciseResults.GroupName,
+                        OrderOption = OrderOptionNames.Shared.Ascending
+                    },
+                    query => query.OrderBy(e => e.Exercise.Group.Name).ThenBy(e => e.Exercise.Name)
+                },
+                {
+                    new OrderModel
+                    {
+                        OrderBy = OrderOptionNames.ExerciseResults.GroupName,
+                        OrderOption = OrderOptionNames.Shared.Descending
+                    },
+                    query => query.OrderByDescending(e => e.Exercise.Group.Name).ThenByDescending(e => e.Exercise.Name)
+                }
+            });
+
     private readonly ApplicationDbContext _dbContext;
-   
+
     private readonly ILogger<ExerciseResultsRepository> _logger;
     private readonly IMapper _mapper;
 
-    public ExerciseResultsRepository(ApplicationDbContext dbContext, ILogger<ExerciseResultsRepository> logger, IMapper mapper)
+    public ExerciseResultsRepository(ApplicationDbContext dbContext, ILogger<ExerciseResultsRepository> logger,
+        IMapper mapper)
     {
         _dbContext = dbContext;
         _logger = logger;
         _mapper = mapper;
     }
 
-    private static readonly ReadOnlyDictionary<string, Func<string, Expression<Func<ExerciseResultEntity, bool>>>> ExerciseResultsFilters =
-        new(new Dictionary<string, Func<string, Expression<Func<ExerciseResultEntity, bool>>>>
-        {
-            { FilterOptionNames.ExerciseResults.OwnerName, value => r => r.Owner.UserName != null && r.Owner.UserName.Contains(value) },
-            { FilterOptionNames.ExerciseResults.ExerciseId, value => Guid.TryParse(value, out var exerciseId) ? r => r.ExerciseId == exerciseId : _ => false},
-            { FilterOptionNames.ExerciseResults.FullName, value =>
-            {
-                var nameParts = value.Split("/");
-                if (nameParts.Length > 2)
-                    return _ => false;
-                if (nameParts.Length == 1)
-                    return er => er.Exercise.Group.Name.Contains(nameParts[0]) || er.Exercise.Name.Contains(nameParts[0]);
-                if (nameParts.Length == 2)
-                    return er => er.Exercise.Group.Name.Contains(nameParts[0]) && er.Exercise.Name.Contains(nameParts[1]);
-                return _ => true;
-            }},
-            { FilterOptionNames.ExerciseResults.FullNameEquals, value =>
-                {
-                    var nameParts = value.Split("/");
-                    if (nameParts.Length == 2)
-                        return er => er.Exercise.Group.Name.Equals(nameParts[0]) && er.Exercise.Name.Contains(nameParts[1]);
-
-                    return _ => false;
-                }
-            },
-            {FilterOptionNames.ExerciseResults.OwnerId, value => Guid.TryParse(value, out var ownerId) ? r => r.Owner.Id == ownerId : _ => false },
-            {FilterOptionNames.ExerciseResults.OwnerIds, value =>
-            {
-                var ids = value.Split(FilterOptionNames.Shared.MultiplyFilterValuesSeparator);
-
-                var guids = new List<Guid>();
-                foreach (var id in ids)
-                    if (Guid.TryParse(id, out var guid))
-                        guids.Add(guid);
-                
-                return r => guids.Contains(r.OwnerId);
-            }},
-            {FilterOptionNames.ExerciseResults.OwnerNameEquals, value => er => er.Owner.UserName != null && er.Owner.UserName.Equals(value)}
-        });
-
-    private static readonly ReadOnlyDictionary<OrderModel, Func<IQueryable<ExerciseResultEntity>, IQueryable<ExerciseResultEntity>>> ExerciseResultsOrders = 
-        new(new Dictionary<OrderModel, Func<IQueryable<ExerciseResultEntity>, IQueryable<ExerciseResultEntity>>>()
-        {
-            {new OrderModel{OrderBy = OrderOptionNames.ExerciseResults.OwnerName, OrderOption = OrderOptionNames.Shared.Ascending}, query => query.OrderBy(e => e.Owner.UserName)},
-            {new OrderModel{OrderBy = OrderOptionNames.ExerciseResults.OwnerName, OrderOption = OrderOptionNames.Shared.Descending}, query => query.OrderByDescending(e => e.Owner.UserName)},
-            {new OrderModel{OrderBy = OrderOptionNames.ExerciseResults.GroupName, OrderOption = OrderOptionNames.Shared.Ascending}, query => query.OrderBy(e => e.Exercise.Group.Name).ThenBy(e => e.Exercise.Name)},
-            {new OrderModel{OrderBy = OrderOptionNames.ExerciseResults.GroupName, OrderOption = OrderOptionNames.Shared.Descending}, query => query.OrderByDescending(e => e.Exercise.Group.Name).ThenByDescending(e => e.Exercise.Name)}
-        });
-    
-    public async Task<IEnumerable<ExerciseResult>> GetAll(FilterModel? filterModel = null, OrderModel? orderModel = null, PageModel? pageModel = null)
+    public async Task<IEnumerable<ExerciseResult>> GetAll(FilterModel? filterModel = null,
+        OrderModel? orderModel = null, PageModel? pageModel = null)
     {
         try
         {
             var query = _dbContext.ExerciseResults
                 .Include(e => e.Exercise)
-                .ThenInclude(e =>e.Group)
+                .ThenInclude(e => e.Group)
                 .Include(e => e.Owner)
                 .AsNoTracking();
 
@@ -95,7 +150,7 @@ public class ExerciseResultsRepository : IRepository<ExerciseResult, (Guid Owner
 
             if (pageModel is not null)
                 query = pageModel.TakePage(query);
-            
+
             return (await query.ToListAsync()).Select(e => _mapper.Map<ExerciseResult>(e));
         }
         catch (Exception e)
@@ -120,7 +175,9 @@ public class ExerciseResultsRepository : IRepository<ExerciseResult, (Guid Owner
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Exception was thrown while receiving exercise result with ownerId: '{ownerId}' and exerciseId: {exerciseId}", id.OwnerId, id.ExerciseId);
+            _logger.LogError(e,
+                "Exception was thrown while receiving exercise result with ownerId: '{ownerId}' and exerciseId: {exerciseId}",
+                id.OwnerId, id.ExerciseId);
             throw new DataBaseException("Error while receiving exercise results from database", e);
         }
     }
@@ -138,11 +195,13 @@ public class ExerciseResultsRepository : IRepository<ExerciseResult, (Guid Owner
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Exception was thrown while receiving exercise results count by filter '{filter}' from database", filterModel);
+            _logger.LogError(e,
+                "Exception was thrown while receiving exercise results count by filter '{filter}' from database",
+                filterModel);
             throw new DataBaseException("Error while receiving exercises results count from database", e);
         }
     }
-    
+
     public async Task<OperationResult> Create(ExerciseResult result)
     {
         ArgumentNullException.ThrowIfNull(result);
@@ -162,13 +221,17 @@ public class ExerciseResultsRepository : IRepository<ExerciseResult, (Guid Owner
         }
         catch (AlreadyExistsException alreadyExistsException)
         {
-            _logger.LogInformation(alreadyExistsException, "Exercise results already exist with ownerId: '{ownerId}' and exerciseId: {exerciseId}", result.Owner.Id, result.Exercise.Id);
+            _logger.LogInformation(alreadyExistsException,
+                "Exercise results already exist with ownerId: '{ownerId}' and exerciseId: {exerciseId}",
+                result.Owner.Id, result.Exercise.Id);
             return DefaultOperationResult.FromException(alreadyExistsException);
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Exception was thrown while adding new exercise results '{exerciseResult}' to database", exerciseResultEntity);
-            return DefaultOperationResult.FromException(new DataBaseException("Error while adding exercise result to database", e));
+            _logger.LogError(e, "Exception was thrown while adding new exercise results '{exerciseResult}' to database",
+                exerciseResultEntity);
+            return DefaultOperationResult.FromException(
+                new DataBaseException("Error while adding exercise result to database", e));
         }
 
         return new DefaultOperationResult(result);
@@ -192,13 +255,18 @@ public class ExerciseResultsRepository : IRepository<ExerciseResult, (Guid Owner
         }
         catch (NotFoundException notFoundException)
         {
-            _logger.LogInformation(notFoundException, "Exercise results was not found with ownerId: '{ownerId}' and exerciseId: {exerciseId}", result.Owner.Id, result.Exercise.Id);
+            _logger.LogInformation(notFoundException,
+                "Exercise results was not found with ownerId: '{ownerId}' and exerciseId: {exerciseId}",
+                result.Owner.Id, result.Exercise.Id);
             return DefaultOperationResult.FromException(notFoundException);
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Exception was thrown while updating exercise result with ownerId: '{ownerId}' and exerciseId: {exerciseId}", result.Owner.Id, result.Exercise.Id);
-            return DefaultOperationResult.FromException(new DataBaseException("Error while updating exercise result in database", e));
+            _logger.LogError(e,
+                "Exception was thrown while updating exercise result with ownerId: '{ownerId}' and exerciseId: {exerciseId}",
+                result.Owner.Id, result.Exercise.Id);
+            return DefaultOperationResult.FromException(
+                new DataBaseException("Error while updating exercise result in database", e));
         }
 
         return new DefaultOperationResult(result);
@@ -216,19 +284,24 @@ public class ExerciseResultsRepository : IRepository<ExerciseResult, (Guid Owner
                 throw new NotFoundException("Exercise result was not found");
 
             result = _mapper.Map<ExerciseResult>(resultEntity);
-            
+
             _dbContext.ExerciseResults.Remove(resultEntity);
             await _dbContext.SaveChangesAsync();
         }
         catch (NotFoundException notFoundException)
         {
-            _logger.LogInformation(notFoundException, "Exercise results was not found with ownerId: '{ownerId}' and exerciseId: {exerciseId}", id.OwnerId, id.ExerciseId);
+            _logger.LogInformation(notFoundException,
+                "Exercise results was not found with ownerId: '{ownerId}' and exerciseId: {exerciseId}", id.OwnerId,
+                id.ExerciseId);
             return DefaultOperationResult.FromException(notFoundException);
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Exception was thrown while deleting exercise result with ownerId: '{ownerId}' and exerciseId: {exerciseId}", id.OwnerId, id.ExerciseId);
-            return DefaultOperationResult.FromException(new DataBaseException("Error while deleting exercise result from database", e));
+            _logger.LogError(e,
+                "Exception was thrown while deleting exercise result with ownerId: '{ownerId}' and exerciseId: {exerciseId}",
+                id.OwnerId, id.ExerciseId);
+            return DefaultOperationResult.FromException(
+                new DataBaseException("Error while deleting exercise result from database", e));
         }
 
         return new DefaultOperationResult(result);

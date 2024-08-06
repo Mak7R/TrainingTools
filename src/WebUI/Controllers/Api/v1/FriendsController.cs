@@ -9,16 +9,16 @@ using WebUI.Models.User;
 
 namespace WebUI.Controllers.Api.v1;
 
-
 [AuthorizeVerifiedRoles]
 public class FriendsController : ApiController
 {
-    private readonly UserManager<ApplicationUser> _userManager;
     private readonly IFriendsService _friendsService;
     private readonly ILogger<FriendsController> _logger;
     private readonly IMapper _mapper;
+    private readonly UserManager<ApplicationUser> _userManager;
 
-    public FriendsController(UserManager<ApplicationUser> userManager, IFriendsService friendsService, ILogger<FriendsController> logger, IMapper mapper)
+    public FriendsController(UserManager<ApplicationUser> userManager, IFriendsService friendsService,
+        ILogger<FriendsController> logger, IMapper mapper)
     {
         _userManager = userManager;
         _friendsService = friendsService;
@@ -27,7 +27,7 @@ public class FriendsController : ApiController
     }
 
     /// <summary>
-    /// Invite user to friendship. Creates friend invitation between current user and user with <see cref="userId"/>
+    ///     Invite user to friendship. Creates friend invitation between current user and user with <see cref="userId" />
     /// </summary>
     /// <param name="userId">represents id of user which is invited by current user</param>
     /// <returns>User id or error response</returns>
@@ -35,16 +35,16 @@ public class FriendsController : ApiController
     public async Task<IActionResult> Invite(Guid userId)
     {
         var user = await _userManager.GetUserAsync(HttpContext.User);
-        if (user is null) return Problem("User unauthorized", statusCode:StatusCodes.Status401Unauthorized);
+        if (user is null) return Problem("User unauthorized", statusCode: StatusCodes.Status401Unauthorized);
 
         var targetUser = await _userManager.FindByIdAsync(userId.ToString());
-        if (targetUser is null) return Problem(detail:"User was not found", statusCode:404, title:"Not found");
+        if (targetUser is null) return Problem("User was not found", statusCode: 404, title: "Not found");
 
         var result = await _friendsService.CreateInvitation(user, targetUser);
 
         if (result.IsSuccessful)
             return Ok(userId);
-        
+
         return StatusCode(500,
             new ProblemDetails
             {
@@ -55,7 +55,7 @@ public class FriendsController : ApiController
     }
 
     /// <summary>
-    /// Accepts invitation of user with id <see cref="userId"/>
+    ///     Accepts invitation of user with id <see cref="userId" />
     /// </summary>
     /// <param name="userId">represents id of user which has invited current user</param>
     /// <returns>User id or error response</returns>
@@ -63,16 +63,16 @@ public class FriendsController : ApiController
     public async Task<IActionResult> Accept(Guid userId)
     {
         var user = await _userManager.GetUserAsync(HttpContext.User);
-        if (user is null) return Problem("User unauthorized", statusCode:StatusCodes.Status401Unauthorized);
+        if (user is null) return Problem("User unauthorized", statusCode: StatusCodes.Status401Unauthorized);
 
         var invitor = await _userManager.FindByIdAsync(userId.ToString());
-        if (invitor is null) return Problem(detail:"User was not found", statusCode:404, title:"Not found");
+        if (invitor is null) return Problem("User was not found", statusCode: 404, title: "Not found");
 
         var result = await _friendsService.AcceptInvitation(invitor, user);
-        
+
         if (result.IsSuccessful)
             return Ok(userId);
-        
+
         return StatusCode(500,
             new ProblemDetails
             {
@@ -81,9 +81,9 @@ public class FriendsController : ApiController
                 Title = "Server error"
             });
     }
-    
+
     /// <summary>
-    /// Refuses invitation of user with id <see cref="userId"/>
+    ///     Refuses invitation of user with id <see cref="userId" />
     /// </summary>
     /// <param name="userId">represents id of user which has invited current user</param>
     /// <returns>User id or error response</returns>
@@ -91,16 +91,16 @@ public class FriendsController : ApiController
     public async Task<IActionResult> Refuse(Guid userId)
     {
         var user = await _userManager.GetUserAsync(HttpContext.User);
-        if (user is null) return Problem("User unauthorized", statusCode:StatusCodes.Status401Unauthorized);
+        if (user is null) return Problem("User unauthorized", statusCode: StatusCodes.Status401Unauthorized);
 
         var invitor = await _userManager.FindByIdAsync(userId.ToString());
-        if (invitor is null) return Problem(detail:"User was not found", statusCode:404, title:"Not found");
+        if (invitor is null) return Problem("User was not found", statusCode: 404, title: "Not found");
 
         var result = await _friendsService.RemoveInvitation(invitor, user);
-        
+
         if (result.IsSuccessful)
             return Ok(userId);
-        
+
         return StatusCode(500,
             new ProblemDetails
             {
@@ -111,7 +111,7 @@ public class FriendsController : ApiController
     }
 
     /// <summary>
-    /// Cancels invitation to user with id <see cref="userId"/>
+    ///     Cancels invitation to user with id <see cref="userId" />
     /// </summary>
     /// <param name="userId">represents id of user which was invited by current user</param>
     /// <returns>User id or error response</returns>
@@ -119,16 +119,16 @@ public class FriendsController : ApiController
     public async Task<IActionResult> Cancel(Guid userId)
     {
         var user = await _userManager.GetUserAsync(HttpContext.User);
-        if (user is null) return Problem("User unauthorized", statusCode:StatusCodes.Status401Unauthorized);
+        if (user is null) return Problem("User unauthorized", statusCode: StatusCodes.Status401Unauthorized);
 
         var target = await _userManager.FindByNameAsync(userId.ToString());
-        if (target is null) return Problem(detail:"User was not found", statusCode:404, title:"Not found");
+        if (target is null) return Problem("User was not found", statusCode: 404, title: "Not found");
 
         var result = await _friendsService.RemoveInvitation(user, target);
-        
+
         if (result.IsSuccessful)
             return Ok(userId);
-        
+
         return StatusCode(500,
             new ProblemDetails
             {
@@ -137,9 +137,9 @@ public class FriendsController : ApiController
                 Title = "Server error"
             });
     }
-    
+
     /// <summary>
-    /// Removes friendship between current user and user with <see cref="userId"/>
+    ///     Removes friendship between current user and user with <see cref="userId" />
     /// </summary>
     /// <param name="userId">represents user which is friend to current</param>
     /// <returns>User id or error response</returns>
@@ -147,10 +147,10 @@ public class FriendsController : ApiController
     public async Task<IActionResult> RemoveFriendship(Guid userId)
     {
         var user = await _userManager.GetUserAsync(HttpContext.User);
-        if (user is null)return Problem("User unauthorized", statusCode:StatusCodes.Status401Unauthorized);
+        if (user is null) return Problem("User unauthorized", statusCode: StatusCodes.Status401Unauthorized);
 
         var friend = await _userManager.FindByNameAsync(userId.ToString());
-        if (friend is null) return Problem(detail:"User was not found", statusCode:404, title:"Not found");
+        if (friend is null) return Problem("User was not found", statusCode: 404, title: "Not found");
 
         var result = await _friendsService.RemoveFriendship(user, friend);
 
@@ -165,47 +165,47 @@ public class FriendsController : ApiController
                 Title = "Server error"
             });
     }
-    
+
     /// <summary>
-    /// Get all friends for current user 
+    ///     Get all friends for current user
     /// </summary>
     /// <returns>List of friends</returns>
     [HttpGet("")]
     public async Task<IActionResult> Index()
     {
         var user = await _userManager.GetUserAsync(HttpContext.User);
-        if (user is null) return Problem("User unauthorized", statusCode:StatusCodes.Status401Unauthorized);
+        if (user is null) return Problem("User unauthorized", statusCode: StatusCodes.Status401Unauthorized);
 
         var friends = await _friendsService.GetFriendsFor(user);
 
         return Ok(_mapper.Map<UserViewModel>(friends));
     }
-    
+
     /// <summary>
-    /// Get all invitations for current user (current user is invited)
+    ///     Get all invitations for current user (current user is invited)
     /// </summary>
     /// <returns>List of invitations where user is invited</returns>
     [HttpGet("invitations-for")]
     public async Task<IActionResult> InvitationsFor()
     {
         var user = await _userManager.GetUserAsync(HttpContext.User);
-        if (user is null) return Problem("User unauthorized", statusCode:StatusCodes.Status401Unauthorized);
-        
+        if (user is null) return Problem("User unauthorized", statusCode: StatusCodes.Status401Unauthorized);
+
         var invitationsFor = await _friendsService.GetInvitationsFor(user);
 
         return Ok(_mapper.Map<FriendInvitationViewModel>(invitationsFor));
     }
-    
+
     /// <summary>
-    /// Get all invitations of current user (current user is invitor)
+    ///     Get all invitations of current user (current user is invitor)
     /// </summary>
     /// <returns>List of invitations where user is invitor</returns>
     [HttpGet("invitations-of")]
     public async Task<IActionResult> InvitationsOf()
     {
         var user = await _userManager.GetUserAsync(HttpContext.User);
-        if (user is null) return Problem("User unauthorized", statusCode:StatusCodes.Status401Unauthorized);
-        
+        if (user is null) return Problem("User unauthorized", statusCode: StatusCodes.Status401Unauthorized);
+
         var invitationsOf = await _friendsService.GetInvitationsOf(user);
 
         return Ok(_mapper.Map<FriendInvitationViewModel>(invitationsOf));

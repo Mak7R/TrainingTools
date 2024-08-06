@@ -1,4 +1,4 @@
-﻿@model WebUI.Models.Account.UpdateProfileDto
+﻿@model UpdateProfileDto
 
 @{
     ViewBag.Title = "Update Profile";
@@ -31,13 +31,13 @@
             <input asp-for="About" class="form-control"/>
             <span asp-validation-for="About" class="text-danger"></span>
         </div>
-        
+
         <div class="mb-3">
             <label asp-for="IsPublic" class="form-label">Is Profile Public: </label>
             <input asp-for="IsPublic" class="form-check-input"/>
             <span asp-validation-for="IsPublic" class="text-danger"></span>
         </div>
-        
+
         @if (User.IsInRole(nameof(Role.Root)) || User.IsInRole(nameof(Role.Admin)))
         {
             <div class="mb-3">

@@ -6,20 +6,20 @@
 
 <div class="container mt-3">
     <h2>Change password</h2>
-    
+
     <form asp-controller="Passwords" asp-action="Change" method="post">
         <div class="input-group mb-2">
             <label class="input-group-text" asp-for="Password">New password: </label>
             <input class="form-control" asp-for="Password"/>
             <span asp-validation-for="Password" class="text-danger"></span>
         </div>
-        
+
         <div class="input-group mb-3">
             <label class="input-group-text" asp-for="ConfirmPassword">Confirm password: </label>
             <input class="form-control" asp-for="ConfirmPassword"/>
             <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
         </div>
-        
+
         <div class="input-group mb-3">
             <label class="input-group-text" asp-for="OldPassword">Old password: </label>
             <input class="form-control" asp-for="OldPassword"/>

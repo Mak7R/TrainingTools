@@ -4,7 +4,6 @@ using WebUI.Models.TrainingPlan;
 
 namespace WebUI.ModelBinding.ModelBinders;
 
-
 [AttributeUsage(
     // Support method parameters in actions.
     AttributeTargets.Parameter |
@@ -15,10 +14,7 @@ namespace WebUI.ModelBinding.ModelBinders;
     // Support model types.
     AttributeTargets.Class |
     AttributeTargets.Enum |
-    AttributeTargets.Struct,
-
-    AllowMultiple = false,
-    Inherited = true)]
+    AttributeTargets.Struct)]
 public class UpdateTrainingPlanModelBinderAttribute : Attribute, IModelBinder
 {
     public async Task BindModelAsync(ModelBindingContext bindingContext)
@@ -27,7 +23,8 @@ public class UpdateTrainingPlanModelBinderAttribute : Attribute, IModelBinder
 
         // Ensure the request has form content type
         var request = bindingContext.HttpContext.Request;
-        if (request.ContentType != null && !request.ContentType.StartsWith("application/json", StringComparison.OrdinalIgnoreCase))
+        if (request.ContentType != null &&
+            !request.ContentType.StartsWith("application/json", StringComparison.OrdinalIgnoreCase))
         {
             bindingContext.Result = ModelBindingResult.Failed();
             return;

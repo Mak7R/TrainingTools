@@ -1,4 +1,4 @@
-﻿@model WebUI.Models.Account.LoginDto
+﻿@model LoginDto
 
 @{
     ViewBag.Title = "Login";
@@ -7,7 +7,7 @@
 
 <div class="container mt-3">
     <h2 class="text-center">Login</h2>
-    
+
     <form method="post" asp-controller="Account" asp-action="Login" asp-route-returnUrl="@Context.Request.Query["ReturnUrl"]">
         <div class="mb-3">
             <label asp-for="EmailOrUsername" class="form-label"></label>
@@ -24,9 +24,9 @@
         <div class="mb-3">
             <a asp-controller="Passwords" asp-action="Forgot">Forgot password?</a>
         </div>
-        
+
         <div class="mb-3">
-            
+
             <button type="submit" class="btn btn-success">Login</button>
         </div>
 

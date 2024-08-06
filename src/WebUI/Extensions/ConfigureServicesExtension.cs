@@ -41,9 +41,11 @@ public static class ConfigureServicesExtension
     public static IServiceCollection ConfigureServices(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddLocalization(options => options.ResourcesPath = "Resources");
-        
+
         var activeConnection = configuration["ActiveConnection"] ?? "DefaultConnection";
-        var sqlServerConnectionString = configuration.GetConnectionString(activeConnection) ?? throw new InvalidOperationException($"Connection string '{activeConnection}' not found.");
+        var sqlServerConnectionString = configuration.GetConnectionString(activeConnection) ??
+                                        throw new InvalidOperationException(
+                                            $"Connection string '{activeConnection}' not found.");
 
         services.AddDbContext<ApplicationDbContext>(options =>
             options.UseSqlServer(sqlServerConnectionString)
@@ -61,7 +63,7 @@ public static class ConfigureServicesExtension
             })
             .AddViewLocalization(LanguageViewLocationExpanderFormat.Suffix)
             .AddDataAnnotationsLocalization();
-        
+
         if (configuration["RazorRuntimeCompilation"] == "True") mvcBuilder.AddRazorRuntimeCompilation();
 
         services.AddHttpContextAccessor();
@@ -79,7 +81,7 @@ public static class ConfigureServicesExtension
 
             options.SupportedCultures = supportedCultures;
             options.SupportedUICultures = supportedCultures;
-            
+
             options.RequestCultureProviders = new List<IRequestCultureProvider>
             {
                 new CookieRequestCultureProvider()
@@ -96,9 +98,10 @@ public static class ConfigureServicesExtension
                 options.Password.RequireNonAlphanumeric = false;
                 options.Password.RequireDigit = false;
 
-                options.User.AllowedUserNameCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.!#$%^&*()_-+=";
+                options.User.AllowedUserNameCharacters =
+                    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.!#$%^&*()_-+=";
                 options.User.RequireUniqueEmail = true;
-                
+
                 options.Tokens.EmailConfirmationTokenProvider = "emailconfirmation";
                 options.SignIn.RequireConfirmedEmail = true;
             })
@@ -117,7 +120,7 @@ public static class ConfigureServicesExtension
         services.ConfigureApplicationCookie(options =>
         {
             options.Cookie.HttpOnly = true;
-            
+
             options.LoginPath = "/login";
             options.LogoutPath = "/logout";
             options.AccessDeniedPath = "/access-denied";
@@ -160,20 +163,23 @@ public static class ConfigureServicesExtension
                     tokenValidationParameters.ValidateIssuer = true;
                     tokenValidationParameters.ValidIssuer = configuration["Jwt:Issuer"];
                 }
-                
+
                 options.TokenValidationParameters = tokenValidationParameters;
             })
             .AddGoogle(options =>
             {
                 var googleOAuth = configuration.GetSection("OAuth2:Google");
-                options.ClientId = googleOAuth["ClientId"] ?? throw new InvalidOperationException("ClientId cannot be empty");
-                options.ClientSecret = googleOAuth["ClientSecret"] ?? throw new InvalidOperationException("ClientSecret cannot be empty");
+                options.ClientId = googleOAuth["ClientId"] ??
+                                   throw new InvalidOperationException("ClientId cannot be empty");
+                options.ClientSecret = googleOAuth["ClientSecret"] ??
+                                       throw new InvalidOperationException("ClientSecret cannot be empty");
                 options.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
             });
 
         services.AddAuthorizationBuilder()
-            .AddPolicy(nameof(VerifyClaimsRequirement), policy => policy.AddRequirements(new VerifyClaimsRequirement()));
-        
+            .AddPolicy(nameof(VerifyClaimsRequirement),
+                policy => policy.AddRequirements(new VerifyClaimsRequirement()));
+
         services.AddApiVersioning(config =>
         {
             config.ApiVersionReader = new UrlSegmentApiVersionReader();
@@ -185,17 +191,21 @@ public static class ConfigureServicesExtension
         {
             options.AddDefaultPolicy(builder =>
             {
-                builder.WithOrigins(configuration.GetSection("AllowedOrigins").Get<string[]>() ?? throw new InvalidOperationException("AllowedOrigins was not found"));
-                builder.WithHeaders(configuration.GetSection("AllowedHeaders").Get<string[]>() ?? throw new InvalidOperationException("AllowedHeaders was not found"));
-                builder.WithMethods(configuration.GetSection("AllowedMethods").Get<string[]>() ?? throw new InvalidOperationException("AllowedMethods was not found"));
+                builder.WithOrigins(configuration.GetSection("AllowedOrigins").Get<string[]>() ??
+                                    throw new InvalidOperationException("AllowedOrigins was not found"));
+                builder.WithHeaders(configuration.GetSection("AllowedHeaders").Get<string[]>() ??
+                                    throw new InvalidOperationException("AllowedHeaders was not found"));
+                builder.WithMethods(configuration.GetSection("AllowedMethods").Get<string[]>() ??
+                                    throw new InvalidOperationException("AllowedMethods was not found"));
             });
         });
 
         // setup swagger
         services.AddEndpointsApiExplorer();
-        services.AddSwaggerGen(options => {
+        services.AddSwaggerGen(options =>
+        {
             options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, "api-docs.xml"));
-            
+
             options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
             {
                 Description = @"JWT Authorization header using the Bearer scheme. \r\n\r\n 
@@ -207,7 +217,7 @@ public static class ConfigureServicesExtension
                 Scheme = "Bearer"
             });
 
-            options.AddSecurityRequirement(new OpenApiSecurityRequirement()
+            options.AddSecurityRequirement(new OpenApiSecurityRequirement
             {
                 {
                     new OpenApiSecurityScheme
@@ -219,16 +229,16 @@ public static class ConfigureServicesExtension
                         },
                         Scheme = "oauth2",
                         Name = "Bearer",
-                        In = ParameterLocation.Header,
-
+                        In = ParameterLocation.Header
                     },
                     new List<string>()
                 }
             });
-            
-            options.SwaggerDoc("v1", new OpenApiInfo{ Title = "Training Tools Web API V1", Version = "1.0" });
+
+            options.SwaggerDoc("v1", new OpenApiInfo { Title = "Training Tools Web API V1", Version = "1.0" });
         });
-        services.AddVersionedApiExplorer(options => {
+        services.AddVersionedApiExplorer(options =>
+        {
             options.GroupNameFormat = "'v'VVV";
             options.SubstituteApiVersionInUrl = true;
         });
@@ -242,32 +252,32 @@ public static class ConfigureServicesExtension
         {
             options.LoggingFields = HttpLoggingFields.RequestPath | HttpLoggingFields.ResponseStatusCode;
         });
-        
+
         return services;
     }
-    
+
     private static void AddApplicationServices(this IServiceCollection services, IConfiguration configuration)
     {
         services.Configure<ConfirmationEmailOptions>(configuration.GetSection("Emails:Confirmation"));
-        
+
         services.AddScoped<IRepository<Group, Guid>, GroupsRepository>();
         services.AddScoped<IRepository<Exercise, Guid>, ExercisesRepository>();
         services.AddScoped<IRepository<TrainingPlan, Guid>, TrainingPlansRepository>();
         services.AddScoped<IRepository<FriendInvitation, (Guid, Guid)>, FriendInvitationsRepository>();
         services.AddScoped<IRepository<Friendship, (Guid, Guid)>, FriendshipsRepository>();
         services.AddScoped<IRepository<ExerciseResult, (Guid, Guid)>, ExerciseResultsRepository>();
-        
+
         services.AddScoped<IGroupsService, GroupsService>();
         services.AddScoped<IUsersService, UsersService>();
         services.AddScoped<IFriendsService, FriendshipsService>();
         services.AddScoped<IExercisesService, ExercisesService>();
         services.AddScoped<IExerciseResultsService, ExerciseResultsService>();
         services.AddScoped<ITrainingPlansService, TrainingPlansService>();
-        
+
         services.AddScoped<IReferencedContentProvider, ImagesAndVideosReferencedContentProvider>();
         services.AddSingleton<IAuthTokenService<TokenGenerationInfo>, JwtService>();
         services.AddSingleton<IExerciseResultsToExсelExporter, ExerciseResultsToExcelExporter>();
-        
+
         services.AddTransient<IEmailSender, EmailSender>();
         services.AddScoped<IAuthorizationHandler, VerifyClaimsRequirementHandler>();
 

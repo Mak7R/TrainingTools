@@ -2,9 +2,9 @@
 
 public class ExceptionHandlingMiddleware
 {
-    private readonly RequestDelegate _next;
     private readonly ILogger<ExceptionHandlingMiddleware> _logger;
-    
+    private readonly RequestDelegate _next;
+
     public ExceptionHandlingMiddleware(RequestDelegate next, ILogger<ExceptionHandlingMiddleware> logger)
     {
         _next = next;
@@ -25,7 +25,6 @@ public class ExceptionHandlingMiddleware
     }
 }
 
-    
 public static class ExceptionHandlingMiddlewareExtensions
 {
     public static IApplicationBuilder UseExceptionHandlingMiddleware(this IApplicationBuilder builder)

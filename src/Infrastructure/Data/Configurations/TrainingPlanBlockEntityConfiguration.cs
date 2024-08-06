@@ -1,7 +1,6 @@
 ﻿using Infrastructure.Entities.TrainingPlan;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using Microsoft.Extensions.Configuration;
 
 namespace Infrastructure.Data.Configurations;
 
@@ -13,7 +12,7 @@ public class TrainingPlanBlockEntityConfiguration : IEntityTypeConfiguration<Tra
             .ToTable("TrainingPlanBlock")
             .Property("TrainingPlanEntityId")
             .IsRequired();
-        
+
 
         builder
             .HasMany(block => block.TrainingPlanBlockEntries)

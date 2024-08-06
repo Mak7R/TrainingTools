@@ -18,13 +18,13 @@
         <form class="d-flex justify-content-end col mx-1 px-0" method="get" onsubmit="addQueryParametersFromForm(event)">
             <label for="filter-by-name-input"></label>
             <input id="filter-by-name-input" class="form-control me-1" name="@Filters.OwnerName.AsFilterName()" value="@ViewData[Filters.OwnerName.AsFilterName()]" placeholder="search"/>
-            <button type="submit" class="btn btn-primary rounded-end-5"><img style="width: 2em;height: 2em;" src="/img/icons/search.svg" alt="Search"/></button>
+            <button type="submit" class="btn btn-primary rounded-end-5">
+                <img style="width: 2em;height: 2em;" src="/img/icons/search.svg" alt="Search"/>
+            </button>
         </form>
     </div>
-    
-    
-    
-    
+
+
     <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3">
         @foreach (var result in Model)
         {
@@ -45,5 +45,3 @@
 
     @await Html.PartialAsync("Partials/DefaultPagingFormPartialView", ViewBag.ExerciseResultsCount, ViewData)
 </div>
-
-

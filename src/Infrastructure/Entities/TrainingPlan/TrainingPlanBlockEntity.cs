@@ -5,11 +5,12 @@ namespace Infrastructure.Entities.TrainingPlan;
 
 public class TrainingPlanBlockEntity
 {
-    [Key]
-    public Guid Id { get; set; }
+    [Key] public Guid Id { get; set; }
+
     public int Position { get; set; }
 
     [StringLength(MaxBlockNameSize)] public string Title { get; set; } = string.Empty;
 
-    public IList<TrainingPlanBlockEntryEntity> TrainingPlanBlockEntries { get; set; } = new List<TrainingPlanBlockEntryEntity>();
+    public IList<TrainingPlanBlockEntryEntity> TrainingPlanBlockEntries { get; set; } =
+        new List<TrainingPlanBlockEntryEntity>();
 }

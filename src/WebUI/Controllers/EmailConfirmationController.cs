@@ -12,17 +12,19 @@ namespace WebUI.Controllers;
 [AllowAnonymous]
 public class EmailConfirmationController : Controller
 {
-    private readonly UserManager<ApplicationUser> _userManager;
     private readonly IStringLocalizer<AccountController> _localizer;
+    private readonly UserManager<ApplicationUser> _userManager;
 
-    public EmailConfirmationController(UserManager<ApplicationUser> userManager, IStringLocalizer<AccountController> localizer)
+    public EmailConfirmationController(UserManager<ApplicationUser> userManager,
+        IStringLocalizer<AccountController> localizer)
     {
         _userManager = userManager;
         _localizer = localizer;
     }
 
     [HttpPost("/resend-email-confirmation")]
-    public async Task<IActionResult> ResendEmailConfirmationLetter(string email, [FromServices] IEmailSender emailSender)
+    public async Task<IActionResult> ResendEmailConfirmationLetter(string email,
+        [FromServices] IEmailSender emailSender)
     {
         var user = await _userManager.FindByEmailAsync(email);
         if (user == null)
@@ -30,15 +32,18 @@ public class EmailConfirmationController : Controller
 
         if (user.EmailConfirmed)
             return this.BadRequestRedirect(["Email already confirmed"]);
-        
+
         var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-        var confirmationLink = Url.Action("ConfirmEmail", "EmailConfirmation", new { userId = user.Id, token }, Request.Scheme) ?? $"?userId{user.Id}&token={token}";
-        await emailSender.SendEmailAsync(email, _localizer["ConfirmEmailTitle"], _localizer["ConfirmEmailText", confirmationLink]);
+        var confirmationLink =
+            Url.Action("ConfirmEmail", "EmailConfirmation", new { userId = user.Id, token }, Request.Scheme) ??
+            $"?userId{user.Id}&token={token}";
+        await emailSender.SendEmailAsync(email, _localizer["ConfirmEmailTitle"],
+            _localizer["ConfirmEmailText", confirmationLink]);
 
         return this.InfoRedirect(100,
             ["Letter with confirmation was sent to your email", "Check it and confirm before login"]);
     }
-    
+
     [HttpGet("/account/confirm-email")]
     public async Task<IActionResult> ConfirmEmail(Guid userId, string token)
     {
@@ -46,7 +51,7 @@ public class EmailConfirmationController : Controller
             return RedirectToAction("Index", "Home");
 
         var user = await _userManager.FindByIdAsync(userId.ToString());
-        if (user == null) return RedirectToAction("Login","Account");
+        if (user == null) return RedirectToAction("Login", "Account");
 
         var result = await _userManager.ConfirmEmailAsync(user, token);
         if (result.Succeeded)

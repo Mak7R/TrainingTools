@@ -38,7 +38,7 @@ namespace Application.Resources.UsersService {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Application.Resources.Services.UsersService.UsersService.en-US", typeof(UsersService_en_US).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Application.Resources.Services.UsersService.en-US", typeof(UsersService_en_US).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;

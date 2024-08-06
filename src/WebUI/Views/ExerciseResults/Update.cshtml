@@ -11,41 +11,41 @@
     <form asp-action="Update" method="post">
         <table class="table table-striped table-hover table-bordered border-black" id="resultsTable">
             <thead>
-                <tr>
-                    <th class="col-1" scope="col">#</th>
-                    <th class="col-2" scope="col">Weight</th>
-                    <th class="col-2" scope="col">Count</th>
-                    <th class="col-4" scope="col">Comment</th>
-                    <th class="col-1" scope="col">Action</th>
-                </tr>
+            <tr>
+                <th class="col-1" scope="col">#</th>
+                <th class="col-2" scope="col">Weight</th>
+                <th class="col-2" scope="col">Count</th>
+                <th class="col-4" scope="col">Comment</th>
+                <th class="col-1" scope="col">Action</th>
+            </tr>
             </thead>
             <tbody>
-                @{
-                    var index = 0;
-                }
+            @{
+                var index = 0;
+            }
 
-                @for (var i = 0; i < Model.ApproachInfos.Count; i++)
-                {
-                    <tr>
-                        <td>@(index + 1)</td>
-                        <td>
-                            <input type="number" step="0.001" min="0" class="form-control" name="ApproachInfos[@i].Weight" value="@Model.ApproachInfos[i].Weight.ToString(CultureInfo.InvariantCulture)" placeholder="0" />
-                        </td>
-                        <td>
-                            <input type="number" min="0" class="form-control" name="ApproachInfos[@i].Count" value="@Model.ApproachInfos[i].Count" placeholder="0" />
-                        </td>
-                        <td>
-                            <input type="text" class="form-control" name="ApproachInfos[@i].Comment" value="@Model.ApproachInfos[i].Comment" />
-                        </td>
-                        <td>
-                            <button type="button" class="btn btn-danger" onclick="removeRow(this)">Remove</button>
-                        </td>
-                    </tr>
-                    index++;
-                }
+            @for (var i = 0; i < Model.ApproachInfos.Count; i++)
+            {
+                <tr>
+                    <td>@(index + 1)</td>
+                    <td>
+                        <input type="number" step="0.001" min="0" class="form-control" name="ApproachInfos[@i].Weight" value="@Model.ApproachInfos[i].Weight.ToString(CultureInfo.InvariantCulture)" placeholder="0"/>
+                    </td>
+                    <td>
+                        <input type="number" min="0" class="form-control" name="ApproachInfos[@i].Count" value="@Model.ApproachInfos[i].Count" placeholder="0"/>
+                    </td>
+                    <td>
+                        <input type="text" class="form-control" name="ApproachInfos[@i].Comment" value="@Model.ApproachInfos[i].Comment"/>
+                    </td>
+                    <td>
+                        <button type="button" class="btn btn-danger" onclick="removeRow(this)">Remove</button>
+                    </td>
+                </tr>
+                index++;
+            }
             </tbody>
         </table>
-        
+
         <button type="button" class="btn btn-primary d-block w-100 mb-2" onclick="addRow()">Add Row</button>
         <div class="row justify-content-center">
             <a class="btn btn-secondary col-4 me-4" asp-controller="ExerciseResults" asp-action="GetUserResults">Cancel</a>

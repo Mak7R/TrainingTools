@@ -16,22 +16,23 @@ namespace WebUI.Controllers;
 [AllowAnonymous]
 public class PasswordsController : Controller
 {
-    private readonly UserManager<ApplicationUser> _userManager;
     private readonly IStringLocalizer<PasswordsController> _localizer;
+    private readonly UserManager<ApplicationUser> _userManager;
 
-    public PasswordsController(UserManager<ApplicationUser> userManager, IStringLocalizer<PasswordsController> localizer)
+    public PasswordsController(UserManager<ApplicationUser> userManager,
+        IStringLocalizer<PasswordsController> localizer)
     {
         _userManager = userManager;
         _localizer = localizer;
     }
-    
+
     [AllowAnonymous]
     [HttpGet("/forgot-password")]
     public IActionResult Forgot()
     {
         return View();
     }
-    
+
     [AllowAnonymous]
     [HttpPost("/forgot-password")]
     public async Task<IActionResult> Forgot([EmailAddress] string email, [FromServices] IEmailSender emailSender)
@@ -47,10 +48,13 @@ public class PasswordsController : Controller
         }
 
         var token = await _userManager.GeneratePasswordResetTokenAsync(user);
-        var reference = Url.Action("Reset", "Passwords", new { email, token }, Request.Scheme) ?? $"?email={email}&token={token}";
-        await emailSender.SendEmailAsync(email, _localizer["ResetPasswordTitle"], _localizer["ResetPasswordText", reference]);
+        var reference = Url.Action("Reset", "Passwords", new { email, token }, Request.Scheme) ??
+                        $"?email={email}&token={token}";
+        await emailSender.SendEmailAsync(email, _localizer["ResetPasswordTitle"],
+            _localizer["ResetPasswordText", reference]);
 
-        return this.InfoRedirect(100, ["Link for updating password was successfully sent to your email. Check it and follow link."]);
+        return this.InfoRedirect(100,
+            ["Link for updating password was successfully sent to your email. Check it and follow link."]);
     }
 
     [AllowAnonymous]
@@ -68,7 +72,7 @@ public class PasswordsController : Controller
     {
         if (!ModelState.IsValid)
             return View(resetPasswordModel);
-        
+
         var user = await _userManager.FindByEmailAsync(resetPasswordModel.Email);
         if (user is null)
         {
@@ -76,11 +80,12 @@ public class PasswordsController : Controller
             return View(resetPasswordModel);
         }
 
-        var result = await _userManager.ResetPasswordAsync(user, resetPasswordModel.Token, resetPasswordModel.NewPassword);
+        var result =
+            await _userManager.ResetPasswordAsync(user, resetPasswordModel.Token, resetPasswordModel.NewPassword);
 
         if (result.Succeeded)
             return RedirectToAction("Login", "Account");
-        
+
         foreach (var error in result.Errors)
             ModelState.AddModelError(nameof(ResetPasswordModel), error.Description);
         resetPasswordModel.NewPassword = string.Empty;
@@ -93,7 +98,7 @@ public class PasswordsController : Controller
     {
         return View();
     }
-    
+
     [AuthorizeVerifiedRoles]
     [HttpPost("/change-password")]
     public async Task<IActionResult> Change(ChangePasswordModel changePasswordModel)
@@ -101,12 +106,13 @@ public class PasswordsController : Controller
         var user = await _userManager.GetUserAsync(User);
         if (user is null)
             return RedirectToAction("Login", "Account");
-        
-        var result = await _userManager.ChangePasswordAsync(user, changePasswordModel.OldPassword, changePasswordModel.Password);
+
+        var result =
+            await _userManager.ChangePasswordAsync(user, changePasswordModel.OldPassword, changePasswordModel.Password);
 
         if (result.Succeeded)
             return RedirectToAction("Index", "Home");
-        
+
         foreach (var error in result.Errors)
             ModelState.AddModelError(nameof(ResetPasswordModel), error.Description);
         return View(changePasswordModel);

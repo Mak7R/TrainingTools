@@ -1,15 +1,15 @@
-﻿
-
-@{
+﻿@{
     ViewBag.Title = "Help";
 }
 
 <div class="container mt-4">
     <h2 class="text-center">Help</h2>
-    
+
     <ul>
-        <li class="mt-2"><a asp-controller="Help" asp-action="Information">Main information</a></li>
-        
+        <li class="mt-2">
+            <a asp-controller="Help" asp-action="Information">Main information</a>
+        </li>
+
         <li class="mt-2">
             Resend confirmation letter
             <form method="post" asp-controller="EmailConfirmation" asp-action="ResendEmailConfirmationLetter">
@@ -20,7 +20,9 @@
                 </div>
             </form>
         </li>
-        
-        <li class="mt-2"><a asp-controller="Passwords" asp-action="Forgot">Forgot password?</a></li>
+
+        <li class="mt-2">
+            <a asp-controller="Passwords" asp-action="Forgot">Forgot password?</a>
+        </li>
     </ul>
 </div>

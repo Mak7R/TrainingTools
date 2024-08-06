@@ -1,20 +1,20 @@
 ﻿@using Filters = Application.Constants.FilterOptionNames.Exercise
 @using Orders = Application.Constants.OrderOptionNames.Exercise
-@model IEnumerable<WebUI.Models.Exercise.ExerciseViewModel>
+@model IEnumerable<ExerciseViewModel>
 
 @{
     ViewBag.Title = "Exercises";
 
     var isUserAuthenticated = User.Identity?.IsAuthenticated ?? false;
-    
+
     var isUserAdmin = User.IsInRole("Admin");
     var isUserRoot = User.IsInRole("Root");
 
     IEnumerable<GroupViewModel> availableGroups = ViewBag.AvailableGroups;
-    
+
     ExerciseResult[] exerciseResults;
     if (ViewBag.UserResults is IEnumerable<ExerciseResult> eR) exerciseResults = eR.ToArray();
-    else exerciseResults = new ExerciseResult[]{};
+    else exerciseResults = new ExerciseResult[] { };
 }
 
 <div class="container">
@@ -23,8 +23,8 @@
     <form class="d-flex justify-content-end" method="get" onsubmit="addQueryParametersFromForm(event)">
         <div class="input-group mb-1">
             <label for="filter-by-group-input" hidden></label>
-            
-            @{ var currentFilterGroup = ViewData[Filters.GroupId.AsFilterName()] as string;}
+
+            @{ var currentFilterGroup = ViewData[Filters.GroupId.AsFilterName()] as string; }
             <select id="filter-by-group-input" class="form-select rounded-start-5 me-1" style="max-width: 30%;" name="@Filters.GroupId.AsFilterName()">
                 <option value="">Not selected</option>
                 @foreach (var group in availableGroups)
@@ -39,11 +39,13 @@
                     }
                 }
             </select>
-            
+
             <label for="filter-by-name-input" hidden></label>
             <input id="filter-by-name-input" class="form-control me-1" name="@Filters.Name.AsFilterName()" value="@ViewData[Filters.Name.AsFilterName()]" placeholder="search"/>
-            
-            <button type="submit" class="btn btn-primary rounded-end-5"><img style="width: 2em;height: 2em;" src="/img/icons/search.svg" alt="Search"/></button>
+
+            <button type="submit" class="btn btn-primary rounded-end-5">
+                <img style="width: 2em;height: 2em;" src="/img/icons/search.svg" alt="Search"/>
+            </button>
         </div>
     </form>
 
@@ -91,7 +93,7 @@
     </table>
 
     @await Html.PartialAsync("Partials/DefaultPagingFormPartialView", ViewBag.ExercisesCount, ViewData)
-    
+
     @if (isUserAdmin || isUserRoot)
     {
         <a class="btn btn-success w-100 d-block" asp-controller="Exercises" asp-action="Create">Add new exercise</a>

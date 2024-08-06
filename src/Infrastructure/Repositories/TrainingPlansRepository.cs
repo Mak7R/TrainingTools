@@ -13,50 +13,82 @@ using Infrastructure.Entities.TrainingPlan;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
-
 namespace Infrastructure.Repositories;
 
 public class TrainingPlansRepository : IRepository<TrainingPlan, Guid>
 {
+    private static readonly ReadOnlyDictionary<string, Func<string, Expression<Func<TrainingPlanEntity, bool>>>>
+        TrainingPlanFilters =
+            new(new Dictionary<string, Func<string, Expression<Func<TrainingPlanEntity, bool>>>>
+            {
+                { FilterOptionNames.TrainingPlan.Title, value => p => p.Title.Contains(value) },
+                { FilterOptionNames.TrainingPlan.TitleEquals, value => p => p.Title == value },
+                {
+                    FilterOptionNames.TrainingPlan.AuthorName,
+                    value => p => p.Author.UserName != null && p.Author.UserName.Contains(value)
+                },
+                {
+                    FilterOptionNames.TrainingPlan.AuthorNameEquals,
+                    value => p => p.Author.UserName != null && p.Author.UserName == value
+                },
+                {
+                    FilterOptionNames.TrainingPlan.AuthorId,
+                    value => Guid.TryParse(value, out var authorId) ? p => p.AuthorId == authorId : _ => false
+                },
+                { FilterOptionNames.TrainingPlan.PublicOnly, value => value == "true" ? p => p.IsPublic : p => true }
+            });
+
+    private static readonly
+        ReadOnlyDictionary<OrderModel, Func<IQueryable<TrainingPlanEntity>, IQueryable<TrainingPlanEntity>>>
+        TrainingPlanOrders =
+            new(new Dictionary<OrderModel, Func<IQueryable<TrainingPlanEntity>, IQueryable<TrainingPlanEntity>>>
+            {
+                {
+                    new OrderModel
+                    {
+                        OrderBy = OrderOptionNames.TrainingPlan.Title, OrderOption = OrderOptionNames.Shared.Ascending
+                    },
+                    query => query.OrderBy(t => t.Title)
+                },
+                {
+                    new OrderModel
+                    {
+                        OrderBy = OrderOptionNames.TrainingPlan.Title, OrderOption = OrderOptionNames.Shared.Descending
+                    },
+                    query => query.OrderByDescending(t => t.Title)
+                },
+                {
+                    new OrderModel
+                    {
+                        OrderBy = OrderOptionNames.TrainingPlan.AuthorName,
+                        OrderOption = OrderOptionNames.Shared.Ascending
+                    },
+                    query => query.OrderBy(t => t.Author.UserName).ThenBy(t => t.Title)
+                },
+                {
+                    new OrderModel
+                    {
+                        OrderBy = OrderOptionNames.TrainingPlan.AuthorName,
+                        OrderOption = OrderOptionNames.Shared.Descending
+                    },
+                    query => query.OrderByDescending(t => t.Author.UserName).ThenBy(t => t.Title)
+                }
+            });
+
     private readonly ApplicationDbContext _dbContext;
     private readonly ILogger<TrainingPlansRepository> _logger;
     private readonly IMapper _mapper;
 
-    public TrainingPlansRepository(ApplicationDbContext dbContext, ILogger<TrainingPlansRepository> logger, IMapper mapper)
+    public TrainingPlansRepository(ApplicationDbContext dbContext, ILogger<TrainingPlansRepository> logger,
+        IMapper mapper)
     {
         _dbContext = dbContext;
         _logger = logger;
         _mapper = mapper;
     }
 
-    private static readonly ReadOnlyDictionary<string, Func<string, Expression<Func<TrainingPlanEntity, bool>>>> TrainingPlanFilters =
-        new(new Dictionary<string, Func<string, Expression<Func<TrainingPlanEntity, bool>>>>
-        {
-            { FilterOptionNames.TrainingPlan.Title, value => p => p.Title.Contains(value) },
-            { FilterOptionNames.TrainingPlan.TitleEquals, value => p => p.Title == value},
-            {
-                FilterOptionNames.TrainingPlan.AuthorName,
-                value => p => p.Author.UserName != null && p.Author.UserName.Contains(value)
-            },
-            {
-                FilterOptionNames.TrainingPlan.AuthorNameEquals,
-                value => p => p.Author.UserName != null && p.Author.UserName == value
-            },
-            { FilterOptionNames.TrainingPlan.AuthorId, value => Guid.TryParse(value, out var authorId) ? p => p.AuthorId == authorId : _ => false },
-            { FilterOptionNames.TrainingPlan.PublicOnly, value => value == "true" ? p => p.IsPublic : p => true }
-        });
-    
-    private static readonly
-        ReadOnlyDictionary<OrderModel, Func<IQueryable<TrainingPlanEntity>, IQueryable<TrainingPlanEntity>>> TrainingPlanOrders =
-            new(new Dictionary<OrderModel, Func<IQueryable<TrainingPlanEntity>, IQueryable<TrainingPlanEntity>>>
-            {
-                {new OrderModel{OrderBy = OrderOptionNames.TrainingPlan.Title, OrderOption = OrderOptionNames.Shared.Ascending}, query => query.OrderBy(t => t.Title)},
-                {new OrderModel{OrderBy = OrderOptionNames.TrainingPlan.Title, OrderOption = OrderOptionNames.Shared.Descending}, query => query.OrderByDescending(t => t.Title)},
-                {new OrderModel{OrderBy = OrderOptionNames.TrainingPlan.AuthorName, OrderOption = OrderOptionNames.Shared.Ascending}, query => query.OrderBy(t => t.Author.UserName).ThenBy(t => t.Title)},
-                {new OrderModel{OrderBy = OrderOptionNames.TrainingPlan.AuthorName, OrderOption = OrderOptionNames.Shared.Descending}, query => query.OrderByDescending(t => t.Author.UserName).ThenBy(t => t.Title)}
-            });
-    
-    public async Task<IEnumerable<TrainingPlan>> GetAll(FilterModel? filterModel = null, OrderModel? orderModel = null, PageModel? pageModel = null)
+    public async Task<IEnumerable<TrainingPlan>> GetAll(FilterModel? filterModel = null, OrderModel? orderModel = null,
+        PageModel? pageModel = null)
     {
         try
         {
@@ -69,13 +101,13 @@ public class TrainingPlansRepository : IRepository<TrainingPlan, Guid>
 
             if (filterModel is not null)
                 query = filterModel.Filter(query, TrainingPlanFilters);
-            
+
             if (orderModel is not null)
                 query = orderModel.Order(query, TrainingPlanOrders);
 
             if (pageModel is not null)
                 query = pageModel.TakePage(query);
-            
+
             return (await query.ToListAsync()).Select(entity => _mapper.Map<TrainingPlan>(entity));
         }
         catch (Exception e)
@@ -95,7 +127,6 @@ public class TrainingPlansRepository : IRepository<TrainingPlan, Guid>
                 .Include(plan => plan.TrainingPlanBlocks)
                 .ThenInclude(block => block.TrainingPlanBlockEntries)
                 .ThenInclude(e => e.Group)
-                
                 .FirstOrDefaultAsync(plan => plan.Id == id);
 
             return plan == null ? null : _mapper.Map<TrainingPlan>(plan);
@@ -120,7 +151,9 @@ public class TrainingPlansRepository : IRepository<TrainingPlan, Guid>
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Exception was thrown while receiving training plans count by filter '{filter}' from database", filterModel);
+            _logger.LogError(e,
+                "Exception was thrown while receiving training plans count by filter '{filter}' from database",
+                filterModel);
             throw new DataBaseException("Error while receiving training plans count from database", e);
         }
     }
@@ -128,7 +161,7 @@ public class TrainingPlansRepository : IRepository<TrainingPlan, Guid>
     public async Task<OperationResult> Create(TrainingPlan trainingPlan)
     {
         ArgumentNullException.ThrowIfNull(trainingPlan);
-        
+
         var trainingPlanEntity = _mapper.Map<TrainingPlanEntity>(trainingPlan);
 
         try
@@ -145,13 +178,16 @@ public class TrainingPlansRepository : IRepository<TrainingPlan, Guid>
         }
         catch (AlreadyExistsException alreadyExistsException)
         {
-            _logger.LogInformation(alreadyExistsException, "Training plan with name '{trainingPlanName}' already exist in database", trainingPlan.Title);
+            _logger.LogInformation(alreadyExistsException,
+                "Training plan with name '{trainingPlanName}' already exist in database", trainingPlan.Title);
             return DefaultOperationResult.FromException(alreadyExistsException);
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Exception was thrown while adding new training plan '{plan}' to database", trainingPlan.Title);
-            return DefaultOperationResult.FromException(new DataBaseException("Error while adding training plan to database", e));
+            _logger.LogError(e, "Exception was thrown while adding new training plan '{plan}' to database",
+                trainingPlan.Title);
+            return DefaultOperationResult.FromException(
+                new DataBaseException("Error while adding training plan to database", e));
         }
 
         return new DefaultOperationResult(true, trainingPlan);
@@ -170,32 +206,38 @@ public class TrainingPlansRepository : IRepository<TrainingPlan, Guid>
 
             if (trainingPlanEntity is null)
                 throw new NotFoundException("Training plan was not found");
-            
+
             var sameName = await _dbContext.TrainingPlans
                 .AsNoTracking()
-                .FirstOrDefaultAsync(p => p.Id != trainingPlanEntity.Id && p.AuthorId == updatedPlan.Author.Id && p.Title == updatedPlan.Title);
+                .FirstOrDefaultAsync(p =>
+                    p.Id != trainingPlanEntity.Id && p.AuthorId == updatedPlan.Author.Id &&
+                    p.Title == updatedPlan.Title);
 
             if (sameName is not null)
                 throw new AlreadyExistsException("Plan with this name already exists");
-            
+
             _mapper.Map(updatedPlan, trainingPlanEntity); // todo optimization with execute update
-            
+
             await _dbContext.SaveChangesAsync();
         }
         catch (NotFoundException notFoundException)
         {
-            _logger.LogInformation(notFoundException, "Training plan with id '{trainingPlanId}' was not found", updatedPlan.Id);
+            _logger.LogInformation(notFoundException, "Training plan with id '{trainingPlanId}' was not found",
+                updatedPlan.Id);
             return DefaultOperationResult.FromException(notFoundException);
         }
         catch (AlreadyExistsException alreadyExistsException)
         {
-            _logger.LogInformation(alreadyExistsException, "Training plan with name '{trainingPlan}' already exist in database", updatedPlan.Title);
+            _logger.LogInformation(alreadyExistsException,
+                "Training plan with name '{trainingPlan}' already exist in database", updatedPlan.Title);
             return DefaultOperationResult.FromException(alreadyExistsException);
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Exception was thrown while adding new training plan '{trainingPlanId}' to database", updatedPlan.Id);
-            return DefaultOperationResult.FromException(new DataBaseException("Error while updating training plan in database", e));
+            _logger.LogError(e, "Exception was thrown while adding new training plan '{trainingPlanId}' to database",
+                updatedPlan.Id);
+            return DefaultOperationResult.FromException(
+                new DataBaseException("Error while updating training plan in database", e));
         }
 
         return new DefaultOperationResult(true, updatedPlan);
@@ -206,13 +248,14 @@ public class TrainingPlansRepository : IRepository<TrainingPlan, Guid>
         TrainingPlan? trainingPlan;
         try
         {
-            var trainingPlanEntity = await _dbContext.TrainingPlans.FirstOrDefaultAsync(plan => plan.Id == trainingPlanId);
+            var trainingPlanEntity =
+                await _dbContext.TrainingPlans.FirstOrDefaultAsync(plan => plan.Id == trainingPlanId);
 
             if (trainingPlanEntity is null)
                 throw new NotFoundException("Training plan was not found");
 
             trainingPlan = _mapper.Map<TrainingPlan>(trainingPlanEntity);
-            
+
             _dbContext.TrainingPlans.Remove(trainingPlanEntity);
             await _dbContext.SaveChangesAsync();
         }

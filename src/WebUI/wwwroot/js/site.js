@@ -1,7 +1,7 @@
-﻿
-class PreviewController{
+﻿class PreviewController {
     textArea = null;
     previewSpan = null;
+
     constructor(textAreaId, previewSpanId) {
         this.textArea = document.getElementById(textAreaId);
         this.previewSpan = document.getElementById(previewSpanId);
@@ -40,6 +40,6 @@ function addQueryParametersFromForm(event) {
     for (const [key, value] of formData.entries()) {
         params.set(key, value);
     }
-    
+
     window.location.href = `${window.location.pathname}?${params.toString()}`;
 }

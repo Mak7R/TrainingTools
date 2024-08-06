@@ -15,21 +15,24 @@ namespace WebUI.Controllers.Api.v1;
 [AllowAnonymous]
 public class PasswordsController : ApiController
 {
-    private readonly UserManager<ApplicationUser> _userManager;
     private readonly IStringLocalizer<Controllers.PasswordsController> _localizer;
+    private readonly UserManager<ApplicationUser> _userManager;
 
-    public PasswordsController(UserManager<ApplicationUser> userManager, IStringLocalizer<Controllers.PasswordsController> localizer)
+    public PasswordsController(UserManager<ApplicationUser> userManager,
+        IStringLocalizer<Controllers.PasswordsController> localizer)
     {
         _userManager = userManager;
         _localizer = localizer;
     }
-    
+
     /// <summary>
-    /// Send link for reset password to <see cref="email"/>
+    ///     Send link for reset password to <see cref="email" />
     /// </summary>
     /// <param name="email">to this email will be sent link for reset password</param>
     /// <param name="emailSender">Service for sending letter</param>
-    /// <returns><see cref="email"/></returns>
+    /// <returns>
+    ///     <see cref="email" />
+    /// </returns>
     [AllowAnonymous]
     [HttpPost("/forgot-password")]
     public async Task<IActionResult> Forgot([EmailAddress] string email, [FromServices] IEmailSender emailSender)
@@ -39,14 +42,16 @@ public class PasswordsController : ApiController
             return Problem("User with this email was not found", statusCode: 404);
 
         var token = await _userManager.GeneratePasswordResetTokenAsync(user);
-        var reference = Url.Action("Reset", "Passwords", new { email, token }, Request.Scheme) ?? $"?email={email}&token={token}";
-        await emailSender.SendEmailAsync(email, _localizer["ResetPasswordTitle"], _localizer["ResetPasswordText", reference]);
+        var reference = Url.Action("Reset", "Passwords", new { email, token }, Request.Scheme) ??
+                        $"?email={email}&token={token}";
+        await emailSender.SendEmailAsync(email, _localizer["ResetPasswordTitle"],
+            _localizer["ResetPasswordText", reference]);
 
         return Ok(email);
     }
 
     /// <summary>
-    /// Resets password if reset token is valid for current email
+    ///     Resets password if reset token is valid for current email
     /// </summary>
     /// <param name="resetPasswordModel">represents all necessary info for resetting password</param>
     /// <returns>ok</returns>
@@ -57,11 +62,12 @@ public class PasswordsController : ApiController
         if (user is null)
             return Problem("User with this email was not found", statusCode: 404);
 
-        var result = await _userManager.ResetPasswordAsync(user, resetPasswordModel.Token, resetPasswordModel.NewPassword);
+        var result =
+            await _userManager.ResetPasswordAsync(user, resetPasswordModel.Token, resetPasswordModel.NewPassword);
 
         if (result.Succeeded)
             Ok();
-        
+
         foreach (var error in result.Errors)
             ModelState.AddModelError(nameof(ResetPasswordModel), error.Description);
         resetPasswordModel.NewPassword = string.Empty;
@@ -75,9 +81,9 @@ public class PasswordsController : ApiController
             }
         });
     }
-    
+
     /// <summary>
-    /// Changes current password to new password
+    ///     Changes current password to new password
     /// </summary>
     /// <param name="changePasswordModel">represents info for changing password</param>
     /// <returns></returns>
@@ -87,20 +93,21 @@ public class PasswordsController : ApiController
     {
         var user = await _userManager.GetUserAsync(User);
         if (user is null)
-            return Problem("User was not found", statusCode:404);
-        
-        var result = await _userManager.ChangePasswordAsync(user, changePasswordModel.OldPassword, changePasswordModel.Password);
+            return Problem("User was not found", statusCode: 404);
+
+        var result =
+            await _userManager.ChangePasswordAsync(user, changePasswordModel.OldPassword, changePasswordModel.Password);
 
         if (result.Succeeded)
             return Ok();
-        
+
         return BadRequest(new ProblemDetails
         {
             Detail = "Password was not changed",
             Status = 400,
             Extensions = new Dictionary<string, object?>
             {
-                {"errors", result.Errors.Select(e => e.Description)}
+                { "errors", result.Errors.Select(e => e.Description) }
             }
         });
     }

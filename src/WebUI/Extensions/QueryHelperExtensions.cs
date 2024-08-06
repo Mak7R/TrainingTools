@@ -4,5 +4,8 @@ namespace WebUI.Extensions;
 
 public static class QueryHelperExtensions
 {
-    public static string AsFilterName(this string value) => $"{FilterOptionNames.Shared.FiltersPrefix}{value}";
+    public static string AsFilterName(this string value)
+    {
+        return $"{FilterOptionNames.Shared.FiltersPrefix}{value}";
+    }
 }
