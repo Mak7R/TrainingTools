@@ -120,12 +120,10 @@ public class TrainingPlansController : ApiController
     public async Task<IActionResult> GetTrainingPlan(Guid planId)
     {
         var user = await _userManager.GetUserAsync(User);
-        if (user is null)
-            return RedirectToAction("Login", "Account", new { returnUrl = $"/training-plans/{planId}" });
 
         var trainingPlan = await _trainingPlansService.GetById(planId);
 
-        if (trainingPlan is null || (!trainingPlan.IsPublic && trainingPlan.Author.Id != user.Id))
+        if (trainingPlan is null || (!trainingPlan.IsPublic && trainingPlan.Author.Id != user?.Id))
             return Problem("Training plan was not found", statusCode: 404, title: "Not found");
 
         return Ok(_mapper.Map<TrainingPlanViewModel>(trainingPlan));

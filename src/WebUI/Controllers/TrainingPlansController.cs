@@ -92,12 +92,10 @@ public class TrainingPlansController : Controller
     public async Task<IActionResult> GetTrainingPlan(Guid planId)
     {
         var user = await _userManager.GetUserAsync(User);
-        if (user is null)
-            return RedirectToAction("Login", "Account", new { returnUrl = $"/training-plans/{planId}" });
 
         var trainingPlan = await _trainingPlansService.GetById(planId);
 
-        if (trainingPlan is null || (!trainingPlan.IsPublic && trainingPlan.Author.Id != user.Id))
+        if (trainingPlan is null || (!trainingPlan.IsPublic && trainingPlan.Author.Id != user?.Id))
             return this.NotFoundRedirect(new[] { "Training plan was not found" });
 
         return View(_mapper.Map<TrainingPlanViewModel>(trainingPlan));
