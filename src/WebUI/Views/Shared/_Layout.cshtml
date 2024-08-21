@@ -38,13 +38,13 @@
                     <li class="nav-item">
                         <a class="nav-link" asp-controller="Exercises" asp-action="GetAll">@Localizer["Exercises"]</a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link" asp-controller="TrainingPlans" asp-action="GetAll">
+                            @Localizer["TrainingPlans"]
+                        </a>
+                    </li>
                     @if (Context.User.Identity?.IsAuthenticated is true)
                     {
-                        <li class="nav-item">
-                            <a class="nav-link" asp-controller="TrainingPlans" asp-action="GetAll">
-                                @Localizer["TrainingPlans"]
-                            </a>
-                        </li>
                         <li class="nav-item">
                             <a class="nav-link" asp-controller="Users" asp-action="GetAll">@Localizer["Users"]</a>
                         </li>
