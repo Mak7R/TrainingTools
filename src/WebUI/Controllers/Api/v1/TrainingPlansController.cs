@@ -5,6 +5,7 @@ using Domain.Exceptions;
 using Domain.Identity;
 using Domain.Models;
 using Domain.Models.TrainingPlan;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using WebUI.Filters;
@@ -15,7 +16,6 @@ using WebUI.Models.TrainingPlan;
 namespace WebUI.Controllers.Api.v1;
 
 [Route("api/v{version:apiVersion}/training-plans")]
-[AuthorizeVerifiedRoles]
 public class TrainingPlansController : ApiController
 {
     private readonly IMapper _mapper;
@@ -37,6 +37,7 @@ public class TrainingPlansController : ApiController
     /// <param name="orderModel">Supported orders: title, owner</param>
     /// <param name="pageModel">Paging params: page, page-size</param>
     /// <returns>A list of training plans.</returns>
+    [AllowAnonymous]
     [HttpGet("")]
     [QueryValuesReader<DefaultOrderOptions>]
     public async Task<IActionResult> GetAll(
@@ -55,6 +56,7 @@ public class TrainingPlansController : ApiController
     /// </summary>
     /// <param name="filterModel">Supported filters: f_title, f_title_equals, f_author-id, f_author, f_author-equals</param>
     /// <returns>The count of training plans.</returns>
+    [AllowAnonymous]
     [HttpGet("count")]
     [QueryValuesReader<DefaultOrderOptions>]
     public async Task<IActionResult> Count(FilterViewModel? filterModel)
@@ -69,6 +71,7 @@ public class TrainingPlansController : ApiController
     /// </summary>
     /// <param name="filterModel">Supported filters: f_title, f_title_equals, f_public-only</param>
     /// <returns>The count of user-specific training plans.</returns>
+    [AuthorizeVerifiedRoles]
     [HttpGet("my/count")]
     [QueryValuesReader<DefaultOrderOptions>]
     public async Task<IActionResult> UserPlansCount(FilterViewModel? filterModel)
@@ -88,6 +91,7 @@ public class TrainingPlansController : ApiController
     /// <param name="orderModel">Supported orders: title</param>
     /// <param name="pageModel">Paging params: page, page-size</param>
     /// <returns>A list of user-specific training plans.</returns>
+    [AuthorizeVerifiedRoles]
     [HttpGet("for-user")]
     [QueryValuesReader<DefaultOrderOptions>]
     public async Task<IActionResult> GetUserTrainingPlans(
@@ -111,6 +115,7 @@ public class TrainingPlansController : ApiController
     /// </summary>
     /// <param name="planId">The ID of the training plan.</param>
     /// <returns>The training plan details.</returns>
+    [AllowAnonymous]
     [HttpGet("{planId:guid}")]
     public async Task<IActionResult> GetTrainingPlan(Guid planId)
     {
@@ -131,6 +136,7 @@ public class TrainingPlansController : ApiController
     /// </summary>
     /// <param name="creationModel">The model containing the training plan creation details.</param>
     /// <returns>A redirection to the user's training plans page.</returns>
+    [AuthorizeVerifiedRoles]
     [HttpPost("")]
     public async Task<IActionResult> Create([FromForm] CreateTrainingPlanModel creationModel)
     {
@@ -161,6 +167,7 @@ public class TrainingPlansController : ApiController
     /// <param name="planId">The ID of the training plan to update.</param>
     /// <param name="updateTrainingPlanModel">The model containing the training plan update details.</param>
     /// <returns>The updated training plan details.</returns>
+    [AuthorizeVerifiedRoles]
     [HttpPut("{planId:guid}")]
     public async Task<IActionResult> Update(Guid planId,
         [UpdateTrainingPlanModelBinder] UpdateTrainingPlanModel updateTrainingPlanModel)
@@ -238,6 +245,7 @@ public class TrainingPlansController : ApiController
     /// </summary>
     /// <param name="planId">The ID of the training plan to delete.</param>
     /// <returns>The details of the deleted training plan.</returns>
+    [AuthorizeVerifiedRoles]
     [HttpDelete("{planId:guid}")]
     public async Task<IActionResult> Delete(Guid planId)
     {

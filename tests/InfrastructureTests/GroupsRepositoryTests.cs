@@ -67,7 +67,7 @@ public class GroupsRepositoryTests
     }
     
     [Fact]
-    public async Task GetAll_ShouldReturnAllGroups_WhenNoFilterIsApplied()
+    public async Task GetAll_ShouldReturnAllGroups_WhenNoArgumentsIsApplied()
     {
         // Arrange
         var groups = _fixture.CreateMany<GroupEntity>().ToList();
@@ -76,16 +76,13 @@ public class GroupsRepositoryTests
 
         // Act
         var result = await _groupsRepository.GetAll();
-
+        
         // Assert
-        result.Should().HaveCount(groups.Count);
-        result.Should()
-            .Contain(g => groups.Select(gr => gr.Name)
-                .Contains(g.Name));
+        result.Select(r => r.Id).Should().BeEquivalentTo(groups.Select(g => g.Id));
     }
 
     [Fact]
-    public async Task GetAll_ShouldReturnFilteredGroups_WhenFilterIsAppliedAndMatch()
+    public async Task GetAll_ShouldReturnFilteredGroups_WhenFilterIsApplied()
     {
         // Arrange
         List<string> names = ["Group", "Group1", "NotGroup", "Exercise", "Exercise1"];
@@ -111,35 +108,82 @@ public class GroupsRepositoryTests
         var result = await _groupsRepository.GetAll(filterModel);
 
         // Assert
-        var filteredGroups = groups.Where(g => g.Name.Contains(containableName)).ToList();
-        result.Should().HaveCount(filteredGroups.Count);
-        result.Should()
-            .Contain(g => groups.Select(gr => gr.Name)
-                .Contains(g.Name));
+        var filteredGroupIds = groups.Where(g => g.Name.Contains(containableName)).Select(g => g.Id).ToList();
+        result.Select(g => g.Id).Should().BeEquivalentTo(filteredGroupIds);
+    }
+    
+    [Fact]
+    public async Task GetAll_ShouldReturnFilteredGroups_WhenOrderIsApplied()
+    {
+        // Arrange
+        List<string> names = ["Group", "Group1", "NotGroup", "Exercise", "Exercise1"];
+        var enumerator = names.GetEnumerator();
+        var groups = _fixture.Build<GroupEntity>()
+            .With(g => g.Name, () =>
+            {
+                enumerator.MoveNext();
+                return enumerator.Current;
+            })
+            .CreateMany(names.Count).ToList();
+        await _dbContext.Groups.AddRangeAsync(groups);
+        await _dbContext.SaveChangesAsync();
+
+        var orderModel = new OrderModel
+        {
+            OrderBy = OrderOptionNames.Group.Name,
+            OrderOption = OrderOptionNames.Shared.Descending
+        };
+
+        // Act
+        var result = await _groupsRepository.GetAll(orderModel:orderModel);
+
+        // Assert
+        result.Should().BeInDescendingOrder(g => g.Name);
+        result.Select(g => g.Id).Should().BeEquivalentTo(groups.Select(g => g.Id));
+        
     }
 
     [Fact]
-    public async Task GetAll_ReturnsEmptyEnumerable_WhenFilterIsAppliedAndDoesNotMatch()
+    public async Task GetAll_ShouldReturnFilteredGroups_WhenPageIsApplied()
     {
-        int i = 1;
-        var groupEntities = _fixture.Build<GroupEntity>()
-            .With(g => g.Name, () => $"Group{i++}")
-            .CreateMany(4)
-            .ToList();
-        
-        await _dbContext.Groups.AddRangeAsync(groupEntities);
+        // Arrange
+        List<string> names = ["Group", "Group1", "NotGroup", "Exercise", "Exercise1"];
+        var enumerator = names.GetEnumerator();
+        var groups = _fixture.Build<GroupEntity>()
+            .With(g => g.Name, () =>
+            {
+                enumerator.MoveNext();
+                return enumerator.Current;
+            })
+            .CreateMany(names.Count).ToList();
+        await _dbContext.Groups.AddRangeAsync(groups);
         await _dbContext.SaveChangesAsync();
 
-        var filterModel = new FilterModel
+        var orderModel = new OrderModel
         {
-            { FilterOptionNames.Group.Name, "NonExistentGroup" }
+            OrderBy = OrderOptionNames.Group.Name,
+            OrderOption = OrderOptionNames.Shared.Ascending
         };
 
-        var result = await _groupsRepository.GetAll(filterModel);
+        int page = 1, pageSize = 2;
+        var pageModel = new PageModel
+        {
+            CurrentPage = page,
+            PageSize = pageSize
+        };
 
-        result.Should().BeEmpty();
+        // Act
+        var result = await _groupsRepository.GetAll(orderModel:orderModel, pageModel:pageModel);
+
+        // Assert
+        result.Count().Should().Be(pageSize);
+        result.Should().BeInAscendingOrder(g => g.Name);
+
+        var pagedGroups = groups.OrderBy(g => g.Name).Skip(page*pageSize).Take(pageSize).Select(g => g.Id);
+        result.Select(g => g.Id).Should().BeEquivalentTo(pagedGroups);
+        
     }
-
+    
     [Fact]
     public async Task GetAll_ThrowsDataBaseException_WhenExceptionOccurs()
     {
@@ -152,49 +196,46 @@ public class GroupsRepositoryTests
 
     #endregion
 
-    #region GetByName
+    #region Count
 
     [Fact]
-    public async Task GetByName_ShouldReturnGroup_WhenGroupNameExists()
+    public async Task Count_ShouldReturnGroupsCount_WhenNoFilterIsApplied()
     {
         // Arrange
-        var groupName = "Group1";
-        var groupEntity = _fixture.Build<GroupEntity>().With(g => g.Name, groupName).Create();
-        await _dbContext.Groups.AddAsync(groupEntity);
+        var groups = _fixture.Build<GroupEntity>().CreateMany().ToList();
+        await _dbContext.Groups.AddRangeAsync(groups);
         await _dbContext.SaveChangesAsync();
 
         // Act
-        var result = (await _groupsRepository.GetAll(filterModel:new FilterModel{{FilterOptionNames.Group.NameEquals, groupName}})).SingleOrDefault();
+        var result = await _groupsRepository.Count();
 
         // Assert
-        result.Should().NotBeNull();
-        result?.Name.Should().Be(groupName);
+        result.Should().Be(groups.Count);
     }
 
     [Fact]
-    public async Task GetByName_ShouldReturnNull_WhenGroupNameDoesNotExist()
+    public async Task Count_ShouldReturnZero_WhenBadFilterIsApplied()
     {
         // Arrange
-        var groupName = "Group1";
-        var groupEntity = _fixture.Build<GroupEntity>().With(g => g.Name, "DifferentGroup").Create();
-        await _dbContext.Groups.AddAsync(groupEntity);
+        var groups = _fixture.Build<GroupEntity>().With(g => g.Name, "SomeGroup").Create();
+        await _dbContext.Groups.AddAsync(groups);
         await _dbContext.SaveChangesAsync();
 
         // Act
-        var result = (await _groupsRepository.GetAll(filterModel:new FilterModel{{FilterOptionNames.Group.NameEquals, groupName}})).SingleOrDefault();
+        var result = await _groupsRepository.Count(new FilterModel { { FilterOptionNames.Group.NameEquals, "UnexistsGroup" } });
 
         // Assert
-        result.Should().BeNull();
+        result.Should().Be(0);
     }
 
     [Fact]
-    public async Task GetByName_ThrowsDataBaseException_WhenExceptionOccurs()
+    public async Task Count_ThrowsDataBaseException_WhenExceptionOccurs()
     {
         // Arrange
         _dbContextMock.Setup(db => db.Groups).Throws(new Exception("Database error"));
 
         // Act
-        Func<Task> action = async () => await _groupsRepository.GetAll(filterModel:new FilterModel{{FilterOptionNames.Group.NameEquals, string.Empty}});
+        Func<Task> action = async () => await _groupsRepository.Count();
 
         // Assert
         await action.Should().ThrowAsync<DataBaseException>();

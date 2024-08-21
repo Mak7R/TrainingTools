@@ -6,6 +6,7 @@ using Domain.Exceptions;
 using Domain.Identity;
 using Domain.Models;
 using Domain.Models.TrainingPlan;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using WebUI.Extensions;
@@ -18,7 +19,6 @@ namespace WebUI.Controllers;
 
 [Controller]
 [Route("training-plans")]
-[AuthorizeVerifiedRoles]
 public class TrainingPlansController : Controller
 {
     private readonly IMapper _mapper;
@@ -33,6 +33,7 @@ public class TrainingPlansController : Controller
         _mapper = mapper;
     }
 
+    [AllowAnonymous]
     [HttpGet("")]
     [QueryValuesReader<DefaultOrderOptions>]
     public async Task<IActionResult> GetAll(
@@ -57,6 +58,7 @@ public class TrainingPlansController : Controller
         return View(plans.Select(p => _mapper.Map<TrainingPlanViewModel>(p)));
     }
 
+    [AuthorizeVerifiedRoles]
     [HttpGet("for-user")]
     [QueryValuesReader<DefaultOrderOptions>]
     public async Task<IActionResult> GetUserTrainingPlans(
@@ -85,6 +87,7 @@ public class TrainingPlansController : Controller
         return View(plans.Select(p => _mapper.Map<TrainingPlanViewModel>(p)));
     }
 
+    [AllowAnonymous]
     [HttpGet("{planId:guid}")]
     public async Task<IActionResult> GetTrainingPlan(Guid planId)
     {
@@ -100,6 +103,7 @@ public class TrainingPlansController : Controller
         return View(_mapper.Map<TrainingPlanViewModel>(trainingPlan));
     }
 
+    [AuthorizeVerifiedRoles]
     [HttpGet("create")]
     public async Task<IActionResult> Create()
     {
@@ -110,6 +114,7 @@ public class TrainingPlansController : Controller
         return View();
     }
 
+    [AuthorizeVerifiedRoles]
     [HttpPost("create")]
     public async Task<IActionResult> Create([FromForm] CreateTrainingPlanModel creationModel)
     {
@@ -134,6 +139,7 @@ public class TrainingPlansController : Controller
         return RedirectToAction("GetUserTrainingPlans", "TrainingPlans");
     }
 
+    [AuthorizeVerifiedRoles]
     [HttpGet("{planId:guid}/update")]
     [AddAvailableGroups]
     public async Task<IActionResult> Update(Guid planId)
@@ -155,6 +161,7 @@ public class TrainingPlansController : Controller
         return View(_mapper.Map<UpdateTrainingPlanModel>(trainingPlan));
     }
 
+    [AuthorizeVerifiedRoles]
     [HttpPost("{planId:guid}/update")]
     public async Task<IActionResult> Update(Guid planId,
         [UpdateTrainingPlanModelBinder] UpdateTrainingPlanModel updateTrainingPlanModel)
@@ -218,6 +225,7 @@ public class TrainingPlansController : Controller
         });
     }
 
+    [AuthorizeVerifiedRoles]
     [HttpGet("{planId:guid}/delete")]
     public async Task<IActionResult> Delete(Guid planId)
     {
