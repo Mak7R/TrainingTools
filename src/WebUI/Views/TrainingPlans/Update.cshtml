@@ -251,7 +251,7 @@
                 @:{ title: '@Html.Raw(block.Title)', entries: [
                 @foreach (var entry in block.Entries)
                 {
-                    @: { description: '@Html.Raw(entry.Description)', groupId: '@entry.GroupId' },
+                    @: { description: `@Html.Raw(entry.Description)`, groupId: '@entry.GroupId' },
                 }
 
                 @:]},
