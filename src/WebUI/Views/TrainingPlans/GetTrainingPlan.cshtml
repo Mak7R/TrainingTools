@@ -10,7 +10,7 @@
     {
         private readonly int _groupCount;
         private int _currentIndex;
-        private const int DefaultMove = 124;
+        private const int DefaultMove = 53;
 
         public ColorGenerator(int groupCount)
         {
@@ -20,9 +20,9 @@
 
         public string NextColor()
         {
-            var hue = (_currentIndex * 360.0 / _groupCount + DefaultMove) % 360;
+            var hue = (_currentIndex * DefaultMove) % 360;
             _currentIndex++;
-            return HslToRgb(hue, 0.5, 0.75); // Saturation and Lightness can be adjusted
+            return HslToRgb(hue, 0.55, 0.70); // Saturation and Lightness can be adjusted
         }
 
         private string HslToRgb(double hue, double saturation, double lightness)
