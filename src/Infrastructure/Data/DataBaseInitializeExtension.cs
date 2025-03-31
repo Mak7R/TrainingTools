@@ -42,7 +42,6 @@ public static class DataBaseInitializeExtension
         where T : DbContext
     {
         var dbContext = serviceProvider.GetRequiredService<T>();
-        await dbContext.Database.EnsureCreatedAsync();
         dbContext.Migrate();
 
         await serviceProvider.InitializeRoles(roles);

@@ -226,3 +226,7 @@ _Pvt_Extensions
 
 # FAKE - F# Make
 .fake/
+
+backups
+/.idea
+/src/WebUI/logs
